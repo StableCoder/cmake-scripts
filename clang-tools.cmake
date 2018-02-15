@@ -139,8 +139,6 @@ function(_ClangTidy TIDY_TARGET_NAME)
                 endforeach()
             endif()
 
-            message("FOR ${TIDY_TARGET_NAME} these are the sources " ${TIDY_CODE_FILES})
-
             # Includes
             _GetLibraryIncludeDirectories(_TEMP ${TIDY_TARGET_NAME})
             foreach(iter IN LISTS _TEMP)

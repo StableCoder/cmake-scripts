@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+if(NOT COVERAGE_ADDED)
+set(COVERAGE_ADDED ON)
+
 # Options
 OPTION(CODE_COVERAGE "Builds targets with code coverage tools. (Requires GCC or Clang)" OFF)
 
@@ -61,9 +64,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "coverage" OR CODE_COVERAGE)
     else()
         message(FATAL_ERROR "Code coverage requires Clang or GCC. Aborting.")
     endif()
-else()
-    message("On Unix, there are extra build configurations:")
-    message("coverage : Adds code coverage instrumentation")
 endif()
 
 # Adds code coverage targets to the named target, named '${TARGET_NAME}-ccov'.
@@ -137,3 +137,5 @@ macro(target_add_auto_code_coverage TARGET_NAME)
         endif()
     endif()
 endmacro()
+
+endif(NOT COVERAGE_ADDED)

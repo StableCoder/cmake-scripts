@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+if(NOT TOOLS_ADDED)
+set(TOOLS_ADDED ON)
+
 # Generates a 'format' target using a custom name, files, and include directories all being parameters.
 #
 # FORMAT_TARGET_NAME - The name of the target to create. If it's a real target name, then the files for it will
@@ -117,4 +120,6 @@ if (CPPCHECK_EXE)
 else()
     message(STATUS "cppcheck not found!")
     set(CMAKE_CXX_CPPCHECK "" CACHE STRING "" FORCE) # delete it
+endif()
+
 endif()

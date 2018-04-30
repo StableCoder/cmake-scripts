@@ -12,6 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This adds a bunch of extra build types that build the programs with instrumentation for several sanitizer types, available
+# on Unix systems with GCC or Clang: 
+# tsan - ThreadSanitizer
+# asan - AddressSanitizer
+# lsan - LeakSanitizer
+# msan - MemorySanitizer (also requires instrumented libc++ or libstdc++)
+# ubsan - UndefinedBehaviourSanitizer
+
+if(NOT SANITIZERS_ADDED)
+set(SANITIZERS_ADDED ON)
+
 function(_CheckUnix)
     if (NOT UNIX)
         message(FATAL_ERROR "Error: ${ARGV0} requires a Unix environment.")
@@ -105,16 +116,6 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "ubsan")
     message("Building for UndefinedBehaviourSanitizer")
     _CheckUnix(CMAKE_BUILD_TYPE)
 
-else()
-    if(UNIX)
-        # If running on Linux, then enable the build types for the clang-based sanitizer tools
-        message("On Unix, there are extra build configurations:")
-        message("tsan : ThreadSanitizer")
-        message("asan : AddressSanitizer")
-        message("lsan : LeakSanitizer")
-        message("msan : MemorySanitizer (Clang only)")
-        message("ubsan : UndefinedBehaviourSanitizer")
-    else()
-        message("To enable sanitizer tools, run in a Unix environment.")
-    endif()
 endif()
+
+endif(NOT SANITIZERS_ADDED)

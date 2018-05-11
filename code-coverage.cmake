@@ -48,6 +48,30 @@ if(CMAKE_BUILD_TYPE STREQUAL "coverage" OR CODE_COVERAGE)
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-instr-generate -fcoverage-mapping")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-instr-generate -fcoverage-mapping")
 
+        add_custom_target(ccov-clean
+            COMMAND rm ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
+            COMMAND rm ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list
+        )
+
+        add_custom_target(ccov-all-processing
+            COMMAND llvm-profdata merge -o ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata -sparse `cat ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list`
+            )
+
+        add_custom_target(ccov-all-report
+            COMMAND llvm-cov report `cat ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list` -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
+            DEPENDS ccov-all-processing
+            )
+
+        add_custom_target(ccov-all
+            COMMAND llvm-cov show `cat ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list` -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata -show-line-counts-or-regions -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged -format="html"
+            DEPENDS ccov-all-processing
+            )
+
+        add_custom_target(TARGET ccov-all POST_BUILD
+                COMMAND ;
+                COMMENT "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged/index.html in your browser to view the coverage report."
+            )
+
     elseif(CMAKE_COMPILER_IS_GNUCXX)
         message("Building with lcov Code Coverage Tools")
 
@@ -75,10 +99,15 @@ endif()
 macro(target_add_code_coverage TARGET_NAME)
     if(CMAKE_BUILD_TYPE STREQUAL "coverage" OR CODE_COVERAGE)
         if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
-            add_custom_target(${TARGET_NAME}-ccov-preprocessing
+            add_custom_target(${TARGET_NAME}-ccov-run
                 COMMAND LLVM_PROFILE_FILE=${TARGET_NAME}.profraw $<TARGET_FILE:${TARGET_NAME}>
-                COMMAND llvm-profdata merge -sparse ${TARGET_NAME}.profraw -o ${TARGET_NAME}.profdata
+                COMMAND echo "-object=$<TARGET_FILE:${TARGET_NAME}>" >> ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
+                COMMAND echo "${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.profraw " >> ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list
                 DEPENDS ${TARGET_NAME})
+
+            add_custom_target(${TARGET_NAME}-ccov-preprocessing
+                COMMAND llvm-profdata merge -sparse ${TARGET_NAME}.profraw -o ${TARGET_NAME}.profdata
+                DEPENDS ${TARGET_NAME}-ccov-run)
 
             add_custom_target(${TARGET_NAME}-ccov-show
                 COMMAND llvm-cov show $<TARGET_FILE:${TARGET_NAME}> -instr-profile=${TARGET_NAME}.profdata -show-line-counts-or-regions
@@ -137,6 +166,8 @@ macro(target_add_auto_code_coverage TARGET_NAME)
                 add_custom_target(ccov-report)
             endif()
             add_dependencies(ccov-report ${TARGET_NAME}-ccov-report)
+
+            add_dependencies(ccov-all-processing ${TARGET_NAME}-ccov-run)
         endif()
     endif()
 endmacro()

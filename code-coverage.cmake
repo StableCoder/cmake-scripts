@@ -23,6 +23,9 @@ FIND_PROGRAM(LLVM_COV_PATH llvm-cov)
 FIND_PROGRAM(LCOV_PATH lcov)
 FIND_PROGRAM(GENHTML_PATH genhtml)
 
+# Variables
+set(CMAKE_COVERAGE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/ccov)
+
 set(CMAKE_C_FLAGS_COVERAGE
     "${CMAKE_C_FLAGS_RELEASE}"
     CACHE STRING "Flags used by the C compiler during Code Coverage builds."
@@ -44,6 +47,35 @@ if(CMAKE_BUILD_TYPE STREQUAL "coverage" OR CODE_COVERAGE)
         # set Flags
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-instr-generate -fcoverage-mapping")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-instr-generate -fcoverage-mapping")
+
+        add_custom_target(ccov-clean
+            COMMAND rm -f ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
+            COMMAND rm -f ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list
+        )
+
+        add_custom_target(ccov-preprocessing
+            COMMAND mkdir -p ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}
+            DEPENDS ccov-clean
+        )
+
+        add_custom_target(ccov-all-processing
+            COMMAND llvm-profdata merge -o ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata -sparse `cat ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list`
+        )
+
+        add_custom_target(ccov-all-report
+            COMMAND llvm-cov report `cat ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list` -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
+            DEPENDS ccov-all-processing
+        )
+
+        add_custom_target(ccov-all
+            COMMAND llvm-cov show `cat ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list` -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata -show-line-counts-or-regions -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged -format="html"
+            DEPENDS ccov-all-processing
+        )
+
+        add_custom_target(TARGET ccov-all POST_BUILD
+            COMMAND ;
+            COMMENT "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged/index.html in your browser to view the coverage report."
+        )
 
     elseif(CMAKE_COMPILER_IS_GNUCXX)
         message("Building with lcov Code Coverage Tools")
@@ -72,26 +104,36 @@ endif()
 macro(target_add_code_coverage TARGET_NAME)
     if(CMAKE_BUILD_TYPE STREQUAL "coverage" OR CODE_COVERAGE)
         if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
-            add_custom_target(${TARGET_NAME}-ccov-preprocessing
+            add_custom_target(${TARGET_NAME}-ccov-run
                 COMMAND LLVM_PROFILE_FILE=${TARGET_NAME}.profraw $<TARGET_FILE:${TARGET_NAME}>
+                COMMAND echo "-object=$<TARGET_FILE:${TARGET_NAME}>" >> ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
+                COMMAND echo "${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.profraw " >> ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list
+                DEPENDS ccov-preprocessing ${TARGET_NAME}
+            )
+
+            add_custom_target(${TARGET_NAME}-ccov-processing
                 COMMAND llvm-profdata merge -sparse ${TARGET_NAME}.profraw -o ${TARGET_NAME}.profdata
-                DEPENDS ${TARGET_NAME})
+                DEPENDS ${TARGET_NAME}-ccov-run
+            )
 
             add_custom_target(${TARGET_NAME}-ccov-show
                 COMMAND llvm-cov show $<TARGET_FILE:${TARGET_NAME}> -instr-profile=${TARGET_NAME}.profdata -show-line-counts-or-regions
-                DEPENDS ${TARGET_NAME}-ccov-preprocessing)
+                DEPENDS ${TARGET_NAME}-ccov-processing
+            )
 
             add_custom_target(${TARGET_NAME}-ccov-report
                 COMMAND llvm-cov report $<TARGET_FILE:${TARGET_NAME}> -instr-profile=${TARGET_NAME}.profdata
-                DEPENDS ${TARGET_NAME}-ccov-preprocessing)
+                DEPENDS ${TARGET_NAME}-ccov-processing
+            )
 
             add_custom_target(${TARGET_NAME}-ccov
-                COMMAND llvm-cov show $<TARGET_FILE:${TARGET_NAME}> -instr-profile=${TARGET_NAME}.profdata -show-line-counts-or-regions -output-dir=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../ccov/${TARGET_NAME}-llvm-cov -format="html"
-                DEPENDS ${TARGET_NAME}-ccov-preprocessing)
+                COMMAND llvm-cov show $<TARGET_FILE:${TARGET_NAME}> -instr-profile=${TARGET_NAME}.profdata -show-line-counts-or-regions -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${TARGET_NAME}-llvm-cov -format="html"
+                DEPENDS ${TARGET_NAME}-ccov-processing
+            )
 
             add_custom_command(TARGET ${TARGET_NAME}-ccov POST_BUILD
                 COMMAND ;
-                COMMENT "Open ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../ccov/${TARGET_NAME}-llvm-cov/index.html in your browser to view the coverage report."
+                COMMENT "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${TARGET_NAME}-llvm-cov/index.html in your browser to view the coverage report."
             )
 
         elseif(CMAKE_COMPILER_IS_GNUCXX)
@@ -103,14 +145,14 @@ macro(target_add_code_coverage TARGET_NAME)
                 COMMAND $<TARGET_FILE:${TARGET_NAME}>
                 COMMAND ${LCOV_PATH} --directory . --capture --output-file ${COVERAGE_INFO}
                 COMMAND ${LCOV_PATH} --remove ${COVERAGE_INFO} 'tests/*' '/usr/*' --output-file ${COVERAGE_CLEANED}
-                COMMAND ${GENHTML_PATH} -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../ccov/${TARGET_NAME}-lcov ${COVERAGE_CLEANED}
+                COMMAND ${GENHTML_PATH} -o ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${TARGET_NAME}-lcov ${COVERAGE_CLEANED}
                 COMMAND ${CMAKE_COMMAND} -E remove ${COVERAGE_INFO} ${COVERAGE_CLEANED}
                 DEPENDS ${TARGET_NAME}
             )
 
             add_custom_command(TARGET ${TARGET_NAME}-ccov POST_BUILD
                 COMMAND ;
-                COMMENT "Open ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../ccov/${TARGET_NAME}-lcov/index.html in your browser to view the coverage report."
+                COMMENT "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${TARGET_NAME}-lcov/index.html in your browser to view the coverage report."
             )
         endif()
     endif()
@@ -134,6 +176,8 @@ macro(target_add_auto_code_coverage TARGET_NAME)
                 add_custom_target(ccov-report)
             endif()
             add_dependencies(ccov-report ${TARGET_NAME}-ccov-report)
+
+            add_dependencies(ccov-all-processing ${TARGET_NAME}-ccov-run)
         endif()
     endif()
 endmacro()

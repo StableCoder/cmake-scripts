@@ -71,15 +71,15 @@ endfunction()
 ##############
 # clang-tidy #
 ##############
-option(NO_CLANG_TIDY "Turns off clang-tidy processing if it is found." OFF)
+option(CLANG_TIDY "Turns on clang-tidy processing if it is found." OFF)
 
 find_program (CLANG_TIDY_EXE NAMES "clang-tidy")
 if (CLANG_TIDY_EXE)
     message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
-    if(NOT NO_CLANG_TIDY)
+    if(CLANG_TIDY)
         set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE};-format-style=file;-header-filter='${CMAKE_SOURCE_DIR}/*'" CACHE STRING "" FORCE)
     else()
-        message(STATUS "clang-tidy DISABLED via 'NO_CLANG_TIDY' variable!")
+    message(STATUS "clang-tidy NOT ENABLED via 'CLANG_TIDY' variable!")
     endif()
 else()
     message(STATUS "clang-tidy not found!")
@@ -89,7 +89,7 @@ endif()
 ########################
 # include what you use #
 ########################
-option(ADD_IWYU "Turns on include-what-you-use processing if it is found." OFF)
+option(IWYU "Turns on include-what-you-use processing if it is found." OFF)
 
 find_program(IWYU_EXE NAMES "include-what-you-use")
 if (IWYU_EXE)
@@ -97,7 +97,7 @@ if (IWYU_EXE)
     if(ADD_IWYU)
         set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "${IWYU_EXE};-Xiwyu;" CACHE STRING "" FORCE)
     else()
-        message(STATUS "include-what-you-use NOT_ENABLED via 'ADD_IWYU' variable!")
+        message(STATUS "include-what-you-use NOT ENABLED via 'IWYU' variable!")
     endif()
 else()
     message(STATUS "include-what-you-use not found!")
@@ -107,7 +107,7 @@ endif()
 ############
 # cppcheck #
 ############
-option(ADD_CPPCHECK "Turns on cppcheck processing if it is found." OFF)
+option(CPPCHECK "Turns on cppcheck processing if it is found." OFF)
 
 find_program(CPPCHECK_EXE NAMES "cppcheck")
 if (CPPCHECK_EXE)
@@ -115,7 +115,7 @@ if (CPPCHECK_EXE)
     if(ADD_CPPCHECK)
         set(CMAKE_CXX_CPPCHECK "${CPPCHECK_EXE};--enable=warning,performance,portability,missingInclude;--template=\"[{severity}][{id}] {message} {callstack} \(On {file}:{line}\)\";--suppress=missingIncludeSystem;--quiet;--verbose;--force" CACHE STRING "" FORCE)
     else()
-        message(STATUS "cppcheck NOT ENABLED via 'ADD_CPPCHECK' variable!")
+        message(STATUS "cppcheck NOT ENABLED via 'CPPCHECK' variable!")
     endif()
 else()
     message(STATUS "cppcheck not found!")

@@ -10,7 +10,7 @@ Using the functions `_Cxx11()`, `_Cxx14()` or `_Cxx17()` this adds the appropria
 
 ## Sanitizer Builds
 
-`sanitizer-builds.cmake`
+`sanitizers.cmake`
 
 Sanitizers are tools that perform checks during a program’s runtime and returns issues, and as such, along with unit testing, code coverage and static analysis, is another tool to add to the programmers toolbox. And of course, like the previous tools, are tragically simple to add into any project using CMake, allowing any project and developer to quickly and easily use.
 
@@ -32,15 +32,27 @@ A quick rundown of the tools available, and what they do:
     - Unreachable code
 - [MemorySanitizer](https://clang.llvm.org/docs/MemorySanitizer.html) detects uninitialized reads.
 
-These are used by changing the build type to one of the following:
-- asan
-- lsan
-- tsan
-- msan
-- ubsan
-Like so `-DCMAKE_BUILD_TYPE=asan`.
+These are used by declaring the `USE_SANITIZER` CMake variables as one of:
+- Address
+- Memory
+- MemoryWithOrigins
+- Undefined
+- Thread
+- Address;Undefined
+- Undefined;Address
+- Leak
+
+## Code Coverage
+
+Generating code coverage during a run of a program can help determine which blocks, regions, or even lines of code are being used, and for how many times.
+
+Coverage here is supported on both GCC and Clang. GCC requires the `lcov` program, and Clang requires `llvm-cov` and `llvm-profdata`, often provided with the llvm toolset.
+
+To enable, turn on the `CODE_COVERAGE` variable.
 
 ## Tools
+
+`tools.cmake`
 
 ### clang-format
 

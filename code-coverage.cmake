@@ -16,7 +16,7 @@ if(NOT COVERAGE_ADDED)
 set(COVERAGE_ADDED ON)
 
 # Options
-OPTION(CODE_COVERAGE "Builds targets with code coverage tools. (Requires GCC or Clang)" OFF)
+OPTION(CODE_COVERAGE "Builds targets with code coverage instrumentation. (Requires GCC or Clang)" OFF)
 
 # Programs
 FIND_PROGRAM(LLVM_COV_PATH llvm-cov)
@@ -26,16 +26,7 @@ FIND_PROGRAM(GENHTML_PATH genhtml)
 # Variables
 set(CMAKE_COVERAGE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/ccov)
 
-set(CMAKE_C_FLAGS_COVERAGE
-    "${CMAKE_C_FLAGS_RELEASE}"
-    CACHE STRING "Flags used by the C compiler during Code Coverage builds."
-    FORCE)
-set(CMAKE_CXX_FLAGS_COVERAGE
-    "${CMAKE_CXX_FLAGS_RELEASE}"
-    CACHE STRING "Flags used by the C++ compiler during Code Coverage builds."
-    FORCE)
-
-if(CMAKE_BUILD_TYPE STREQUAL "coverage" OR CODE_COVERAGE)
+if(CODE_COVERAGE)
     if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
         message("Building with llvm Code Coverage Tools")
 
@@ -81,7 +72,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "coverage" OR CODE_COVERAGE)
         message("Building with lcov Code Coverage Tools")
 
         # Warning/Error messages
-        if(NOT (CMAKE_BUILD_TYPE STREQUAL "Debug"))
+        if(NOT (uppercase_CMAKE_BUILD_TYPE STREQUAL "DEBUG"))
             message(WARNING "Code coverage results with an optimized (non-Debug) build may be misleading")
         endif()
         if(NOT LCOV_PATH)
@@ -102,7 +93,7 @@ endif()
 #
 # TARGET_NAME - Name of the target to generate code coverage for.
 macro(target_add_code_coverage TARGET_NAME)
-    if(CMAKE_BUILD_TYPE STREQUAL "coverage" OR CODE_COVERAGE)
+    if(CODE_COVERAGE)
         if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
             add_custom_target(${TARGET_NAME}-ccov-run
                 COMMAND LLVM_PROFILE_FILE=${TARGET_NAME}.profraw $<TARGET_FILE:${TARGET_NAME}>
@@ -163,7 +154,7 @@ endmacro()
 #
 # TARGET_NAME - Name of the target to generate code coverage for.
 macro(target_add_auto_code_coverage TARGET_NAME)
-    if(CMAKE_BUILD_TYPE STREQUAL "coverage" OR CODE_COVERAGE)
+    if(CODE_COVERAGE)
         target_add_code_coverage(${TARGET_NAME})
 
         if(NOT TARGET ccov)

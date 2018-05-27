@@ -13,15 +13,16 @@
 # limitations under the License.
 
 option(BUILD_TESTS "Build the test programs." OFF)
+option(FORCE_CATCH_CLONE "Forces cloning of the Catch test headers rather than using local." OFF)
 
 macro(_BuildTests)
     if(BUILD_TESTS)
         if(NOT TARGET catch)
             add_library(catch INTERFACE)
             
-            find_file(HAVE_CATCH_HPP catch.hpp)
+            find_file(HAVE_CATCH_HPP catch.hpp PATH_SUFFIXES catch)
 
-            if(NOT HAVE_CATCH_HPP)
+            if(NOT HAVE_CATCH_HPP OR FORCE_CATCH_CLONE)
                 # Cloning
                 message(STATUS "No Catch header detected, cloning via Git.")
                 include(ExternalProject)
@@ -42,6 +43,11 @@ macro(_BuildTests)
                 ExternalProject_Get_Property(catch2 source_dir)
                 add_dependencies(catch catch2)
                 target_include_directories(catch INTERFACE ${source_dir}/single_include)
+            else()
+                # Using Local
+                message(STATUS "Local Catch header detected at: " ${HAVE_CATCH_HPP})
+                get_filename_component(CATCH_PATH ${HAVE_CATCH_HPP} DIRECTORY)
+                target_include_directories(catch INTERFACE ${CATCH_PATH})
             endif()
         endif()
 

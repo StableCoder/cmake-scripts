@@ -44,11 +44,29 @@ These are used by declaring the `USE_SANITIZER` CMake variables as one of:
 
 ## Code Coverage
 
+`code-coverage.cmake`
+
 Generating code coverage during a run of a program can help determine which blocks, regions, or even lines of code are being used, and for how many times.
 
 Coverage here is supported on both GCC and Clang. GCC requires the `lcov` program, and Clang requires `llvm-cov` and `llvm-profdata`, often provided with the llvm toolset.
 
 To enable, turn on the `CODE_COVERAGE` variable.
+
+## Compiler Options
+
+`compiler-options.cmake`
+
+Allows for easy use of some pre-made compiler options for the major compilers.
+
+### Enable All Warnings
+
+Using `-DENABLE_ALL_WARNINGS=ON` will enable almost all of the warnings available for a compiler:
+
+| Compiler | Options                |
+|:---------|:-----------------------|
+| MSVC     | /W4                    |
+| GCC      | -Wall -Weffc++ -Wextra |
+| Clang    | -Wall -Weffc++ -Wextra |
 
 ## Tools
 
@@ -73,7 +91,7 @@ _ClangFormat(stec_audio ${ALL_CODE_FILES})
 
 ### clang-tidy
 
-When detected, [clang-tidy](https://clang.llvm.org/extra/clang-tidy/) is automatically added and run, unless it is disabled via `-DNO_CLANG_TIDY=ON`.
+When detected, [clang-tidy](https://clang.llvm.org/extra/clang-tidy/) can be enabled by using the option of `-DCLANG_TIDY=ON`.
 
 ### include-what-you-use
 

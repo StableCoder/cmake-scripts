@@ -42,7 +42,7 @@ macro(_BuildTests)
 
                 ExternalProject_Get_Property(catch2 source_dir)
                 add_dependencies(catch catch2)
-                target_include_directories(catch INTERFACE ${source_dir}/single_include)
+                target_include_directories(catch INTERFACE ${source_dir}/single_include  ${source_dir}/single_include/catch2)
             else()
                 # Using Local
                 message(STATUS "Local Catch header detected at: " ${HAVE_CATCH_HPP})

@@ -28,17 +28,34 @@ macro(_BuildTests)
                 include(ExternalProject)
                 find_package(Git REQUIRED)
 
-                ExternalProject_Add(
-                    catch2
-                    PREFIX ${CMAKE_BINARY_DIR}/catch2
-                    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-                    TIMEOUT 10
-                    UPDATE_COMMAND ${GIT_EXECUTABLE} pull
-                    CONFIGURE_COMMAND ""
-                    BUILD_COMMAND ""
-                    INSTALL_COMMAND ""
-                    LOG_DOWNLOAD ON
-                )
+                if(CMAKE_CXX_STANDARD AND CMAKE_CXX_STANDARD GREATER 10)
+                    message(STATUS "Detected C++11 or better, using Catch2")
+                    ExternalProject_Add(
+                        catch2
+                        PREFIX ${CMAKE_BINARY_DIR}/catch2
+                        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+                        TIMEOUT 10
+                        UPDATE_COMMAND ${GIT_EXECUTABLE} pull
+                        CONFIGURE_COMMAND ""
+                        BUILD_COMMAND ""
+                        INSTALL_COMMAND ""
+                        LOG_DOWNLOAD ON
+                    )
+                else()
+                    message(STATUS "Did not detect C++11 or better, using Catch1")
+                    ExternalProject_Add(
+                        catch2
+                        PREFIX ${CMAKE_BINARY_DIR}/catch1
+                        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+                        GIT_TAG Catch1.x
+                        TIMEOUT 10
+                        UPDATE_COMMAND ${GIT_EXECUTABLE} pull
+                        CONFIGURE_COMMAND ""
+                        BUILD_COMMAND ""
+                        INSTALL_COMMAND ""
+                        LOG_DOWNLOAD ON
+                    )
+                endif()
 
                 ExternalProject_Get_Property(catch2 source_dir)
                 add_dependencies(catch catch2)

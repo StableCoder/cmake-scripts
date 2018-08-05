@@ -1,4 +1,5 @@
-# Copyright 2018 Stable Tec
+#
+# Copyright (C) 2018 by George Cave - gcave@stablecoder.ca
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

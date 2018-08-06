@@ -86,7 +86,7 @@ file(GLOB_RECURSE ALL_CODE_FILES
     ${PROJECT_SOURCE_DIR}/example/*.[ch]
 )
 
-_ClangFormat(stec_audio ${ALL_CODE_FILES})
+_ClangFormat(${TARGET_NAME} ${ALL_CODE_FILES})
 ```
 
 ### clang-tidy

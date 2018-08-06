@@ -29,7 +29,7 @@ set(CMAKE_COVERAGE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/ccov)
 
 if(CODE_COVERAGE)
     if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
-        message("Building with llvm Code Coverage Tools")
+        message(STATUS "Building with llvm Code Coverage Tools")
 
         # Warning/Error messages
         if(NOT LLVM_COV_PATH)
@@ -70,7 +70,7 @@ if(CODE_COVERAGE)
         )
 
     elseif(CMAKE_COMPILER_IS_GNUCXX)
-        message("Building with lcov Code Coverage Tools")
+        message(STATUS "Building with lcov Code Coverage Tools")
 
         # Warning/Error messages
         if(NOT (uppercase_CMAKE_BUILD_TYPE STREQUAL "DEBUG"))

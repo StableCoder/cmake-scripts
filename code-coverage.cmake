@@ -115,7 +115,7 @@ macro(target_add_code_coverage TARGET_NAME)
 
             add_custom_target(ccov-rpt-${TARGET_NAME}
                 COMMAND llvm-cov report $<TARGET_FILE:${TARGET_NAME}> -instr-profile=${TARGET_NAME}.profdata
-                DEPENDS ccov-processing-${TARGET_NAME}-
+                DEPENDS ccov-processing-${TARGET_NAME}
             )
 
             add_custom_target(ccov-${TARGET_NAME}

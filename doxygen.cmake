@@ -30,18 +30,18 @@ macro(_BuildDocs)
         configure_file(${doxyfile_in} ${doxyfile} @ONLY)
 
         # Generate the directory where the docs would be placed.
-        file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/${PROJECT_NAME})
+        file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc)
 
         add_custom_target(
             doc
             COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/${PROJECT_NAME}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc
             COMMENT "Generating ${PROJECT_NAME} documentation with Doxygen."
             VERBATIM
         )
 
         install(
-            DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/${PROJECT_NAME}
+            DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc
             COMPONENT documentation
             DESTINATION share/doc
         )

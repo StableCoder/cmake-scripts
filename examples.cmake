@@ -16,7 +16,7 @@
 option(BUILD_EXAMPLES "Build the example programs." OFF)
 
 macro(_BuildExamples)
-    if(BUILD_EXAMPLES AND (IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/example))
+    if(BUILD_EXAMPLES AND (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/example/CMakeLists.txt))
         add_subdirectory(example)
     endif()
 endmacro()

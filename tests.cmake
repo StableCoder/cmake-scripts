@@ -70,7 +70,7 @@ macro(_BuildTests)
         endif()
 
         enable_testing()
-        if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
+        if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test/CMakeLists.txt)
             add_subdirectory(test)
         endif()
     endif()

@@ -24,6 +24,12 @@ macro(_BuildDocs)
             message(FATAL_ERROR "Doxygen is needed to build the documentation.")
         endif ()
 
+        # Global all .dox files to add to the doxygen input
+        file(GLOB_RECURSE DOXY_INPUTS
+            ${CMAKE_CURRENT_SOURCE_DIR}/*.dox
+        )
+        set(DOXY_INPUTS "${CMAKE_CURRENT_SOURCE_DIR} ${DOXY_INPUTS}")
+
         set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
         set(doxyfile ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 

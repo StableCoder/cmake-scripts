@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-if(NOT TOOLS_ADDED)
-set(TOOLS_ADDED ON)
-
 # Generates a 'format' target using a custom name, files, and include directories all being parameters.
 #
 # FORMAT_TARGET_NAME - The name of the target to create. If it's a real target name, then the files for it will
@@ -68,7 +65,6 @@ function(_ClangFormat FORMAT_TARGET_NAME)
     endif()
 endfunction()
 
-
 ##############
 # clang-tidy #
 ##############
@@ -77,9 +73,11 @@ option(CLANG_TIDY "Turns on clang-tidy processing if it is found." OFF)
 find_program (CLANG_TIDY_EXE NAMES "clang-tidy")
 if (CLANG_TIDY_EXE)
     message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
-    set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE};-format-style=file;-header-filter='${CMAKE_SOURCE_DIR}/*'" CACHE STRING "" FORCE)
-    if(NOT CLANG_TIDY)
+    if(CLANG_TIDY)
+        set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE};-format-style=file;-header-filter='${CMAKE_SOURCE_DIR}/*'" CACHE STRING "" FORCE)
+    else()
         message(STATUS "clang-tidy NOT ENABLED via 'CLANG_TIDY' variable!")
+        set(CMAKE_CXX_CLANG_TIDY "" CACHE STRING "" FORCE) # delete it
     endif()
 else()
     message(STATUS "clang-tidy not found!")
@@ -98,6 +96,7 @@ if (IWYU_EXE)
         set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "${IWYU_EXE};-Xiwyu;" CACHE STRING "" FORCE)
     else()
         message(STATUS "include-what-you-use NOT ENABLED via 'IWYU' variable!")
+        set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "" CACHE STRING "" FORCE) # delete it
     endif()
 else()
     message(STATUS "include-what-you-use not found!")
@@ -116,10 +115,9 @@ if (CPPCHECK_EXE)
         set(CMAKE_CXX_CPPCHECK "${CPPCHECK_EXE};--enable=warning,performance,portability,missingInclude;--template=\"[{severity}][{id}] {message} {callstack} \(On {file}:{line}\)\";--suppress=missingIncludeSystem;--quiet;--verbose;--force" CACHE STRING "" FORCE)
     else()
         message(STATUS "cppcheck NOT ENABLED via 'CPPCHECK' variable!")
+        set(CMAKE_CXX_CPPCHECK "" CACHE STRING "" FORCE) # delete it
     endif()
 else()
     message(STATUS "cppcheck not found!")
     set(CMAKE_CXX_CPPCHECK "" CACHE STRING "" FORCE) # delete it
-endif()
-
 endif()

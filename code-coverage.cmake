@@ -174,4 +174,13 @@ macro(target_add_auto_code_coverage TARGET_NAME)
     endif()
 endmacro()
 
+macro(remove_code_coverage)
+    # LLVM
+    string(REPLACE "-fprofile-instr-generate -fcoverage-mapping" "" CMAKE_C_FLAGS ${CMAKE_C_FLAGS})
+    string(REPLACE "-fprofile-instr-generate -fcoverage-mapping" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+    # GCOV
+    string(REPLACE "--coverage -fprofile-arcs -ftest-coverage" "" CMAKE_C_FLAGS ${CMAKE_C_FLAGS})
+    string(REPLACE "--coverage -fprofile-arcs -ftest-coverage" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+endmacro()
+
 endif(NOT COVERAGE_ADDED)

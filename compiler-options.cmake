@@ -14,19 +14,30 @@
 # limitations under the License.
 
 option(ENABLE_ALL_WARNINGS "Compile with all warnings for the major compilers." OFF)
+option(ENABLE_EFFECTIVE_CXX "Enable Effective C++ warnings." OFF)
 
 if(ENABLE_ALL_WARNINGS)
     if (CMAKE_COMPILER_IS_GNUCXX)
         # GCC
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Weffc++ -Wextra")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Weffc++ -Wextra")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
     elseif("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
         # Clang
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Weffc++ -Wextra")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Weffc++ -Wextra")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
     elseif(MSVC)
         # MSVC
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /W4")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+    endif()
+endif()
+
+if(ENABLE_EFFECTIVE_CXX)
+    if (CMAKE_COMPILER_IS_GNUCXX)
+        # GCC
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
+    elseif("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
+        # Clang
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
     endif()
 endif()

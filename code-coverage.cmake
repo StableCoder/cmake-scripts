@@ -110,7 +110,7 @@ macro(target_add_code_coverage TARGET_NAME)
 
             add_custom_target(ccov-show-${TARGET_NAME}
                 COMMAND llvm-cov show $<TARGET_FILE:${TARGET_NAME}> -instr-profile=${TARGET_NAME}.profdata -show-line-counts-or-regions
-                DEPENDS ccov-processing${TARGET_NAME}
+                DEPENDS ccov-processing-${TARGET_NAME}
             )
 
             add_custom_target(ccov-rpt-${TARGET_NAME}

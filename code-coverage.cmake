@@ -73,7 +73,7 @@ if(CODE_COVERAGE)
         message(STATUS "Building with lcov Code Coverage Tools")
 
         # Warning/Error messages
-        if(NOT (uppercase_CMAKE_BUILD_TYPE STREQUAL "DEBUG"))
+        if(NOT ($<UPPER_CASE:CMAKE_BUILD_TYPE> STREQUAL "DEBUG"))
             message(WARNING "Code coverage results with an optimized (non-Debug) build may be misleading")
         endif()
         if(NOT LCOV_PATH)

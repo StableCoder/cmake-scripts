@@ -30,9 +30,6 @@
 # NOTE: To add coverage targets to an executable target, but *not* instrument it, call the macro with the
 # `NO_INSTRUMENTATION` option, such as `target_code_coverage(<TARGET_NAME> NO_INSTRUMENTATION)`
 
-if(NOT COVERAGE_ADDED)
-set(COVERAGE_ADDED ON)
-
 # Options
 OPTION(CODE_COVERAGE "Builds targets with code coverage instrumentation. (Requires GCC or Clang)" OFF)
 
@@ -98,8 +95,6 @@ if(CODE_COVERAGE)
         message(FATAL_ERROR "Code coverage requires Clang or GCC. Aborting.")
     endif()
 endif()
-
-endif(NOT COVERAGE_ADDED)
 
 # Adds code coverage instrumentation to a library, or instrumentation/targets for an executable target.
 #

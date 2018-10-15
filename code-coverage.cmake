@@ -18,7 +18,7 @@
 # to be set to 'ON', either by GUI, ccmake, or on the command line.
 #
 # From this point, there are two primary methods for adding instrumentation to targets:
-# 1 - A blanket instrumentation by calling `code_coverage()`, where all targets in that directory and all
+# 1 - A blanket instrumentation by calling `add_code_coverage()`, where all targets in that directory and all
 #     subdirectories are automatically instrumented.
 # 2 - Per-target instrumentation by calling `target_code_coverage(<TARGET_NAME>)`, where the target is given
 #     and thus only that target is instrumented. This applies to both libraries and executables.
@@ -209,7 +209,7 @@ endmacro()
 
 # Adds code coverage instrumentation to all targets in the current directory and any subdirectories. To add coverage instrumentation to only
 # specific targets, use `target_code_coverage`.
-macro(code_coverage)
+macro(add_code_coverage)
     if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
         add_compile_options(-fprofile-instr-generate -fcoverage-mapping)
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fprofile-instr-generate -fcoverage-mapping")

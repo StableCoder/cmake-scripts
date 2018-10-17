@@ -178,12 +178,19 @@ macro(target_code_coverage TARGET_NAME)
         get_target_property(target_type ${TARGET_NAME} TYPE)
         if(target_type STREQUAL "EXECUTABLE")
             if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
-                add_custom_target(ccov-run-${TARGET_NAME}
-                    COMMAND LLVM_PROFILE_FILE=${TARGET_NAME}.profraw $<TARGET_FILE:${TARGET_NAME}>
-                    COMMAND echo "-object=$<TARGET_FILE:${TARGET_NAME}>" >> ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
-                    COMMAND echo "${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.profraw " >> ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list
-                    DEPENDS ccov-preprocessing ${TARGET_NAME}
-                )
+                if(NOT target_code_coverage_NO_INSTRUMENTATION)
+                    add_custom_target(ccov-run-${TARGET_NAME}
+                        COMMAND LLVM_PROFILE_FILE=${TARGET_NAME}.profraw $<TARGET_FILE:${TARGET_NAME}>
+                        COMMAND echo "-object=$<TARGET_FILE:${TARGET_NAME}>" >> ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
+                        COMMAND echo "${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.profraw " >> ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list
+                        DEPENDS ccov-preprocessing ${TARGET_NAME}
+                    )
+                else()
+                    add_custom_target(ccov-run-${TARGET_NAME}
+                        COMMAND LLVM_PROFILE_FILE=${TARGET_NAME}.profraw $<TARGET_FILE:${TARGET_NAME}>
+                        DEPENDS ccov-preprocessing ${TARGET_NAME}
+                    )
+                endif()
 
                 add_custom_target(ccov-processing-${TARGET_NAME}
                     COMMAND llvm-profdata merge -sparse ${TARGET_NAME}.profraw -o ${TARGET_NAME}.profdata

@@ -107,11 +107,11 @@ endif()
 macro(target_code_coverage TARGET_NAME)
     # Argument parsing
     set(options NO_INSTRUMENTATION)
-    cmake_parse_arguments(target_executable_code_coverage "${options}" "" "" ${ARGN})
+    cmake_parse_arguments(target_code_coverage "${options}" "" "" ${ARGN})
 
     if(CODE_COVERAGE)
         # Instrumentation
-        if(NOT target_executable_code_coverage_NO_INSTRUMENTATION)
+        if(NOT target_code_coverage_NO_INSTRUMENTATION)
             if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
                 target_compile_options(${TARGET_NAME} PRIVATE -fprofile-instr-generate -fcoverage-mapping)
                 set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS "-fprofile-instr-generate -fcoverage-mapping")    
@@ -159,15 +159,14 @@ macro(target_code_coverage TARGET_NAME)
 
             elseif(CMAKE_COMPILER_IS_GNUCXX)
                 set(COVERAGE_INFO "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TARGET_NAME}.info")
-                set(COVERAGE_CLEANED "${coverage_info}.cleaned")
 
                 add_custom_target(ccov-${TARGET_NAME}
-                    ${LCOV_PATH} --directory . --zerocounters
+                    ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
                     COMMAND $<TARGET_FILE:${TARGET_NAME}>
-                    COMMAND ${LCOV_PATH} --directory . --capture --output-file ${COVERAGE_INFO}
-                    COMMAND ${LCOV_PATH} --remove ${COVERAGE_INFO} 'tests/*' '/usr/*' --output-file ${COVERAGE_CLEANED}
-                    COMMAND ${GENHTML_PATH} -o ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${TARGET_NAME}-lcov ${COVERAGE_CLEANED}
-                    COMMAND ${CMAKE_COMMAND} -E remove ${COVERAGE_INFO} ${COVERAGE_CLEANED}
+                    COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --capture --output-file ${COVERAGE_INFO}
+                    COMMAND ${LCOV_PATH} --remove ${COVERAGE_INFO} 'tests/*' '/usr/*' --output-file ${COVERAGE_INFO}
+                    COMMAND ${GENHTML_PATH} -o ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${TARGET_NAME}-lcov ${COVERAGE_INFO}
+                    COMMAND ${CMAKE_COMMAND} -E remove ${COVERAGE_INFO}
                     DEPENDS ${TARGET_NAME}
                 )
 
@@ -190,7 +189,7 @@ endmacro()
 #                      is useful for adding test programs without instrumenting the test program itself.
 macro(target_auto_code_coverage TARGET_NAME)
     if(CODE_COVERAGE)
-        target_code_coverage(${TARGET_NAME})
+        target_code_coverage(${TARGET_NAME} ${ARGN})
 
         if(NOT TARGET ccov)
             add_custom_target(ccov)

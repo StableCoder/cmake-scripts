@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-## USAGE:
+# USAGE:
 # To enable any code coverage instrumentation/targets, the single CMake option of `CODE_COVERAGE` needs
 # to be set to 'ON', either by GUI, ccmake, or on the command line.
 #
@@ -29,6 +29,46 @@
 #
 # NOTE: To add coverage targets to an executable target, but *not* instrument it, call the macro with the
 # `NO_INSTRUMENTATION` option, such as `target_code_coverage(<TARGET_NAME> NO_INSTRUMENTATION)`
+# 
+# Example 1: All targets instrumented
+# 
+# In this case, the coverage information reported will will be that of the `theLib` library target and `theExe` executable.
+# 
+# 1a: Via global command
+# 
+# ```
+# add_code_coverage() # Adds instrumentation to all targets
+# 
+# add_library(theLib lib.cpp)
+# 
+# add_executable(theExe main.cpp)
+# target_link_libraries(theExe PRIVATE theLib)
+# target_code_coverage(theExe) # As an executable target, adds the 'ccov-theExe' target (instrumentation already added via global anyways) for generating code coverage reports.
+# ```
+# 
+# 1b: Via target commands
+# 
+# ```
+# add_library(theLib lib.cpp)
+# target_code_coverage(theLib) # As a library target, adds coverage instrumentation but no targets.
+# 
+# add_executable(theExe main.cpp)
+# target_link_libraries(theExe PRIVATE theLib)
+# target_code_coverage(theExe) # As an executable target, adds the 'ccov-theExe' target and instrumentation for generating code coverage reports.
+# ```
+# 
+# Example 2: Library target instrumented, executable targets added but not instrumented
+# 
+# In this case, the coverage information reported will just be that of the `theLib` library target, but this information will be collected via running the `theExe` executable.
+# 
+# ```
+# add_library(theLib lib.cpp)
+# target_code_coverage(theLib) # As a library target, adds coverage instrumentation but no targets.
+# 
+# add_executable(theExe main.cpp)
+# target_link_libraries(theExe PRIVATE theLib)
+# target_code_coverage(theExe NO_INSTRUMENTATION) # As an executable target, adds the 'ccov-theExe' target for generating code coverage reports, but no instrumentation
+# ```
 
 # Options
 OPTION(CODE_COVERAGE "Builds targets with code coverage instrumentation. (Requires GCC or Clang)" OFF)
@@ -98,6 +138,19 @@ if(CODE_COVERAGE)
 endif()
 
 # Adds code coverage instrumentation to a library, or instrumentation/targets for an executable target.
+#
+# EXECUTABLE ADDED TARGETS:
+# GCOV/LCOV:
+# ccov : Generates HTML code coverage report for every target added via `target_auto_code_coverage`.
+# ccov-${TARNGET_NAME} : Generates HTML code coverage report for the associated named target.
+#
+# LLVM-COV:
+# ccov : Generates HTML code coverage report for every target added via `target_auto_code_coverage`.
+# ccov-${TARGET_NAME} : Generates HTML code coverage report.
+# ccov-rpt-${TARGET_NAME} : Prints to command line summary per-file coverage information.
+# ccov-show-${TARGET_NAME} : Prints to command line detailed per-line coverage information.
+# ccov-all : Generates HTML code coverage report, merging every target added via `target_auto_code_coverage` into a single detailed report.
+# ccov-all-report : Prints summary per-file coverage infromation of all targets added via `target_auto_code_coverage` to the command line.
 #
 # Required:
 # TARGET_NAME - Name of the target to generate code coverage for.

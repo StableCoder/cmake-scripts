@@ -82,21 +82,24 @@ FIND_PROGRAM(GENHTML_PATH genhtml)
 set(CMAKE_COVERAGE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/ccov)
 
 if(CODE_COVERAGE)
+    # Common Targets
+    add_custom_target(ccov-preprocessing
+        COMMAND cmake -E make_directory ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}
+        DEPENDS ccov-clean
+    )
+
     if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
+        # Messages
         message(STATUS "Building with llvm Code Coverage Tools")
 
         if(NOT LLVM_COV_PATH)
             message(FATAL_ERROR "llvm-cov not found! Aborting.")
         endif()
 
+        # Targets
         add_custom_target(ccov-clean
             COMMAND rm -f ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
             COMMAND rm -f ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list
-        )
-
-        add_custom_target(ccov-preprocessing
-            COMMAND mkdir -p ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}
-            DEPENDS ccov-clean
         )
 
         add_custom_target(ccov-all-processing
@@ -119,6 +122,7 @@ if(CODE_COVERAGE)
         )
 
     elseif(CMAKE_COMPILER_IS_GNUCXX)
+        # Messages
         message(STATUS "Building with lcov Code Coverage Tools")
 
         string(TOUPPER ${CMAKE_BUILD_TYPE} upper_build_type)
@@ -131,6 +135,30 @@ if(CODE_COVERAGE)
         if(NOT GENHTML_PATH)
             message(FATAL_ERROR "genhtml not found! Aborting...")
         endif()
+
+        # Targets
+        add_custom_target(ccov-clean
+            COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
+        )
+
+        set(COVERAGE_INFO "${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.info")
+
+        add_custom_target(ccov-all-processing
+            COMMAND ;
+        )
+
+        add_custom_target(ccov-all
+            COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --capture --output-file ${COVERAGE_INFO}
+            COMMAND ${LCOV_PATH} --remove ${COVERAGE_INFO} '/usr/*' --output-file ${COVERAGE_INFO}
+            COMMAND ${GENHTML_PATH} -o ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-lcov ${COVERAGE_INFO}
+            COMMAND ${CMAKE_COMMAND} -E remove ${COVERAGE_INFO}
+            DEPENDS ccov-all-processing
+        )
+
+        add_custom_target(TARGET ccov-all POST_BUILD
+            COMMAND ;
+            COMMENT "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged/index.html in your browser to view the coverage report."
+        )
 
     else()
         message(FATAL_ERROR "Code coverage requires Clang or GCC. Aborting.")
@@ -220,14 +248,17 @@ macro(target_code_coverage TARGET_NAME)
             elseif(CMAKE_COMPILER_IS_GNUCXX)
                 set(COVERAGE_INFO "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TARGET_NAME}.info")
 
-                add_custom_target(ccov-${TARGET_NAME}
-                    ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
+                add_custom_target(ccov-run-${TARGET_NAME}
                     COMMAND $<TARGET_FILE:${TARGET_NAME}>
+                    DEPENDS ccov-preprocessing ${TARGET_NAME}
+                )
+
+                add_custom_target(ccov-${TARGET_NAME}
                     COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --capture --output-file ${COVERAGE_INFO}
-                    COMMAND ${LCOV_PATH} --remove ${COVERAGE_INFO} 'tests/*' '/usr/*' --output-file ${COVERAGE_INFO}
+                    COMMAND ${LCOV_PATH} --remove ${COVERAGE_INFO} '/usr/*' --output-file ${COVERAGE_INFO}
                     COMMAND ${GENHTML_PATH} -o ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${TARGET_NAME}-lcov ${COVERAGE_INFO}
                     COMMAND ${CMAKE_COMMAND} -E remove ${COVERAGE_INFO}
-                    DEPENDS ${TARGET_NAME}
+                    DEPENDS ccov-run-${TARGET_NAME}
                 )
 
                 add_custom_command(TARGET ccov-${TARGET_NAME} POST_BUILD
@@ -256,13 +287,13 @@ macro(target_auto_code_coverage TARGET_NAME)
         endif()
         add_dependencies(ccov ccov-${TARGET_NAME})
 
+        add_dependencies(ccov-all-processing ccov-run-${TARGET_NAME})
+
         if(NOT CMAKE_COMPILER_IS_GNUCXX)
             if(NOT TARGET ccov-report)
                 add_custom_target(ccov-report)
             endif()
             add_dependencies(ccov-report ccov-rpt-${TARGET_NAME})
-
-            add_dependencies(ccov-all-processing ccov-run-${TARGET_NAME})
         endif()
     endif()
 endmacro()

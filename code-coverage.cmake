@@ -116,11 +116,6 @@ if(CODE_COVERAGE)
             DEPENDS ccov-all-processing
         )
 
-        add_custom_target(TARGET ccov-all POST_BUILD
-            COMMAND ;
-            COMMENT "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged/index.html in your browser to view the coverage report."
-        )
-
     elseif(CMAKE_COMPILER_IS_GNUCXX)
         # Messages
         message(STATUS "Building with lcov Code Coverage Tools")
@@ -150,19 +145,19 @@ if(CODE_COVERAGE)
         add_custom_target(ccov-all
             COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --capture --output-file ${COVERAGE_INFO}
             COMMAND ${LCOV_PATH} --remove ${COVERAGE_INFO} '/usr/*' --output-file ${COVERAGE_INFO}
-            COMMAND ${GENHTML_PATH} -o ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-lcov ${COVERAGE_INFO}
+            COMMAND ${GENHTML_PATH} -o ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged ${COVERAGE_INFO}
             COMMAND ${CMAKE_COMMAND} -E remove ${COVERAGE_INFO}
             DEPENDS ccov-all-processing
-        )
-
-        add_custom_target(TARGET ccov-all POST_BUILD
-            COMMAND ;
-            COMMENT "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged/index.html in your browser to view the coverage report."
         )
 
     else()
         message(FATAL_ERROR "Code coverage requires Clang or GCC. Aborting.")
     endif()
+
+    add_custom_command(TARGET ccov-all POST_BUILD
+        COMMAND ;
+        COMMENT "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged/index.html in your browser to view the coverage report."
+    )
 endif()
 
 # Adds code coverage instrumentation to a library, or instrumentation/targets for an executable target.
@@ -239,13 +234,8 @@ macro(target_code_coverage TARGET_NAME)
                 )
 
                 add_custom_target(ccov-${TARGET_NAME}
-                    COMMAND llvm-cov show $<TARGET_FILE:${TARGET_NAME}> -instr-profile=${TARGET_NAME}.profdata -show-line-counts-or-regions -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${TARGET_NAME}-llvm-cov -format="html"
+                    COMMAND llvm-cov show $<TARGET_FILE:${TARGET_NAME}> -instr-profile=${TARGET_NAME}.profdata -show-line-counts-or-regions -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${TARGET_NAME} -format="html"
                     DEPENDS ccov-processing-${TARGET_NAME}
-                )
-
-                add_custom_command(TARGET ccov-${TARGET_NAME} POST_BUILD
-                    COMMAND ;
-                    COMMENT "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${TARGET_NAME}-llvm-cov/index.html in your browser to view the coverage report."
                 )
 
             elseif(CMAKE_COMPILER_IS_GNUCXX)
@@ -257,18 +247,19 @@ macro(target_code_coverage TARGET_NAME)
                 )
 
                 add_custom_target(ccov-${TARGET_NAME}
+                    COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
+                    COMMAND $<TARGET_FILE:${TARGET_NAME}>
                     COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --capture --output-file ${COVERAGE_INFO}
                     COMMAND ${LCOV_PATH} --remove ${COVERAGE_INFO} '/usr/*' --output-file ${COVERAGE_INFO}
-                    COMMAND ${GENHTML_PATH} -o ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${TARGET_NAME}-lcov ${COVERAGE_INFO}
+                    COMMAND ${GENHTML_PATH} -o ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${TARGET_NAME} ${COVERAGE_INFO}
                     COMMAND ${CMAKE_COMMAND} -E remove ${COVERAGE_INFO}
-                    DEPENDS ccov-run-${TARGET_NAME}
-                )
-
-                add_custom_command(TARGET ccov-${TARGET_NAME} POST_BUILD
-                    COMMAND ;
-                    COMMENT "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${TARGET_NAME}-lcov/index.html in your browser to view the coverage report."
                 )
             endif()
+
+            add_custom_command(TARGET ccov-${TARGET_NAME} POST_BUILD
+                COMMAND ;
+                COMMENT "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${TARGET_NAME}/index.html in your browser to view the coverage report."
+            )
         endif()
     endif()
 endmacro()

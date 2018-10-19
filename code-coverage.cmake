@@ -200,7 +200,9 @@ macro(target_code_coverage TARGET_NAME)
                 target_compile_options(${TARGET_NAME} PRIVATE -fprofile-arcs -ftest-coverage)
                 target_link_libraries(${TARGET_NAME} PRIVATE gcov)
             endif()
-        endif()
+        elseif("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
+            set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS "-fprofile-instr-generate -fcoverage-mapping") 
+        endif()   
 
         # Targets
         get_target_property(target_type ${TARGET_NAME} TYPE)

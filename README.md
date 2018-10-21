@@ -2,15 +2,11 @@
 
 This is a collection of quite useful scripts that expand the possibilities for building software with CMake, by making some things easier and otherwise adding new build types.
 
-## C++ Standards
+## C++ Standards `c++-standards.cmake`
 
-`c++-standards.cmake`
+Using the functions `cxx_11()`, `cxx_14()`, `cxx_17()` or `cxx_20()` this adds the appropriated flags for both unix and MSVC compilers, even for those before 3.11 with improper support.
 
-Using the functions `_Cxx11()`, `_Cxx14()` or `_Cxx17()` this adds the appropriated flags for both unix and MSVC compilers, even for those before 3.11 with improper support.
-
-## Sanitizer Builds
-
-`sanitizers.cmake`
+## Sanitizer Builds `sanitizers.cmake`
 
 Sanitizers are tools that perform checks during a program’s runtime and returns issues, and as such, along with unit testing, code coverage and static analysis, is another tool to add to the programmers toolbox. And of course, like the previous tools, are tragically simple to add into any project using CMake, allowing any project and developer to quickly and easily use.
 
@@ -32,7 +28,7 @@ A quick rundown of the tools available, and what they do:
     - Unreachable code
 - [MemorySanitizer](https://clang.llvm.org/docs/MemorySanitizer.html) detects uninitialized reads.
 
-These are used by declaring the `USE_SANITIZER` CMake variables as one of:
+These are used by declaring the `USE_SANITIZER` CMake variable as one of:
 - Address
 - Memory
 - MemoryWithOrigins
@@ -42,9 +38,7 @@ These are used by declaring the `USE_SANITIZER` CMake variables as one of:
 - Undefined;Address
 - Leak
 
-## Code Coverage
-
-`code-coverage.cmake`
+## Code Coverage `code-coverage.cmake`
 
 Generating code coverage during a run of a program can help determine which blocks, regions, or even lines of code are being used, and for how many times.
 
@@ -69,7 +63,7 @@ To enable, turn on the `CODE_COVERAGE` variable.
 
 ### Usage
 
-To enable any code coverage instrumentation/targets, the single CMake option of `CODE_COVERAGE` needs to be set to 'ON', either by GUI, ccmake, or on the command line.
+To enable any code coverage instrumentation/targets, the single CMake option of `CODE_COVERAGE` needs to be set to 'ON', either by GUI, ccmake, or on the command line ie `-DCODE_COVERAGE=ON`.
 
 From this point, there are two primary methods for adding instrumentation to targets:
 1. A blanket instrumentation by calling `add_code_coverage()`, where all targets in that directory and all subdirectories are automatically instrumented.
@@ -120,9 +114,7 @@ add_executable(theExe main.cpp non_covered.cpp)
 target_code_coverage(theExe AUTO ALL EXCLUDE non_covered.cpp test/*) # As an executable target, adds to the 'ccov' and ccov-all' targets, and the reports will exclude the non-covered.cpp file, and any files in a test/ folder.
 ```
 
-## Compiler Options
-
-`compiler-options.cmake`
+## Compiler Options `compiler-options.cmake`
 
 Allows for easy use of some pre-made compiler options for the major compilers.
 
@@ -130,15 +122,15 @@ Allows for easy use of some pre-made compiler options for the major compilers.
 
 Using `-DENABLE_ALL_WARNINGS=ON` will enable almost all of the warnings available for a compiler:
 
-| Compiler | Options                |
-|:---------|:-----------------------|
-| MSVC     | /W4                    |
-| GCC      | -Wall -Weffc++ -Wextra |
-| Clang    | -Wall -Weffc++ -Wextra |
+| Compiler | Options       |
+|:---------|:--------------|
+| MSVC     | /W4           |
+| GCC      | -Wall -Wextra |
+| Clang    | -Wall -Wextra |
 
-## Tools
+Using `-DENABLE_EFFECTIVE_CXX=ON` adds the `-Weffc++` for both GCC and clang.
 
-`tools.cmake`
+## Tools `tools.cmake`
 
 ### clang-format
 
@@ -154,17 +146,17 @@ file(GLOB_RECURSE ALL_CODE_FILES
     ${PROJECT_SOURCE_DIR}/example/*.[ch]
 )
 
-_ClangFormat(${TARGET_NAME} ${ALL_CODE_FILES})
+clang_format(${TARGET_NAME} ${ALL_CODE_FILES})
 ```
 
 ### clang-tidy
 
-When detected, [clang-tidy](https://clang.llvm.org/extra/clang-tidy/) can be enabled by using the option of `-DCLANG_TIDY=ON`.
+When detected, [clang-tidy](https://clang.llvm.org/extra/clang-tidy/) can be enabled by using the option of `-DCLANG_TIDY=ON`. Disabled by default.
 
 ### include-what-you-use
 
-This tool helps to organize headers for all files encompass all items being used in that file, without accidentally relying upon headers deep down a chain of other headers. This is disabled by default, and can be enabled via have the program installed and adding `-DADD_IWYU=ON`.
+This tool helps to organize headers for all files encompass all items being used in that file, without accidentally relying upon headers deep down a chain of other headers. This is disabled by default, and can be enabled via have the program installed and adding `-DIWYU=ON`.
 
 ### cppcheck
 
-This tool is another static analyzer in the vein of clang-tidy, which focuses on having no false positives. This is by default disabled, and can be enabled via have the program installed and adding `-DADD_CPPCHECK=ON`.
+This tool is another static analyzer in the vein of clang-tidy, which focuses on having no false positives. This is by default disabled, and can be enabled via have the program installed and adding `-DCPPCHECK=ON`.

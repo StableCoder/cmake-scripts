@@ -27,7 +27,8 @@ if (CLANG_FORMAT_EXE)
 else()
     message(STATUS "clang-format not found!")
 endif()
-function(_ClangFormat FORMAT_TARGET_NAME)
+
+function(clang_format FORMAT_TARGET_NAME)
     if(CLANG_FORMAT)
         if(TARGET ${FORMAT_TARGET_NAME})
             get_target_property(_TARGET_TYPE ${FORMAT_TARGET_NAME} TYPE)
@@ -79,6 +80,9 @@ if (CLANG_TIDY_EXE)
         message(STATUS "clang-tidy NOT ENABLED via 'CLANG_TIDY' variable!")
         set(CMAKE_CXX_CLANG_TIDY "" CACHE STRING "" FORCE) # delete it
     endif()
+elseif(CLANG_TIDY)
+    message(SEND_ERROR "Cannot enable clang-tidy, as executable not found!")
+    set(CMAKE_CXX_CLANG_TIDY "" CACHE STRING "" FORCE) # delete it
 else()
     message(STATUS "clang-tidy not found!")
     set(CMAKE_CXX_CLANG_TIDY "" CACHE STRING "" FORCE) # delete it
@@ -98,6 +102,9 @@ if (IWYU_EXE)
         message(STATUS "include-what-you-use NOT ENABLED via 'IWYU' variable!")
         set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "" CACHE STRING "" FORCE) # delete it
     endif()
+elseif(IWYU)
+    message(SEND_ERROR "Cannot enable include-what-you-use, as executable not found!")
+    set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "" CACHE STRING "" FORCE) # delete it
 else()
     message(STATUS "include-what-you-use not found!")
     set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "" CACHE STRING "" FORCE) # delete it
@@ -117,6 +124,9 @@ if (CPPCHECK_EXE)
         message(STATUS "cppcheck NOT ENABLED via 'CPPCHECK' variable!")
         set(CMAKE_CXX_CPPCHECK "" CACHE STRING "" FORCE) # delete it
     endif()
+elseif(CPPCHECK)
+    message(SEND_ERROR "Cannot enable cppcheck, as executable not found!")
+    set(CMAKE_CXX_CPPCHECK "" CACHE STRING "" FORCE) # delete it
 else()
     message(STATUS "cppcheck not found!")
     set(CMAKE_CXX_CPPCHECK "" CACHE STRING "" FORCE) # delete it

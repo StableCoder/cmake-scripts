@@ -13,16 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-macro(_BuildDocs)
-    find_package(Doxygen)
+find_package(Doxygen)
 
-    option(BUILD_DOCUMENTATION "Build API documentation using Doxygen. (make doc)" ${DOXYGEN_FOUND})
+option(BUILD_DOCUMENTATION "Build API documentation using Doxygen. (make doc)" ${DOXYGEN_FOUND})
 
+function(build_docs)
     if(BUILD_DOCUMENTATION AND NOT TARGET doc)
         # Only build if documentation is wanted and if this also happens to be the root project.
-        if (NOT DOXYGEN_FOUND)
+        if(NOT DOXYGEN_FOUND)
             message(FATAL_ERROR "Doxygen is needed to build the documentation.")
-        endif ()
+        endif()
 
         # Global all .dox files to add to the doxygen input
         file(GLOB_RECURSE DOXY_INPUTS
@@ -52,4 +52,4 @@ macro(_BuildDocs)
             DESTINATION share/doc
         )
     endif()
-endmacro()
+endfunction()

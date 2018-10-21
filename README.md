@@ -55,16 +55,17 @@ To enable, turn on the `CODE_COVERAGE` variable.
 ### Added Targets
 
 - GCOV/LCOV:
-    - ccov : Generates HTML code coverage report for every executable target added via `target_auto_code_coverage`.
+    - ccov : Generates HTML code coverage report for every target added with 'AUTO' parameter.
     - ccov-${TARNGET_NAME} : Generates HTML code coverage report for the associated named target.
-    - ccov-all : Generates HTML code coverage report, merging every target added via `target_auto_code_coverage` into a single detailed report.
+    - ccov-all : Generates HTML code coverage report, merging every target added with 'ALL' parameter into a single detailed report.
 - LLVM-COV:
-    - ccov : Generates HTML code coverage report for every executable target added via `target_auto_code_coverage`.
+    - ccov : Generates HTML code coverage report for every target added with 'AUTO' parameter.
+    - ccov-report : Generates HTML code coverage report for every target added with 'AUTO' parameter.
     - ccov-${TARGET_NAME} : Generates HTML code coverage report.
     - ccov-rpt-${TARGET_NAME} : Prints to command line summary per-file coverage information.
     - ccov-show-${TARGET_NAME} : Prints to command line detailed per-line coverage information.
-    - ccov-all : Generates HTML code coverage report, merging every target added via `target_auto_code_coverage` into a single detailed report.
-    - ccov-all-report : Prints summary per-file coverage infromation of all targets added via `target_auto_code_coverage` to the command line.
+    - ccov-all : Generates HTML code coverage report, merging every target added with 'ALL' parameter into a single detailed report.
+    - ccov-all-report : Prints summary per-file coverage information for every target added with ALL' parameter to the command line.
 
 ### Usage
 
@@ -74,9 +75,7 @@ From this point, there are two primary methods for adding instrumentation to tar
 1. A blanket instrumentation by calling `add_code_coverage()`, where all targets in that directory and all subdirectories are automatically instrumented.
 2. Per-target instrumentation by calling `target_code_coverage(<TARGET_NAME>)`, where the target is given and thus only that target is instrumented. This applies to both libraries and executables.
 
-To add coverage targets, such as calling `make ccov` to generate the actual coverage information for perusal or consumption, either `target_code_coverage(<TARGET_NAME>)` or `target_auto_code_coverage(<TARGET_NAME>)` needs to be called on an *executable* target.
-
-NOTE: To add coverage targets to an executable target, but *not* instrument it, call the macro with the `NO_INSTRUMENTATION` option, such as `target_code_coverage(<TARGET_NAME> NO_INSTRUMENTATION)`.
+To add coverage targets, such as calling `make ccov` to generate the actual coverage information for perusal or consumption, call `target_code_coverage(<TARGET_NAME>)` on an *executable* target.
 
 #### Example 1 - All targets instrumented
 
@@ -105,17 +104,20 @@ target_link_libraries(theExe PRIVATE theLib)
 target_code_coverage(theExe) # As an executable target, adds the 'ccov-theExe' target and instrumentation for generating code coverage reports.
 ```
 
-#### Example 2 - Library target instrumented, executable targets added but not instrumented
-
-In this case, the coverage information reported will just be that of the `theLib` library target, but this information will be collected via running the `theExe` executable.
+#### Example 2: Target instrumented, but with regex pattern of files to be excluded from report
 
 ```
-add_library(theLib lib.cpp)
-target_code_coverage(theLib) # As a library target, adds coverage instrumentation but no targets.
+add_executable(theExe main.cpp non_covered.cpp)
+target_code_coverage(theExe EXCLUDE non_covered.cpp) # As an executable target, the reports will exclude the non-covered.cpp file.
+```
 
-add_executable(theExe main.cpp)
-target_link_libraries(theExe PRIVATE theLib)
-target_code_coverage(theExe NO_INSTRUMENTATION) # As an executable target, adds the 'ccov-theExe' target for generating code coverage reports, but no instrumentation
+#### Example 3: Target added to the 'ccov' and 'ccov-all' targets
+
+```
+add_code_coverage_all_targets(EXCLUDE test/*) # Adds the 'ccov-all' target set and sets it to exclude all files in test/ folders.
+
+add_executable(theExe main.cpp non_covered.cpp)
+target_code_coverage(theExe AUTO ALL EXCLUDE non_covered.cpp test/*) # As an executable target, adds to the 'ccov' and ccov-all' targets, and the reports will exclude the non-covered.cpp file, and any files in a test/ folder.
 ```
 
 ## Compiler Options

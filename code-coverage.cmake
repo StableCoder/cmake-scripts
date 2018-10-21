@@ -96,6 +96,12 @@ if(CODE_COVERAGE)
             message(FATAL_ERROR "llvm-cov not found! Aborting.")
         endif()
 
+        # Targets
+        add_custom_target(ccov-clean
+            COMMAND rm -f ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
+            COMMAND rm -f ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list
+        )
+
     elseif(CMAKE_COMPILER_IS_GNUCXX)
         # Messages
         message(STATUS "Building with lcov Code Coverage Tools")
@@ -114,6 +120,11 @@ if(CODE_COVERAGE)
         if(NOT GENHTML_PATH)
             message(FATAL_ERROR "genhtml not found! Aborting...")
         endif()
+
+        # Targets
+        add_custom_target(ccov-clean
+            COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
+        )
 
     else()
         message(FATAL_ERROR "Code coverage requires Clang or GCC. Aborting.")
@@ -280,11 +291,6 @@ function(add_code_coverage_all_targets)
     if(CODE_COVERAGE)
         if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
             # Targets
-            add_custom_target(ccov-clean
-                COMMAND rm -f ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
-                COMMAND rm -f ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list
-            )
-
             add_custom_target(ccov-all-processing
                 COMMAND llvm-profdata merge -o ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata -sparse `cat ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list`
             )
@@ -305,10 +311,6 @@ function(add_code_coverage_all_targets)
 
         elseif(CMAKE_COMPILER_IS_GNUCXX)
             # Targets
-            add_custom_target(ccov-clean
-                COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
-            )
-
             set(COVERAGE_INFO "${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.info")
 
             add_custom_target(ccov-all-processing

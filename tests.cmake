@@ -18,7 +18,7 @@ option(FORCE_CATCH_CLONE "Forces cloning of the Catch test headers rather than u
 
 find_file(HAVE_CATCH_HPP catch.hpp PATH_SUFFIXES catch2 catch)
 
-function(build_tests)
+macro(build_tests)
     if(BUILD_TESTS)
         if(NOT TARGET catch)
             add_library(catch INTERFACE)
@@ -74,4 +74,4 @@ function(build_tests)
             add_subdirectory(test)
         endif()
     endif()
-endfunction()
+endmacro()

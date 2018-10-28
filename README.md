@@ -1,5 +1,7 @@
 # CMake Scripts
 
+[![license](https://img.shields.io/badge/license-Apache 2.0-blue.svg)](https://git.stabletec.com/other/cmake-scripts/blob/master/LICENSE)
+
 This is a collection of quite useful scripts that expand the possibilities for building software with CMake, by making some things easier and otherwise adding new build types.
 
 ## C++ Standards `c++-standards.cmake`

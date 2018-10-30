@@ -20,7 +20,9 @@ Code Coverage:
       - build/ccov
     expire_in: 1 day
 
-.analysis_template: &analysis_template
+# Fedora
+
+.fedora_template: &fedora_template
   image: stabletec/build-foe:fedora-clang
   allow_failure: true
   tags:
@@ -31,27 +33,65 @@ Code Coverage:
     - ninja
     - ninja test
 
-Static Analysis:
+Fedora Static Analysis:
   variables:
     CMAKE_OPTIONS: -DCLANG_TIDY=ON -DCPPCHECK=ON -DIWYU=ON
-  <<: *analysis_template
+  <<: *fedora_template
 
-ThreadSanitizer:
+Fedora ThreadSanitizer:
   variables:
     CMAKE_OPTIONS: -DUSE_SANITIZER=Thread
-  <<: *analysis_template
+  <<: *fedora_template
 
-AddressSanitizer:
+Fedora AddressSanitizer:
   variables:
     CMAKE_OPTIONS: -DUSE_SANITIZER=Address
-  <<: *analysis_template
+  <<: *fedora_template
 
-LeakSanitizer:
+Fedora LeakSanitizer:
   variables:
     CMAKE_OPTIONS: -DUSE_SANITIZER=Leak
-  <<: *analysis_template
+  <<: *fedora_template
 
-UndefinedSanitizer:
+Fedora UndefinedSanitizer:
   variables:
     CMAKE_OPTIONS: -DUSE_SANITIZER=Undefined
-  <<: *analysis_template
+  <<: *fedora_template
+
+# openSUSE
+
+.opensuse_template: &opensuse_template
+  image: stabletec/build-foe:opensuse-clang
+  allow_failure: true
+  tags:
+    - docker-linux
+  script:
+    - mkdir example/build && cd example/build
+    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
+    - ninja
+    - ninja test
+
+openSUSE Static Analysis:
+  variables:
+    CMAKE_OPTIONS: -DCLANG_TIDY=ON -DCPPCHECK=ON -DIWYU=ON
+  <<: *opensuse_template
+
+openSUSE ThreadSanitizer:
+  variables:
+    CMAKE_OPTIONS: -DUSE_SANITIZER=Thread
+  <<: *opensuse_template
+
+openSUSE AddressSanitizer:
+  variables:
+    CMAKE_OPTIONS: -DUSE_SANITIZER=Address
+  <<: *opensuse_template
+
+openSUSE LeakSanitizer:
+  variables:
+    CMAKE_OPTIONS: -DUSE_SANITIZER=Leak
+  <<: *opensuse_template
+
+openSUSE UndefinedSanitizer:
+  variables:
+    CMAKE_OPTIONS: -DUSE_SANITIZER=Undefined
+  <<: *opensuse_template

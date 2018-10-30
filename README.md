@@ -8,6 +8,8 @@ This is a collection of quite useful scripts that expand the possibilities for b
 
 Using the functions `cxx_11()`, `cxx_14()`, `cxx_17()` or `cxx_20()` this adds the appropriated flags for both unix and MSVC compilers, even for those before 3.11 with improper support.
 
+These obviously force the standard to be required, and also disables compiler-specific extensions, ie `--std=gnu++11`. This helps to prevent fragmenting the code base with items not available elsewhere, adhering to the agreed C++ standards only.
+
 ## Sanitizer Builds `sanitizers.cmake`
 
 Sanitizers are tools that perform checks during a program’s runtime and returns issues, and as such, along with unit testing, code coverage and static analysis, is another tool to add to the programmers toolbox. And of course, like the previous tools, are tragically simple to add into any project using CMake, allowing any project and developer to quickly and easily use.
@@ -42,7 +44,11 @@ These are used by declaring the `USE_SANITIZER` CMake variable as one of:
 
 ## Code Coverage `code-coverage.cmake`
 
-Generating code coverage during a run of a program can help determine which blocks, regions, or even lines of code are being used, and for how many times.
+> In computer science, test coverage is a measure used to describe the degree to which the source code of a program is executed when a particular test suite runs. A program with high test coverage, measured as a percentage, has had more of its source code executed during testing, which suggests it has a lower chance of containing undetected software bugs compared to a program with low test coverage. Many different metrics can be used to calculate test coverage; some of the most basic are the percentage of program subroutines and the percentage of program statements called during execution of the test suite. 
+>
+> [Wikipedia, Code Coverage](https://en.wikipedia.org/wiki/Code_coverage)
+
+Code coverage is the detailing of, during the execution of a binary, which regions, functions, or lines of code are *actually* executed. This can be used in a number of ways, from figuring out areas that automated testing is lacking or not touching, to giving a user an instrumented binary to determine which areas of code are used most/least to determine which areas to focus on. Although this does come with the caveat that coverage is no guarantee of good testing, just of what code has been.
 
 Coverage here is supported on both GCC and Clang. GCC requires the `lcov` program, and Clang requires `llvm-cov` and `llvm-profdata`, often provided with the llvm toolchain.
 
@@ -120,8 +126,6 @@ target_code_coverage(theExe AUTO ALL EXCLUDE non_covered.cpp test/*) # As an exe
 
 Allows for easy use of some pre-made compiler options for the major compilers.
 
-### Enable All Warnings
-
 Using `-DENABLE_ALL_WARNINGS=ON` will enable almost all of the warnings available for a compiler:
 
 | Compiler | Options       |
@@ -152,6 +156,10 @@ clang_format(${TARGET_NAME} ${ALL_CODE_FILES})
 ```
 
 ### clang-tidy
+
+> clang-tidy is a clang-based C++ “linter” tool. Its purpose is to provide an extensible framework for diagnosing and fixing typical programming errors, like style violations, interface misuse, or bugs that can be deduced via static analysis. clang-tidy is modular and provides a convenient interface for writing new checks.
+>
+> [clang-tidy page](https://clang.llvm.org/extra/clang-tidy/)
 
 When detected, [clang-tidy](https://clang.llvm.org/extra/clang-tidy/) can be enabled by using the option of `-DCLANG_TIDY=ON`. Disabled by default.
 

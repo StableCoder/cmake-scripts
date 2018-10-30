@@ -10,6 +10,7 @@ include(../tools.cmake)
 cxx_11()
 
 enable_testing()
+add_code_coverage_all_targets()
 
 # Fails with ThreadSanitizer
 add_executable(tsanFail tsan_fail.cpp)

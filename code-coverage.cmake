@@ -209,7 +209,7 @@ function(target_code_coverage TARGET_NAME)
             elseif(CMAKE_COMPILER_IS_GNUCXX)
                 set(COVERAGE_INFO "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TARGET_NAME}.info")
 
-                add_custom_target(ccov-run-${TARGET_NAME}.*test[/\\].*
+                add_custom_target(ccov-run-${TARGET_NAME}
                     COMMAND $<TARGET_FILE:${TARGET_NAME}>
                     DEPENDS ccov-preprocessing ${TARGET_NAME}
                 )

@@ -187,19 +187,19 @@ function(target_code_coverage TARGET_NAME)
                     DEPENDS ccov-run-${TARGET_NAME}
                 )
 
+                foreach(EXCLUDE_ITEM ${target_code_coverage_EXCLUDE})
+                    set(EXCLUDE_REGEX ${EXCLUDE_REGEX} -ignore-filename-regex='${EXCLUDE_ITEM}')
+                endforeach()
+
                 add_custom_target(ccov-show-${TARGET_NAME}
-                    COMMAND llvm-cov show $<TARGET_FILE:${TARGET_NAME}> -instr-profile=${TARGET_NAME}.profdata -show-line-counts-or-regions
+                    COMMAND llvm-cov show $<TARGET_FILE:${TARGET_NAME}> -instr-profile=${TARGET_NAME}.profdata -show-line-counts-or-regions ${EXCLUDE_REGEX}
                     DEPENDS ccov-processing-${TARGET_NAME}
                 )
 
                 add_custom_target(ccov-report-${TARGET_NAME}
-                    COMMAND llvm-cov report $<TARGET_FILE:${TARGET_NAME}> -instr-profile=${TARGET_NAME}.profdata
+                    COMMAND llvm-cov report $<TARGET_FILE:${TARGET_NAME}> -instr-profile=${TARGET_NAME}.profdata ${EXCLUDE_REGEX}
                     DEPENDS ccov-processing-${TARGET_NAME}
                 )
-
-                foreach(EXCLUDE_ITEM ${target_code_coverage_EXCLUDE})
-                    set(EXCLUDE_REGEX ${EXCLUDE_REGEX} -ignore-filename-regex=${EXCLUDE_ITEM})
-                endforeach()
 
                 add_custom_target(ccov-${TARGET_NAME}
                     COMMAND llvm-cov show $<TARGET_FILE:${TARGET_NAME}> -instr-profile=${TARGET_NAME}.profdata -show-line-counts-or-regions -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${TARGET_NAME} -format="html" ${EXCLUDE_REGEX}
@@ -209,7 +209,7 @@ function(target_code_coverage TARGET_NAME)
             elseif(CMAKE_COMPILER_IS_GNUCXX)
                 set(COVERAGE_INFO "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TARGET_NAME}.info")
 
-                add_custom_target(ccov-run-${TARGET_NAME}
+                add_custom_target(ccov-run-${TARGET_NAME}.*test[/\\].*
                     COMMAND $<TARGET_FILE:${TARGET_NAME}>
                     DEPENDS ccov-preprocessing ${TARGET_NAME}
                 )

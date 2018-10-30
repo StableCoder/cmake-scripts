@@ -1,0 +1,57 @@
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+  CTEST_OUTPUT_ON_FAILURE: '1'
+
+Code Coverage:
+  image: stabletec/build-foe:fedora-clang
+  tags:
+    - docker-linux
+  script:
+    - mkdir example/build && cd example/build
+    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON 
+    - ninja
+    - ninja ccov
+    - ninja ccov-all
+    - ninja ccov-report
+    - ninja ccov-all-report
+  artifacts:
+    name: CodeCoverage
+    paths: 
+      - build/ccov
+    expire_in: 1 day
+
+.analysis_template: &analysis_template
+  image: stabletec/build-foe:fedora-clang
+  allow_failure: true
+  tags:
+    - docker-linux
+  script:
+    - mkdir example/build && cd example/build
+    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
+    - ninja
+    - ninja test
+
+Static Analysis:
+  variables:
+    CMAKE_OPTIONS: -DCLANG_TIDY=ON -DCPPCHECK=ON -DIWYU=ON
+  <<: *analysis_template
+
+ThreadSanitizer:
+  variables:
+    CMAKE_OPTIONS: -DUSE_SANITIZER=Thread
+  <<: *analysis_template
+
+AddressSanitizer:
+  variables:
+    CMAKE_OPTIONS: -DUSE_SANITIZER=Address
+  <<: *analysis_template
+
+LeakSanitizer:
+  variables:
+    CMAKE_OPTIONS: -DUSE_SANITIZER=Leak
+  <<: *analysis_template
+
+UndefinedSanitizer:
+  variables:
+    CMAKE_OPTIONS: -DUSE_SANITIZER=Undefined
+  <<: *analysis_template

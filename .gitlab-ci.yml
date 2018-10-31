@@ -17,7 +17,7 @@ Code Coverage:
   artifacts:
     name: CodeCoverage
     paths: 
-      - build/ccov
+      - example/build/ccov
     expire_in: 1 day
 
 # Fedora

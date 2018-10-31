@@ -94,6 +94,14 @@ if(CODE_COVERAGE)
 
         if(NOT LLVM_COV_PATH)
             message(FATAL_ERROR "llvm-cov not found! Aborting.")
+        else()
+            # Version number checking for 'EXCLUDE' compatability
+            execute_process(COMMAND ${LLVM_COV_PATH} --version OUTPUT_VARIABLE LLVM_COV_VERSION_CALL_OUTPUT)
+            string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" LLVM_COV_VERSION ${LLVM_COV_VERSION_CALL_OUTPUT})
+
+            if(LLVM_COV_VERSION VERSION_LESS "7.0.0")
+                message(WARNING "target_code_coverage()/add_code_coverage_all_targets() 'EXCLUDE' option only available on llvm-cov >= 7.0.0")
+            endif()
         endif()
 
         # Targets
@@ -187,9 +195,11 @@ function(target_code_coverage TARGET_NAME)
                     DEPENDS ccov-run-${TARGET_NAME}
                 )
 
-                foreach(EXCLUDE_ITEM ${target_code_coverage_EXCLUDE})
-                    set(EXCLUDE_REGEX ${EXCLUDE_REGEX} -ignore-filename-regex='${EXCLUDE_ITEM}')
-                endforeach()
+                if(LLVM_COV_VERSION VERSION_GREATER_EQUAL "7.0.0")
+                    foreach(EXCLUDE_ITEM ${target_code_coverage_EXCLUDE})
+                        set(EXCLUDE_REGEX ${EXCLUDE_REGEX} -ignore-filename-regex='${EXCLUDE_ITEM}')
+                    endforeach()
+                endif()
 
                 add_custom_target(ccov-show-${TARGET_NAME}
                     COMMAND llvm-cov show $<TARGET_FILE:${TARGET_NAME}> -instr-profile=${TARGET_NAME}.profdata -show-line-counts-or-regions ${EXCLUDE_REGEX}
@@ -295,17 +305,19 @@ function(add_code_coverage_all_targets)
                 COMMAND llvm-profdata merge -o ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata -sparse `cat ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list`
             )
 
+            if(LLVM_COV_VERSION VERSION_GREATER_EQUAL "7.0.0")
+                foreach(EXCLUDE_ITEM ${add_code_coverage_all_targets_EXCLUDE})
+                    set(EXCLUDE_REGEX ${EXCLUDE_REGEX} -ignore-filename-regex=${EXCLUDE_ITEM})
+                endforeach()
+            endif()
+
             add_custom_target(ccov-all-report
-                COMMAND llvm-cov report `cat ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list` -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
+                COMMAND llvm-cov report `cat ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list` -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata ${EXCLUDE_REGEX}
                 DEPENDS ccov-all-processing
             )
 
-            foreach(EXCLUDE_ITEM ${add_code_coverage_all_targets_EXCLUDE})
-                set(EXCLUDE_REGEX ${EXCLUDE_REGEX} -ignore-filename-regex=${EXCLUDE_ITEM})
-            endforeach()
-
             add_custom_target(ccov-all
-                COMMAND llvm-cov show `cat ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list` -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata -show-line-counts-or-regions -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged -format="html"  ${EXCLUDE_REGEX}
+                COMMAND llvm-cov show `cat ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list` -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata -show-line-counts-or-regions -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged -format="html" ${EXCLUDE_REGEX}
                 DEPENDS ccov-all-processing
             )
 

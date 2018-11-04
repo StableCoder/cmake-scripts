@@ -84,7 +84,7 @@ set(CMAKE_COVERAGE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/ccov)
 if(CODE_COVERAGE)
     # Common Targets
     add_custom_target(ccov-preprocessing
-        COMMAND cmake -E make_directory ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}
         DEPENDS ccov-clean
     )
 
@@ -225,7 +225,7 @@ function(target_code_coverage TARGET_NAME)
                 )
 
                 foreach(EXCLUDE_ITEM ${target_code_coverage_EXCLUDE})
-                    set(EXCLUDE_REGEX ${EXCLUDE_REGEX} --remove ${COVERAGE_INFO} ${EXCLUDE_ITEM})
+                    set(EXCLUDE_REGEX ${EXCLUDE_REGEX} --remove ${COVERAGE_INFO} '${EXCLUDE_ITEM}')
                 endforeach()
 
                 if(EXCLUDE_REGEX)
@@ -241,6 +241,7 @@ function(target_code_coverage TARGET_NAME)
                     COMMAND ${EXCLUDE_COMMAND}
                     COMMAND ${GENHTML_PATH} -o ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${TARGET_NAME} ${COVERAGE_INFO}
                     COMMAND ${CMAKE_COMMAND} -E remove ${COVERAGE_INFO}
+                    DEPENDS ccov-preprocessing ${TARGET_NAME}
                 )
             endif()
 
@@ -330,7 +331,7 @@ function(add_code_coverage_all_targets)
             )
 
             foreach(EXCLUDE_ITEM ${add_code_coverage_all_targets_EXCLUDE})
-                set(EXCLUDE_REGEX ${EXCLUDE_REGEX} --remove ${COVERAGE_INFO} ${EXCLUDE_ITEM})
+                set(EXCLUDE_REGEX ${EXCLUDE_REGEX} --remove ${COVERAGE_INFO} '${EXCLUDE_ITEM}')
             endforeach()
 
             if(EXCLUDE_REGEX)

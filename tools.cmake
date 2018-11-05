@@ -29,7 +29,7 @@ else()
 endif()
 
 function(clang_format FORMAT_TARGET_NAME)
-    if(CLANG_FORMAT)
+    if(CLANG_FORMAT_EXE)
         if(TARGET ${FORMAT_TARGET_NAME})
             get_target_property(_TARGET_TYPE ${FORMAT_TARGET_NAME} TYPE)
             # Add target sources

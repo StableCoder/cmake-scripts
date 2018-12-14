@@ -81,7 +81,9 @@ FIND_PROGRAM(GENHTML_PATH genhtml)
 set(CMAKE_COVERAGE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/ccov)
 
 # Common initialization/checks
-if(CODE_COVERAGE)
+if(CODE_COVERAGE AND NOT CODE_COVERAGE_ADDED)
+    set(CODE_COVERAGE_ADDED ON)
+    
     # Common Targets
     add_custom_target(ccov-preprocessing
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}

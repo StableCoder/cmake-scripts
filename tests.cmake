@@ -18,19 +18,37 @@ option(FORCE_CATCH_CLONE "Forces cloning of the Catch test headers rather than u
 
 find_file(HAVE_CATCH_HPP catch.hpp PATH_SUFFIXES catch2 catch)
 
+# Attempts to add the infrastructure necessary for automatically adding C/C++ tests using the Catch2
+# library, including either an interface or pre-compiled 'catch' target library.
+# COMPILED_CATCH - If this option is specified, then generates the 'catch' target as a library with
+#       catch already pre-compiled as part of the library. Otherwise acts just an interface library for
+#       the header location.
+# CATCH1 - Force the use of Catch1.X, rather than auto-detecting the C++ version in use.
+# CLONE - Force cloning of Catch, rather than attempting to use a locally-found variant.
+#
+# It first attempts to find the header on the local machine, and failing that, clones the single
+# header variant for use. It does make the determination between pre-C++11 and will use Catch1.X rather
+# than Catch2 (when cloned), automatically or forced.. Adds a subdirectory of tests/ if it exists from 
+# the macro's calling location.
+#
+# !WARNING! - When switching between COMPILED_CATCH and non-COMPILED_CATCH, the binary folders will need 
+# to be cleared for it to take proper effect.
+# !WARNING! - The parameters of the first processed instance of the macro will determine the catch target
+# configuration. There's no mixing of configs here.
 macro(build_tests)
+    set(options COMPILED_CATCH CATCH1 CLONE)
+    cmake_parse_arguments(build_tests "${options}" "" "" ${ARGN})
+
     if(BUILD_TESTS)
         if(NOT TARGET catch)
-            add_library(catch INTERFACE)
-
-            if(NOT HAVE_CATCH_HPP OR FORCE_CATCH_CLONE)
+            if(NOT HAVE_CATCH_HPP OR FORCE_CATCH_CLONE OR build_tests_CLONE)
                 # Cloning
                 message(STATUS "No local Catch header detected, cloning via Git.")
                 include(ExternalProject)
                 find_package(Git REQUIRED)
 
-                if(CMAKE_CXX_STANDARD AND CMAKE_CXX_STANDARD GREATER 10)
-                    message(STATUS "Detected C++11 or better, using Catch2")
+                if(CMAKE_CXX_STANDARD AND CMAKE_CXX_STANDARD GREATER 10 AND NOT build_tests_CATCH1)
+                    message(STATUS "Cloning Catch2")
                     ExternalProject_Add(
                         git_catch
                         PREFIX ${CMAKE_BINARY_DIR}/catch2
@@ -43,7 +61,7 @@ macro(build_tests)
                         LOG_DOWNLOAD ON
                     )
                 else()
-                    message(STATUS "Did not detect C++11 or better, using Catch1")
+                    message(STATUS "Cloning Catch1")
                     ExternalProject_Add(
                         git_catch
                         PREFIX ${CMAKE_BINARY_DIR}/catch1
@@ -59,13 +77,30 @@ macro(build_tests)
                 endif()
 
                 ExternalProject_Get_Property(git_catch source_dir)
-                add_dependencies(catch git_catch)
-                target_include_directories(catch INTERFACE ${source_dir}/single_include  ${source_dir}/single_include/catch2)
+                set(CATCH_PATH ${source_dir}/single_include  ${source_dir}/single_include/catch2)
             else()
                 # Using Local
                 message(STATUS "Local Catch header detected at: " ${HAVE_CATCH_HPP})
                 get_filename_component(CATCH_PATH ${HAVE_CATCH_HPP} DIRECTORY)
+            endif()
+
+            if(build_tests_COMPILED_CATCH)
+                # A pre-compiled catch library has been requested
+                message(STATUS "Generating a pre-compiled Catch library")
+
+                if(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/pre_compiled_catch.cpp)
+                    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/pre_compiled_catch.cpp "#define CATCH_CONFIG_MAIN\n#include <catch.hpp>\n")
+                endif()
+                add_library(catch ${CMAKE_CURRENT_BINARY_DIR}/pre_compiled_catch.cpp)
+                target_include_directories(catch PUBLIC ${CATCH_PATH})
+            else()
+                add_library(catch INTERFACE)
                 target_include_directories(catch INTERFACE ${CATCH_PATH})
+            endif()
+
+            if(TARGET git_catch)
+                # If cloning, make sure it's cloned BEFORE it's needed.
+                add_dependencies(catch git_catch)
             endif()
         endif()
 

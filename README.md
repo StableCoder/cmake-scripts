@@ -5,6 +5,25 @@
 
 This is a collection of quite useful scripts that expand the possibilities for building software with CMake, by making some things easier and otherwise adding new build types.
 
+- [CMake Scripts](#cmake-scripts)
+  - [C++ Standards `c++-standards.cmake`](#c-standards-c-standardscmake)
+  - [Sanitizer Builds `sanitizers.cmake`](#sanitizer-builds-sanitizerscmake)
+  - [Code Coverage `code-coverage.cmake`](#code-coverage-code-coveragecmake)
+    - [Added Targets](#added-targets)
+    - [Usage](#usage)
+      - [Example 1 - All targets instrumented](#example-1---all-targets-instrumented)
+        - [1a - Via global command](#1a---via-global-command)
+        - [1b - Via target commands](#1b---via-target-commands)
+      - [Example 2: Target instrumented, but with regex pattern of files to be excluded from report](#example-2-target-instrumented-but-with-regex-pattern-of-files-to-be-excluded-from-report)
+      - [Example 3: Target added to the 'ccov' and 'ccov-all' targets](#example-3-target-added-to-the-ccov-and-ccov-all-targets)
+  - [Compiler Options `compiler-options.cmake`](#compiler-options-compiler-optionscmake)
+  - [Tools `tools.cmake`](#tools-toolscmake)
+    - [clang-format](#clang-format)
+    - [clang-tidy](#clang-tidy)
+    - [include-what-you-use](#include-what-you-use)
+    - [cppcheck](#cppcheck)
+  - [CMake Format `cmake-format.cmake`](#cmake-format-cmake-formatcmake)
+
 ## C++ Standards `c++-standards.cmake`
 
 Using the functions `cxx_11()`, `cxx_14()`, `cxx_17()` or `cxx_20()` this adds the appropriated flags for both unix and MSVC compilers, even for those before 3.11 with improper support.
@@ -130,7 +149,7 @@ Allows for easy use of some pre-made compiler options for the major compilers.
 Using `-DENABLE_ALL_WARNINGS=ON` will enable almost all of the warnings available for a compiler:
 
 | Compiler | Options       |
-|:---------|:--------------|
+| :------- | :------------ |
 | MSVC     | /W4           |
 | GCC      | -Wall -Wextra |
 | Clang    | -Wall -Wextra |
@@ -171,3 +190,15 @@ This tool helps to organize headers for all files encompass all items being used
 ### cppcheck
 
 This tool is another static analyzer in the vein of clang-tidy, which focuses on having no false positives. This is by default disabled, and can be enabled via have the program installed and adding `-DCPPCHECK=ON`.
+
+## CMake Format `cmake-format.cmake`
+
+Similar to the clang-format above, creates a target `cmake-format` when the `cmake_format(<FILES>)` function is defined in CMake scripts, and any <FILES> passed in will be formatted by the cmake-format program, if it is found.
+
+```
+file(GLOB_RECURSE CMAKE_FILES
+    CMakeLists.txt
+)
+
+cmake_format(${CMAKE_FILES})
+```

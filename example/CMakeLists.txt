@@ -1,10 +1,11 @@
-cmake_minimum_required( VERSION 3.10 )
-project( sanitizer-tests C CXX )
+cmake_minimum_required(VERSION 3.10)
+project(sanitizer-tests C CXX)
 
 include(../c++-standards.cmake)
 include(../code-coverage.cmake)
 include(../sanitizers.cmake)
 include(../tools.cmake)
+include(../cmake-format.cmake)
 
 # Require C++11
 cxx_11()
@@ -16,7 +17,7 @@ add_code_coverage_all_targets()
 add_executable(tsanFail tsan_fail.cpp)
 target_code_coverage(tsanFail AUTO ALL)
 if(UNIX)
-    target_link_libraries(tsanFail PUBLIC pthread)
+  target_link_libraries(tsanFail PUBLIC pthread)
 endif()
 add_test(tsan tsanFail)
 
@@ -27,9 +28,9 @@ add_test(lsan lsanFail)
 
 # Fails with AddressSanitizer
 if(USE_SANITIZER MATCHES "[Aa]ddress")
-    add_executable(asanFail asan_fail.cpp)
-    target_code_coverage(asanFail AUTO ALL)
-    add_test(asan asanFail)
+  add_executable(asanFail asan_fail.cpp)
+  target_code_coverage(asanFail AUTO ALL)
+  add_test(asan asanFail)
 endif()
 
 # Fails with MemorySanitizer
@@ -41,3 +42,5 @@ add_test(msan msanFail)
 add_executable(ubsanFail ubsan_fail.cpp)
 target_code_coverage(ubsanFail AUTO ALL)
 add_test(ubsan ubsanFail)
+
+cmake_format(${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt)

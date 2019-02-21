@@ -36,7 +36,7 @@ function(cmake_format)
   if(CMAKE_FORMAT_EXE)
     foreach(iter IN LISTS ARGN)
       if(EXISTS ${iter})
-        string(MD5 ${iter} hash)
+        file(MD5 ${iter} hash)
 
         if(NOT TARGET cmake-format-${hash})
           add_custom_target(cmake-format-${hash}

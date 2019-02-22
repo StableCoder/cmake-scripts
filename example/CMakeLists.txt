@@ -3,9 +3,9 @@ project(sanitizer-tests C CXX)
 
 include(../c++-standards.cmake)
 include(../code-coverage.cmake)
+include(../formatting.cmake)
 include(../sanitizers.cmake)
 include(../tools.cmake)
-include(../cmake-format.cmake)
 
 # Require C++11
 cxx_11()
@@ -43,4 +43,7 @@ add_executable(ubsanFail ubsan_fail.cpp)
 target_code_coverage(ubsanFail AUTO ALL)
 add_test(ubsan ubsanFail)
 
-cmake_format(${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt)
+file(GLOB_RECURSE FFILES *.[hc] *.[hc]pp)
+clang_format(format ${FFILES})
+
+cmake_format(${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt CMakeLists.txt)

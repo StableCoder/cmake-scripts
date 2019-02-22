@@ -18,11 +18,12 @@ This is a collection of quite useful scripts that expand the possibilities for b
       - [Example 3: Target added to the 'ccov' and 'ccov-all' targets](#example-3-target-added-to-the-ccov-and-ccov-all-targets)
   - [Compiler Options `compiler-options.cmake`](#compiler-options-compiler-optionscmake)
   - [Tools `tools.cmake`](#tools-toolscmake)
-    - [clang-format](#clang-format)
     - [clang-tidy](#clang-tidy)
     - [include-what-you-use](#include-what-you-use)
     - [cppcheck](#cppcheck)
-  - [CMake Format `cmake-format.cmake`](#cmake-format-cmake-formatcmake)
+  - [Formatting `formatting.cmake`](#formatting-formattingcmake)
+    - [clang-format](#clang-format)
+    - [cmake-format](#cmake-format)
 
 ## C++ Standards `c++-standards.cmake`
 
@@ -158,23 +159,6 @@ Using `-DENABLE_EFFECTIVE_CXX=ON` adds the `-Weffc++` for both GCC and clang.
 
 ## Tools `tools.cmake`
 
-### clang-format
-
-Allows to automatically perform code formatting using the clang-format program, by calling an easy-to-use target ala `make format`. It requires a target name, and the list of files to format.
-
-```
-file(GLOB_RECURSE ALL_CODE_FILES
-    ${PROJECT_SOURCE_DIR}/src/*.[ch]pp
-    ${PROJECT_SOURCE_DIR}/src/*.[ch]
-    ${PROJECT_SOURCE_DIR}/include/*.[h]pp
-    ${PROJECT_SOURCE_DIR}/include/*.[h]
-    ${PROJECT_SOURCE_DIR}/example/*.[ch]pp
-    ${PROJECT_SOURCE_DIR}/example/*.[ch]
-)
-
-clang_format(${TARGET_NAME} ${ALL_CODE_FILES})
-```
-
 ### clang-tidy
 
 > clang-tidy is a clang-based C++ “linter” tool. Its purpose is to provide an extensible framework for diagnosing and fixing typical programming errors, like style violations, interface misuse, or bugs that can be deduced via static analysis. clang-tidy is modular and provides a convenient interface for writing new checks.
@@ -191,7 +175,26 @@ This tool helps to organize headers for all files encompass all items being used
 
 This tool is another static analyzer in the vein of clang-tidy, which focuses on having no false positives. This is by default disabled, and can be enabled via have the program installed and adding `-DCPPCHECK=ON`.
 
-## CMake Format `cmake-format.cmake`
+## Formatting `formatting.cmake`
+
+### clang-format
+
+Allows to automatically perform code formatting using the clang-format program, by calling an easy-to-use target ala `make format`. It requires a target name, and the list of files to format. As well, if the target name is the name of another target, then all files associated with that target will be added, and the target name changed to be `format_<TARGET>`. As well, any targets otherwise listed with the files will also have their files imported for formatting.
+
+```
+file(GLOB_RECURSE ALL_CODE_FILES
+    ${PROJECT_SOURCE_DIR}/src/*.[ch]pp
+    ${PROJECT_SOURCE_DIR}/src/*.[ch]
+    ${PROJECT_SOURCE_DIR}/include/*.[h]pp
+    ${PROJECT_SOURCE_DIR}/include/*.[h]
+    ${PROJECT_SOURCE_DIR}/example/*.[ch]pp
+    ${PROJECT_SOURCE_DIR}/example/*.[ch]
+)
+
+clang_format(TARGET_NAME ${ALL_CODE_FILES})
+```
+
+### cmake-format
 
 Similar to the clang-format above, creates a target `cmake-format` when the `cmake_format(<FILES>)` function is defined in CMake scripts, and any <FILES> passed in will be formatted by the cmake-format program, if it is found.
 

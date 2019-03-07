@@ -46,4 +46,5 @@ add_test(ubsan ubsanFail)
 file(GLOB_RECURSE FFILES *.[hc] *.[hc]pp)
 clang_format(format ${FFILES})
 
-cmake_format(${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt CMakeLists.txt)
+cmake_format(cmake-format ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+             CMakeLists.txt)

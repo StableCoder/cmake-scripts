@@ -6,6 +6,7 @@ include(../code-coverage.cmake)
 include(../formatting.cmake)
 include(../sanitizers.cmake)
 include(../tools.cmake)
+include(../dependency-graph.cmake)
 
 # Require C++11
 cxx_11()

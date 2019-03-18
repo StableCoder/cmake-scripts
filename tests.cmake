@@ -19,29 +19,8 @@ option(FORCE_CATCH_CLONE
 
 find_file(HAVE_CATCH_HPP catch.hpp PATH_SUFFIXES catch2 catch)
 
-# Attempts to add the infrastructure necessary for automatically adding C/C++
-# tests using the Catch2 library, including either an interface or pre-compiled
-# 'catch' target library.
-#
-# It first attempts to find the header on the local machine, and failing that,
-# clones the single header variant for use. It does make the determination
-# between pre-C++11 and will use Catch1.X rather than Catch2 (when cloned),
-# automatically or forced.. Adds a subdirectory of tests/ if it exists from the
-# macro's calling location.
-#
-# ~~~
-# COMPILED_CATCH - If this option is specified, then generates the 'catch' target as a library with
-#       catch already pre-compiled as part of the library. Otherwise acts just an interface library for
-#       the header location.
-# CATCH1 - Force the use of Catch1.X, rather than auto-detecting the C++ version in use.
-# CLONE - Force cloning of Catch, rather than attempting to use a locally-found variant.
-#
-# !WARNING! - When switching between COMPILED_CATCH and non-COMPILED_CATCH, the binary folders will need
-# to be cleared for it to take proper effect.
-# !WARNING! - The parameters of the first processed instance of the macro will determine the catch target
-# configuration. There's no mixing of configs here.
-# ~~~
-macro(build_tests)
+# !! DON'T USE DIRECTLY, USE `build_tests`, THIS IS FOR PROPER SCOPING !!
+function(build_tests_internal)
   set(options COMPILED_CATCH CATCH1 CLONE)
   cmake_parse_arguments(build_tests "${options}" "" "" ${ARGN})
 
@@ -121,7 +100,11 @@ macro(build_tests)
           add_library(catch STATIC
                       ${CMAKE_CURRENT_BINARY_DIR}/pre_compiled_catch.cpp)
         else()
-          add_library(catch ${CMAKE_CURRENT_BINARY_DIR}/pre_compiled_catch.cpp)
+          # Make sure it's visible if it's a shared object.
+          set(CMAKE_CXX_VISIBILITY_PRESET default)
+          set(CMAKE_VISIBILITY_INLINES_HIDDEN 0)
+          add_library(catch SHARED
+                      ${CMAKE_CURRENT_BINARY_DIR}/pre_compiled_catch.cpp)
         endif()
         target_include_directories(catch PUBLIC ${CATCH_PATH})
       else()
@@ -135,7 +118,6 @@ macro(build_tests)
       endif()
     endif()
 
-    enable_testing()
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test/CMakeLists.txt)
       add_subdirectory(test)
     endif()
@@ -143,4 +125,31 @@ macro(build_tests)
       add_subdirectory(tests)
     endif()
   endif()
+endfunction()
+
+# Attempts to add the infrastructure necessary for automatically adding C/C++
+# tests using the Catch2 library, including either an interface or pre-compiled
+# 'catch' target library.
+#
+# It first attempts to find the header on the local machine, and failing that,
+# clones the single header variant for use. It does make the determination
+# between pre-C++11 and will use Catch1.X rather than Catch2 (when cloned),
+# automatically or forced.. Adds a subdirectory of tests/ if it exists from the
+# macro's calling location.
+#
+# ~~~
+# COMPILED_CATCH - If this option is specified, then generates the 'catch' target as a library with
+#       catch already pre-compiled as part of the library. Otherwise acts just an interface library for
+#       the header location.
+# CATCH1 - Force the use of Catch1.X, rather than auto-detecting the C++ version in use.
+# CLONE - Force cloning of Catch, rather than attempting to use a locally-found variant.
+#
+# !WARNING! - When switching between COMPILED_CATCH and non-COMPILED_CATCH, the binary folders will need
+# to be cleared for it to take proper effect.
+# !WARNING! - The parameters of the first processed instance of the macro will determine the catch target
+# configuration. There's no mixing of configs here.
+# ~~~
+macro(build_tests)
+  enable_testing()
+  build_tests_internal(${ARGN})
 endmacro()

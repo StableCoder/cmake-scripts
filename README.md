@@ -165,15 +165,21 @@ Using `-DENABLE_EFFECTIVE_CXX=ON` adds the `-Weffc++` for both GCC and clang.
 >
 > [clang-tidy page](https://clang.llvm.org/extra/clang-tidy/)
 
-When detected, [clang-tidy](https://clang.llvm.org/extra/clang-tidy/) can be enabled by using the option of `-DCLANG_TIDY=ON`. Disabled by default.
+When detected, [clang-tidy](https://clang.llvm.org/extra/clang-tidy/) can be enabled by using the option of `-DCLANG_TIDY=ON`, as it is disabled by default.
+
+To use, add the `clang_tidy()` function, with the arguments being the options to pass to the clang tidy program, such as '-checks=*'.
 
 ### include-what-you-use
 
 This tool helps to organize headers for all files encompass all items being used in that file, without accidentally relying upon headers deep down a chain of other headers. This is disabled by default, and can be enabled via have the program installed and adding `-DIWYU=ON`.
 
+To use, add the `include_what_you_use()` function, with the arguments being the options to pass to the program.
+
 ### cppcheck
 
 This tool is another static analyzer in the vein of clang-tidy, which focuses on having no false positives. This is by default disabled, and can be enabled via have the program installed and adding `-DCPPCHECK=ON`.
+
+To use, add the `cppcheck()` function, with the arguments being the options to pass to the program.
 
 ## Formatting `formatting.cmake`
 
@@ -203,5 +209,5 @@ file(GLOB_RECURSE CMAKE_FILES
     CMakeLists.txt
 )
 
-cmake_format(${CMAKE_FILES})
+cmake_format(TARGET_NAME ${CMAKE_FILES})
 ```

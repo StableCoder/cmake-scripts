@@ -1,29 +1,28 @@
-# CMake Scripts
+# CMake Scripts <!-- omit in toc -->
 
 [![pipeline status](https://git.stabletec.com/other/cmake-scripts/badges/master/pipeline.svg)](https://git.stabletec.com/other/cmake-scripts/commits/master)
 [![license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://git.stabletec.com/other/cmake-scripts/blob/master/LICENSE)
 
 This is a collection of quite useful scripts that expand the possibilities for building software with CMake, by making some things easier and otherwise adding new build types.
 
-- [CMake Scripts](#cmake-scripts)
-  - [C++ Standards `c++-standards.cmake`](#c-standards-c-standardscmake)
-  - [Sanitizer Builds `sanitizers.cmake`](#sanitizer-builds-sanitizerscmake)
-  - [Code Coverage `code-coverage.cmake`](#code-coverage-code-coveragecmake)
-    - [Added Targets](#added-targets)
-    - [Usage](#usage)
-      - [Example 1 - All targets instrumented](#example-1---all-targets-instrumented)
-        - [1a - Via global command](#1a---via-global-command)
-        - [1b - Via target commands](#1b---via-target-commands)
-      - [Example 2: Target instrumented, but with regex pattern of files to be excluded from report](#example-2-target-instrumented-but-with-regex-pattern-of-files-to-be-excluded-from-report)
-      - [Example 3: Target added to the 'ccov' and 'ccov-all' targets](#example-3-target-added-to-the-ccov-and-ccov-all-targets)
-  - [Compiler Options `compiler-options.cmake`](#compiler-options-compiler-optionscmake)
-  - [Tools `tools.cmake`](#tools-toolscmake)
-    - [clang-tidy](#clang-tidy)
-    - [include-what-you-use](#include-what-you-use)
-    - [cppcheck](#cppcheck)
-  - [Formatting `formatting.cmake`](#formatting-formattingcmake)
-    - [clang-format](#clang-format)
-    - [cmake-format](#cmake-format)
+- [C++ Standards `c++-standards.cmake`](#c-standards-c-standardscmake)
+- [Sanitizer Builds `sanitizers.cmake`](#sanitizer-builds-sanitizerscmake)
+- [Code Coverage `code-coverage.cmake`](#code-coverage-code-coveragecmake)
+  - [Added Targets](#added-targets)
+  - [Usage](#usage)
+    - [Example 1 - All targets instrumented](#example-1---all-targets-instrumented)
+      - [1a - Via global command](#1a---via-global-command)
+      - [1b - Via target commands](#1b---via-target-commands)
+    - [Example 2: Target instrumented, but with regex pattern of files to be excluded from report](#example-2-target-instrumented-but-with-regex-pattern-of-files-to-be-excluded-from-report)
+    - [Example 3: Target added to the 'ccov' and 'ccov-all' targets](#example-3-target-added-to-the-ccov-and-ccov-all-targets)
+- [Compiler Options `compiler-options.cmake`](#compiler-options-compiler-optionscmake)
+- [Tools `tools.cmake`](#tools-toolscmake)
+  - [clang-tidy](#clang-tidy)
+  - [include-what-you-use](#include-what-you-use)
+  - [cppcheck](#cppcheck)
+- [Formatting `formatting.cmake`](#formatting-formattingcmake)
+  - [clang-format](#clang-format)
+  - [cmake-format](#cmake-format)
 
 ## C++ Standards `c++-standards.cmake`
 

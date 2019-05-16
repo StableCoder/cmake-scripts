@@ -3,7 +3,7 @@
 [![pipeline status](https://git.stabletec.com/other/cmake-scripts/badges/master/pipeline.svg)](https://git.stabletec.com/other/cmake-scripts/commits/master)
 [![license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://git.stabletec.com/other/cmake-scripts/blob/master/LICENSE)
 
-This is a collection of quite useful scripts that expand the possibilities for building software with CMake, by making some things easier and otherwise adding new build types.
+This is a collection of quite useful scripts that expand the possibilities for building software with CMake, by making some things easier and otherwise adding new build types
 
 - [C++ Standards `c++-standards.cmake`](#c-standards-c-standardscmake)
 - [Sanitizer Builds `sanitizers.cmake`](#sanitizer-builds-sanitizerscmake)
@@ -16,6 +16,9 @@ This is a collection of quite useful scripts that expand the possibilities for b
     - [Example 2: Target instrumented, but with regex pattern of files to be excluded from report](#example-2-target-instrumented-but-with-regex-pattern-of-files-to-be-excluded-from-report)
     - [Example 3: Target added to the 'ccov' and 'ccov-all' targets](#example-3-target-added-to-the-ccov-and-ccov-all-targets)
 - [Compiler Options `compiler-options.cmake`](#compiler-options-compiler-optionscmake)
+- [Dependency Graph `dependency-graph.cmake`](#dependency-graph-dependency-graphcmake)
+- [Doxygen `doxygen.cmake`](#doxygen-doxygencmake)
+  - [Optional Arguments:](#optional-arguments)
 - [Tools `tools.cmake`](#tools-toolscmake)
   - [clang-tidy](#clang-tidy)
   - [include-what-you-use](#include-what-you-use)
@@ -155,6 +158,30 @@ Using `-DENABLE_ALL_WARNINGS=ON` will enable almost all of the warnings availabl
 | Clang    | -Wall -Wextra |
 
 Using `-DENABLE_EFFECTIVE_CXX=ON` adds the `-Weffc++` for both GCC and clang.
+
+## Dependency Graph `dependency-graph.cmake`
+
+Adding this will enable the `DOT_OUTPUT_TYPE` option, and adding a string for the file output type (such as png, ps, pdf, etc), CMake, with the dot application available, add a target named `dependency-graph` that will build a visual representation of the library/executable dependencies, like so:
+![Dependency Graph](dp-graph.png)
+
+## Doxygen `doxygen.cmake`
+
+Builds doxygen documentation with a default 'Doxyfile.in' or with a specified one, and can make the results installable (under the `doc` install target)
+
+This can only be used once per project, as each target generated is as `doc-${PROJECT_NAME}` unless TARGET_NAME is specified.
+
+### Optional Arguments:
+ADD_TO_DOC - If specified, adds this generated target to be a dependency of the more general `doc` target.
+
+INSTALLABLE - Adds the generated documentation to the generic `install` target, under the `documentation` installation group.
+
+PROCESS_DOXYFILE - If set, then will process the found Doxyfile through the CMAKE `configure_file` function for macro replacements before using it. (@ONLY)
+
+TARGET_NAME <str> - The name to give the doc target. (Default: doc-${PROJECT_NAME})
+
+INSTALL_PATH <str> - The path to install the documenttation under. (if not specified, defaults to 'share/${PROJECT_NAME})
+
+DOXYFILE_PATH <str> - The given doxygen file to use/process. (Defaults to'${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile')
 
 ## Tools `tools.cmake`
 

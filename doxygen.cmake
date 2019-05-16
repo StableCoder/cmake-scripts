@@ -19,7 +19,7 @@ option(BUILD_DOCUMENTATION "Build API documentation using Doxygen. (make doc)"
        ${DOXYGEN_FOUND})
 
 # Builds doxygen documentation with a default 'Doxyfile.in' or with a specified
-# one, and can make the results installable (under the `documentation` install
+# one, and can make the results installable (under the `doc` install
 # target)
 #
 # This can only be used once per project, as each target generated is as

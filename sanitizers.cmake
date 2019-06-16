@@ -14,7 +14,8 @@
 # the License.
 
 set(
-  USE_SANITIZER ""
+  USE_SANITIZER
+  ""
   CACHE
     STRING
     "Compile with a sanitizer. Options are: Address, Memory, MemoryWithOrigins, Undefined, Thread, Leak, 'Address;Undefined'"

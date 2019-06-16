@@ -17,16 +17,16 @@ option(CLANG_TIDY "Turns on clang-tidy processing if it is found." OFF)
 option(IWYU "Turns on include-what-you-use processing if it is found." OFF)
 option(CPPCHECK "Turns on cppcheck processing if it is found." OFF)
 
-# Adds clang-tidy checks to the compilation, with the given arguments being used as
-# the options set.
+# Adds clang-tidy checks to the compilation, with the given arguments being used
+# as the options set.
 macro(clang_tidy)
   if(CLANG_TIDY AND CLANG_TIDY_EXE)
     set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_EXE} ${ARGN})
   endif()
 endmacro()
 
-# Adds include_what_you_use to the compilation, with the given arguments being used
-# as the options set.
+# Adds include_what_you_use to the compilation, with the given arguments being
+# used as the options set.
 macro(include_what_you_use)
   if(IWYU AND IWYU_EXE)
     set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "${IWYU_EXE};${IWYU_STRING}")
@@ -76,7 +76,10 @@ find_program(CPPCHECK_EXE NAMES "cppcheck")
 if(CPPCHECK_EXE)
   message(STATUS "cppcheck found: ${CPPCHECK_EXE}")
   if(CPPECHECK)
-    set(CMAKE_CXX_CPPCHECK "${CPPCHECK_EXE};--enable=warning,performance,portability,missingInclude;--template=\"[{severity}][{id}] {message} {callstack} \(On {file}:{line}\)\";--suppress=missingIncludeSystem;--quiet;--verbose;--force")
+    set(
+      CMAKE_CXX_CPPCHECK
+      "${CPPCHECK_EXE};--enable=warning,performance,portability,missingInclude;--template=\"[{severity}][{id}] {message} {callstack} \(On {file}:{line}\)\";--suppress=missingIncludeSystem;--quiet;--verbose;--force"
+      )
   endif()
   if(NOT CPPCHECK)
     message(STATUS "cppcheck NOT ENABLED via 'CPPCHECK' variable!")

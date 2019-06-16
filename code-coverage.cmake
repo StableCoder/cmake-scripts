@@ -93,8 +93,9 @@ if(CODE_COVERAGE AND NOT CODE_COVERAGE_ADDED)
 
   # Common Targets
   add_custom_target(ccov-preprocessing
-                    COMMAND ${CMAKE_COMMAND} -E make_directory
-                            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}
+                    COMMAND ${CMAKE_COMMAND}
+                            -E
+                            make_directory ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}
                     DEPENDS ccov-clean)
 
   if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang"
@@ -123,9 +124,11 @@ if(CODE_COVERAGE AND NOT CODE_COVERAGE_ADDED)
 
     # Targets
     add_custom_target(ccov-clean
-                      COMMAND rm -f
+                      COMMAND rm
+                              -f
                               ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
-                      COMMAND rm -f
+                      COMMAND rm
+                              -f
                               ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list)
 
   elseif(CMAKE_COMPILER_IS_GNUCXX)
@@ -227,29 +230,36 @@ function(target_code_coverage TARGET_NAME)
           ccov-run-${TARGET_NAME}
           COMMAND LLVM_PROFILE_FILE=${TARGET_NAME}.profraw
                   $<TARGET_FILE:${TARGET_NAME}>
-          COMMAND echo "-object=$<TARGET_FILE:${TARGET_NAME}>" >>
+          COMMAND echo
+                  "-object=$<TARGET_FILE:${TARGET_NAME}>"
+                  >>
                   ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
-          COMMAND echo "${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.profraw " >>
+          COMMAND echo
+                  "${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.profraw "
+                  >>
                   ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list
           DEPENDS ccov-preprocessing ${TARGET_NAME})
 
         add_custom_target(ccov-processing-${TARGET_NAME}
-                          COMMAND llvm-profdata merge -sparse
-                                  ${TARGET_NAME}.profraw -o
+                          COMMAND llvm-profdata merge
+                                  -sparse
+                                  ${TARGET_NAME}.profraw
+                                  -o
                                   ${TARGET_NAME}.profdata
                           DEPENDS ccov-run-${TARGET_NAME})
 
         if(LLVM_COV_VERSION VERSION_GREATER_EQUAL "7.0.0")
           foreach(EXCLUDE_ITEM ${target_code_coverage_EXCLUDE})
             set(EXCLUDE_REGEX ${EXCLUDE_REGEX}
-                -ignore-filename-regex='${EXCLUDE_ITEM}')
+                              -ignore-filename-regex='${EXCLUDE_ITEM}')
           endforeach()
         endif()
 
         add_custom_target(ccov-show-${TARGET_NAME}
                           COMMAND llvm-cov show $<TARGET_FILE:${TARGET_NAME}>
                                   -instr-profile=${TARGET_NAME}.profdata
-                                  -show-line-counts-or-regions ${EXCLUDE_REGEX}
+                                  -show-line-counts-or-regions
+                                  ${EXCLUDE_REGEX}
                           DEPENDS ccov-processing-${TARGET_NAME})
 
         add_custom_target(ccov-report-${TARGET_NAME}
@@ -264,7 +274,8 @@ function(target_code_coverage TARGET_NAME)
                   -instr-profile=${TARGET_NAME}.profdata
                   -show-line-counts-or-regions
                   -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${TARGET_NAME}
-                  -format="html" ${EXCLUDE_REGEX}
+                  -format="html"
+                  ${EXCLUDE_REGEX}
           DEPENDS ccov-processing-${TARGET_NAME})
 
       elseif(CMAKE_COMPILER_IS_GNUCXX)
@@ -295,6 +306,7 @@ function(target_code_coverage TARGET_NAME)
 
         add_custom_target(
           ccov-${TARGET_NAME}
+          COMMAND ${CMAKE_COMMAND} -E remove ${COVERAGE_INFO}
           COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
           COMMAND $<TARGET_FILE:${TARGET_NAME}>
           COMMAND ${LCOV_PATH}
@@ -302,10 +314,10 @@ function(target_code_coverage TARGET_NAME)
                   --capture
                   --output-file ${COVERAGE_INFO}
           COMMAND ${EXCLUDE_COMMAND}
-          COMMAND ${GENHTML_PATH} -o
+          COMMAND ${GENHTML_PATH}
+                  -o
                   ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${TARGET_NAME}
                   ${COVERAGE_INFO}
-          COMMAND ${CMAKE_COMMAND} -E remove ${COVERAGE_INFO}
           DEPENDS ccov-preprocessing ${TARGET_NAME})
       endif()
 
@@ -384,21 +396,26 @@ function(add_code_coverage_all_targets)
       # Targets
       add_custom_target(
         ccov-all-processing
-        COMMAND llvm-profdata merge -o
-                ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata -sparse
+        COMMAND llvm-profdata merge
+                -o
+                ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
+                -sparse
                 `cat ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list`)
 
       if(LLVM_COV_VERSION VERSION_GREATER_EQUAL "7.0.0")
         foreach(EXCLUDE_ITEM ${add_code_coverage_all_targets_EXCLUDE})
           set(EXCLUDE_REGEX ${EXCLUDE_REGEX}
-              -ignore-filename-regex=${EXCLUDE_ITEM})
+                            -ignore-filename-regex=${EXCLUDE_ITEM})
         endforeach()
       endif()
 
       add_custom_target(
         ccov-all-report
         COMMAND
-          llvm-cov report `cat ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list`
+          llvm-cov
+          report
+          `cat
+          ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list`
           -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
           ${EXCLUDE_REGEX}
         DEPENDS ccov-all-processing)
@@ -406,11 +423,15 @@ function(add_code_coverage_all_targets)
       add_custom_target(
         ccov-all
         COMMAND
-          llvm-cov show `cat ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list`
+          llvm-cov
+          show
+          `cat
+          ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list`
           -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
           -show-line-counts-or-regions
           -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged
-          -format="html" ${EXCLUDE_REGEX}
+          -format="html"
+          ${EXCLUDE_REGEX}
         DEPENDS ccov-all-processing)
 
     elseif(CMAKE_COMPILER_IS_GNUCXX)
@@ -443,7 +464,8 @@ function(add_code_coverage_all_targets)
                                 --capture
                                 --output-file ${COVERAGE_INFO}
                         COMMAND ${EXCLUDE_COMMAND}
-                        COMMAND ${GENHTML_PATH} -o
+                        COMMAND ${GENHTML_PATH}
+                                -o
                                 ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged
                                 ${COVERAGE_INFO}
                         COMMAND ${CMAKE_COMMAND} -E remove ${COVERAGE_INFO}

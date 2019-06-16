@@ -22,7 +22,11 @@ find_file(HAVE_CATCH_HPP catch.hpp PATH_SUFFIXES catch2 catch)
 # !! DON'T USE DIRECTLY, USE `build_tests`, THIS IS FOR PROPER SCOPING !!
 function(build_tests_internal)
   set(options COMPILED_CATCH CATCH1 CLONE)
-  cmake_parse_arguments(build_tests "${options}" "" "" ${ARGN})
+  cmake_parse_arguments(build_tests
+                        "${options}"
+                        ""
+                        ""
+                        ${ARGN})
 
   if(BUILD_TESTS)
     if(NOT TARGET catch)
@@ -36,51 +40,34 @@ function(build_tests_internal)
            AND CMAKE_CXX_STANDARD GREATER 10
            AND NOT build_tests_CATCH1)
           message(STATUS "Cloning Catch2")
-          externalproject_add(git_catch
-                              PREFIX
-                              ${CMAKE_BINARY_DIR}/catch2
-                              GIT_REPOSITORY
-                              https://github.com/catchorg/Catch2.git
-                              TIMEOUT
-                              10
-                              UPDATE_COMMAND
-                              ${GIT_EXECUTABLE}
-                              pull
-                              CONFIGURE_COMMAND
-                              ""
-                              BUILD_COMMAND
-                              ""
-                              INSTALL_COMMAND
-                              ""
-                              LOG_DOWNLOAD
-                              ON)
+          ExternalProject_Add(
+            git_catch
+            PREFIX ${CMAKE_BINARY_DIR}/catch2
+            GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+            TIMEOUT 10
+            UPDATE_COMMAND ${GIT_EXECUTABLE} pull
+            CONFIGURE_COMMAND ""
+            BUILD_COMMAND ""
+            INSTALL_COMMAND ""
+            LOG_DOWNLOAD ON)
         else()
           message(STATUS "Cloning Catch1")
-          externalproject_add(git_catch
-                              PREFIX
-                              ${CMAKE_BINARY_DIR}/catch1
-                              GIT_REPOSITORY
-                              https://github.com/catchorg/Catch2.git
-                              GIT_TAG
-                              Catch1.x
-                              TIMEOUT
-                              10
-                              UPDATE_COMMAND
-                              ${GIT_EXECUTABLE}
-                              pull
-                              CONFIGURE_COMMAND
-                              ""
-                              BUILD_COMMAND
-                              ""
-                              INSTALL_COMMAND
-                              ""
-                              LOG_DOWNLOAD
-                              ON)
+          ExternalProject_Add(
+            git_catch
+            PREFIX ${CMAKE_BINARY_DIR}/catch1
+            GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+            GIT_TAG Catch1.x
+            TIMEOUT 10
+            UPDATE_COMMAND ${GIT_EXECUTABLE} pull
+            CONFIGURE_COMMAND ""
+            BUILD_COMMAND ""
+            INSTALL_COMMAND ""
+            LOG_DOWNLOAD ON)
         endif()
 
-        externalproject_get_property(git_catch source_dir)
+        ExternalProject_Get_Property(git_catch source_dir)
         set(CATCH_PATH ${source_dir}/single_include
-            ${source_dir}/single_include/catch2)
+                       ${source_dir}/single_include/catch2)
       else()
         # Using Local
         message(STATUS "Local Catch header detected at: " ${HAVE_CATCH_HPP})
@@ -93,7 +80,7 @@ function(build_tests_internal)
 
         if(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/pre_compiled_catch.cpp)
           file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/pre_compiled_catch.cpp
-                     "#define CATCH_CONFIG_MAIN\n#include <catch.hpp>\n")
+               "#define CATCH_CONFIG_MAIN\n#include <catch.hpp>\n")
         endif()
         if(WIN32)
           # Catch on WIN32 doesn't work when dynamically linked

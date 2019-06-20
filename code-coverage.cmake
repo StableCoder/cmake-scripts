@@ -81,6 +81,7 @@ option(
 
 # Programs
 find_program(LLVM_COV_PATH llvm-cov)
+find_program(LLVM_PROFDATA_PATH llvm-profdata)
 find_program(LCOV_PATH lcov)
 find_program(GENHTML_PATH genhtml)
 
@@ -241,7 +242,7 @@ function(target_code_coverage TARGET_NAME)
           DEPENDS ccov-preprocessing ${TARGET_NAME})
 
         add_custom_target(ccov-processing-${TARGET_NAME}
-                          COMMAND llvm-profdata merge
+                          COMMAND ${LLVM_PROFDATA_PATH} merge
                                   -sparse
                                   ${TARGET_NAME}.profraw
                                   -o
@@ -256,21 +257,21 @@ function(target_code_coverage TARGET_NAME)
         endif()
 
         add_custom_target(ccov-show-${TARGET_NAME}
-                          COMMAND llvm-cov show $<TARGET_FILE:${TARGET_NAME}>
+                          COMMAND ${LLVM_COV_PATH} show $<TARGET_FILE:${TARGET_NAME}>
                                   -instr-profile=${TARGET_NAME}.profdata
                                   -show-line-counts-or-regions
                                   ${EXCLUDE_REGEX}
                           DEPENDS ccov-processing-${TARGET_NAME})
 
         add_custom_target(ccov-report-${TARGET_NAME}
-                          COMMAND llvm-cov report $<TARGET_FILE:${TARGET_NAME}>
+                          COMMAND ${LLVM_COV_PATH} report $<TARGET_FILE:${TARGET_NAME}>
                                   -instr-profile=${TARGET_NAME}.profdata
                                   ${EXCLUDE_REGEX}
                           DEPENDS ccov-processing-${TARGET_NAME})
 
         add_custom_target(
           ccov-${TARGET_NAME}
-          COMMAND llvm-cov show $<TARGET_FILE:${TARGET_NAME}>
+          COMMAND ${LLVM_COV_PATH} show $<TARGET_FILE:${TARGET_NAME}>
                   -instr-profile=${TARGET_NAME}.profdata
                   -show-line-counts-or-regions
                   -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${TARGET_NAME}
@@ -396,7 +397,7 @@ function(add_code_coverage_all_targets)
       # Targets
       add_custom_target(
         ccov-all-processing
-        COMMAND llvm-profdata merge
+        COMMAND ${LLVM_PROFDATA_PATH} merge
                 -o
                 ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
                 -sparse
@@ -412,7 +413,7 @@ function(add_code_coverage_all_targets)
       add_custom_target(
         ccov-all-report
         COMMAND
-          llvm-cov
+          ${LLVM_COV_PATH}
           report
           `cat
           ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list`
@@ -423,7 +424,7 @@ function(add_code_coverage_all_targets)
       add_custom_target(
         ccov-all
         COMMAND
-          llvm-cov
+          ${LLVM_COV_PATH}
           show
           `cat
           ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list`

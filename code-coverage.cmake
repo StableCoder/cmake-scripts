@@ -311,7 +311,9 @@ function(target_code_coverage TARGET_NAME)
           COMMAND $<TARGET_FILE:${TARGET_NAME}>
           COMMAND ${LCOV_PATH}
                   --directory ${CMAKE_BINARY_DIR}
+                  --base-directory ${CMAKE_SOURCE_DIR}
                   --capture
+                  --no-external
                   --output-file ${COVERAGE_INFO}
           COMMAND ${EXCLUDE_COMMAND}
           COMMAND ${GENHTML_PATH}

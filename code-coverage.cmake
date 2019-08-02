@@ -224,6 +224,28 @@ function(target_code_coverage TARGET_NAME)
 
     # Targets
     get_target_property(target_type ${TARGET_NAME} TYPE)
+    if(target_type STREQUAL "SHARED_LIBRARY")
+      if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang"
+              OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
+        add_custom_target(
+                ccov-run-${TARGET_NAME}
+                COMMAND echo
+                "-object=$<TARGET_FILE:${TARGET_NAME}>"
+                >>
+                ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
+                DEPENDS ccov-preprocessing ${TARGET_NAME})
+
+        if(NOT TARGET ccov-libs)
+            message(
+                    FATAL_ERROR
+                    "Calling target_code_coverage with 'ALL' must be after a call to 'add_code_coverage_all_targets'."
+            )
+        endif()
+
+        add_dependencies(ccov-libs ccov-run-${TARGET_NAME})
+     endif()
+    endif()
+
     if(target_type STREQUAL "EXECUTABLE")
       if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang"
          OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
@@ -239,7 +261,7 @@ function(target_code_coverage TARGET_NAME)
                   "${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.profraw "
                   >>
                   ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list
-          DEPENDS ccov-preprocessing ${TARGET_NAME})
+          DEPENDS ccov-preprocessing ccov-libs ${TARGET_NAME})
 
         add_custom_target(ccov-processing-${TARGET_NAME}
                           COMMAND ${LLVM_PROFDATA_PATH} merge
@@ -368,8 +390,7 @@ function(add_code_coverage)
   if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang"
      OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
     add_compile_options(-fprofile-instr-generate -fcoverage-mapping)
-    set(CMAKE_EXE_LINKER_FLAGS
-        "${CMAKE_EXE_LINKER_FLAGS} -fprofile-instr-generate -fcoverage-mapping")
+    add_link_options(-fprofile-instr-generate -fcoverage-mapping)
   elseif(CMAKE_COMPILER_IS_GNUCXX)
     add_compile_options(-fprofile-arcs -ftest-coverage)
     link_libraries(gcov)
@@ -396,6 +417,13 @@ function(add_code_coverage_all_targets)
   if(CODE_COVERAGE)
     if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang"
        OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
+
+      add_custom_target(
+              ccov-libs
+              COMMAND ;
+              COMMENT "libs ready for coverage report."
+      )
+
       # Targets
       add_custom_target(
         ccov-all-processing

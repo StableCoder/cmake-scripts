@@ -20,7 +20,11 @@ else()
   message(STATUS "dot not found!")
 endif()
 
-option(BUILD_DEP_GRAPH "Builds a visual representation of the dependencies of that included targets" ${DOT_EXE})
+if(NOT DOT_EXE)
+  option(BUILD_DEP_GRAPH "Builds a visual representation of the dependencies of that included targets" OFF)
+else()
+  option(BUILD_DEP_GRAPH "Builds a visual representation of the dependencies of that included targets" ON)
+endif()
 
 # Builds a dependency graph of the active code targets using the `dot` application
 #

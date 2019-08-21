@@ -41,6 +41,9 @@ option(BUILD_DOCUMENTATION "Build API documentation using Doxygen. (make doc)"
 # TARGET_NAME <str>
 #   The name to give the doc target. (Default: doc-${PROJECT_NAME})
 #
+# OUTPUT_DIR <str>
+#   The directory to place the generated output. (Default: ${CMAKE_CURRENT_BINARY_DIR}/doc)
+#
 # INSTALL_PATH <str>
 #   The path to install the documenttation under. (if not specified, defaults to
 #  'share/${PROJECT_NAME})
@@ -50,7 +53,7 @@ option(BUILD_DOCUMENTATION "Build API documentation using Doxygen. (make doc)"
 # ~~~
 function(build_docs)
   set(OPTIONS ADD_TO_DOC INSTALLABLE PROCESS_DOXYFILE)
-  set(SINGLE_VALUE_KEYWORDS TARGET_NAME INSTALL_PATH DOXYFILE_PATH)
+  set(SINGLE_VALUE_KEYWORDS TARGET_NAME INSTALL_PATH DOXYFILE_PATH OUTPUT_DIR)
   set(MULTI_VALUE_KEYWORDS)
   cmake_parse_arguments(build_docs
                         "${OPTIONS}"
@@ -86,7 +89,13 @@ function(build_docs)
       set(DOXYFILE ${DOXYFILE_PATH})
     endif()
 
-    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc)
+    if(build_docs_OUTPUT_DIR)
+      set(OUT_DIR ${build_docs_OUTPUT_DIR})
+    else()
+      set(OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/doc)
+    endif()
+
+    file(MAKE_DIRECTORY ${OUT_DIR})
 
     if(build_docs_TARGET_NAME)
       set(TARGET_NAME ${build_docs_TARGET_NAME})
@@ -96,7 +105,7 @@ function(build_docs)
 
     add_custom_target(${TARGET_NAME}
                       COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE}
-                      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc
+                      WORKING_DIRECTORY ${OUT_DIR}
                       VERBATIM)
 
     if(build_docs_ADD_TO_DOC)

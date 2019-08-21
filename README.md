@@ -179,6 +179,8 @@ PROCESS_DOXYFILE - If set, then will process the found Doxyfile through the CMAK
 
 TARGET_NAME <str> - The name to give the doc target. (Default: doc-${PROJECT_NAME})
 
+OUTPUT_DIR <str> - The directory to place the generated output. (Default: ${CMAKE_CURRENT_BINARY_DIR}/doc)
+
 INSTALL_PATH <str> - The path to install the documenttation under. (if not specified, defaults to 'share/${PROJECT_NAME})
 
 DOXYFILE_PATH <str> - The given doxygen file to use/process. (Defaults to'${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile')

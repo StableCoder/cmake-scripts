@@ -17,6 +17,8 @@ This is a collection of quite useful scripts that expand the possibilities for b
     - [Example 3: Target added to the 'ccov' and 'ccov-all' targets](#example-3-target-added-to-the-ccov-and-ccov-all-targets)
 - [Compiler Options `compiler-options.cmake`](#compiler-options-compiler-optionscmake)
 - [Dependency Graph `dependency-graph.cmake`](#dependency-graph-dependency-graphcmake)
+  - [Required Arguments](#required-arguments)
+  - [Optional Arguments](#optional-arguments)
 - [Doxygen `doxygen.cmake`](#doxygen-doxygencmake)
   - [Optional Arguments:](#optional-arguments)
 - [Tools `tools.cmake`](#tools-toolscmake)
@@ -161,8 +163,20 @@ Using `-DENABLE_EFFECTIVE_CXX=ON` adds the `-Weffc++` for both GCC and clang.
 
 ## Dependency Graph `dependency-graph.cmake`
 
-Adding this will enable the `DOT_OUTPUT_TYPE` option, and adding a string for the file output type (such as png, ps, pdf, etc), CMake, with the dot application available, add a target named `dependency-graph` that will build a visual representation of the library/executable dependencies, like so:
+CMake, with the dot application available, will build a visual representation of the library/executable dependencies, like so:
 ![Dependency Graph](dp-graph.png)
+
+### Required Arguments
+
+OUTPUT_TYPE <str> - The type of output of `dot` to produce. Can be whatever `dot` itself supports (eg. png, ps, pdf).
+
+### Optional Arguments
+
+ADD_TO_DEP_GRAPH - If specified, add this generated target to be a dependency of the more general `dep-graph` target.
+
+TARGET_NAME <str> - The name to give the doc target. (Default: doc-${PROJECT_NAME})
+
+OUTPUT_DIR <str> - The directory to place the generated output
 
 ## Doxygen `doxygen.cmake`
 

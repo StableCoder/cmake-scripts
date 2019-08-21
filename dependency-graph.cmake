@@ -87,7 +87,7 @@ function(gen_dep_graph OUTPUT_TYPE)
         "Dependency graph for ${TARGET_NAME} generated and located at ${OUT_DIR}/${TARGET_NAME}.${OUTPUT_TYPE}"
       )
 
-    if(build_docs_ADD_TO_DEP_GRAPH)
+    if(gen_dep_graph_ADD_TO_DEP_GRAPH)
       if(NOT TARGET dep-graph)
         add_custom_target(dep-graph)
       endif()

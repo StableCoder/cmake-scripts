@@ -224,7 +224,7 @@ function(target_code_coverage TARGET_NAME)
 
     # Targets
     get_target_property(target_type ${TARGET_NAME} TYPE)
-    if(target_type STREQUAL "SHARED_LIBRARY")
+    if(target_type STREQUAL "SHARED_LIBRARY" AND target_code_coverage_ALL)
       if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang"
               OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
         add_custom_target(

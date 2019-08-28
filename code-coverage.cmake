@@ -204,7 +204,8 @@ function(target_code_coverage TARGET_NAME)
                         ${ARGN})
 
   if(CODE_COVERAGE)
-    # Instrumentation
+
+    # Add code coverage instrumentation to the target's linker command
     if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang"
        OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
       target_compile_options(
@@ -224,6 +225,8 @@ function(target_code_coverage TARGET_NAME)
 
     # Targets
     get_target_property(target_type ${TARGET_NAME} TYPE)
+
+    # Add shared library to processing for 'all' targets
     if(target_type STREQUAL "SHARED_LIBRARY" AND target_code_coverage_ALL)
       if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang"
          OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
@@ -246,9 +249,12 @@ function(target_code_coverage TARGET_NAME)
       endif()
     endif()
 
+    # For executables add targets to run and produce output
     if(target_type STREQUAL "EXECUTABLE")
       if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang"
          OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
+
+        # Run the executable, generating raw profile data
         add_custom_target(
           ccov-run-${TARGET_NAME}
           COMMAND LLVM_PROFILE_FILE=${TARGET_NAME}.profraw
@@ -263,6 +269,7 @@ function(target_code_coverage TARGET_NAME)
                   ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list
           DEPENDS ccov-preprocessing ccov-libs ${TARGET_NAME})
 
+        # Merge the generated profile data so llvm-cov can process it
         add_custom_target(ccov-processing-${TARGET_NAME}
                           COMMAND ${LLVM_PROFDATA_PATH}
                                   merge
@@ -272,6 +279,7 @@ function(target_code_coverage TARGET_NAME)
                                   ${TARGET_NAME}.profdata
                           DEPENDS ccov-run-${TARGET_NAME})
 
+        # Ignore regex only works on LLVM >= 7
         if(LLVM_COV_VERSION VERSION_GREATER_EQUAL "7.0.0")
           foreach(EXCLUDE_ITEM ${target_code_coverage_EXCLUDE})
             set(EXCLUDE_REGEX ${EXCLUDE_REGEX}
@@ -279,6 +287,7 @@ function(target_code_coverage TARGET_NAME)
           endforeach()
         endif()
 
+        # Print out details of the coverage information to the command line
         add_custom_target(ccov-show-${TARGET_NAME}
                           COMMAND ${LLVM_COV_PATH}
                                   show
@@ -288,6 +297,7 @@ function(target_code_coverage TARGET_NAME)
                                   ${EXCLUDE_REGEX}
                           DEPENDS ccov-processing-${TARGET_NAME})
 
+        # Print out a summary of the coverage information to the command line
         add_custom_target(ccov-report-${TARGET_NAME}
                           COMMAND ${LLVM_COV_PATH}
                                   report
@@ -296,6 +306,7 @@ function(target_code_coverage TARGET_NAME)
                                   ${EXCLUDE_REGEX}
                           DEPENDS ccov-processing-${TARGET_NAME})
 
+        # Generates HTML output of the coverage information for perusal
         add_custom_target(
           ccov-${TARGET_NAME}
           COMMAND ${LLVM_COV_PATH}
@@ -312,10 +323,12 @@ function(target_code_coverage TARGET_NAME)
         set(COVERAGE_INFO
             "${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${TARGET_NAME}.info")
 
+        # Run the executable, generating coverage information
         add_custom_target(ccov-run-${TARGET_NAME}
                           COMMAND $<TARGET_FILE:${TARGET_NAME}>
                           DEPENDS ccov-preprocessing ${TARGET_NAME})
 
+        # Generate exclusion string for use
         foreach(EXCLUDE_ITEM ${target_code_coverage_EXCLUDE})
           set(EXCLUDE_REGEX
               ${EXCLUDE_REGEX}
@@ -334,6 +347,7 @@ function(target_code_coverage TARGET_NAME)
           set(EXCLUDE_COMMAND ;)
         endif()
 
+        # Generates HTML output of the coverage information for perusal
         add_custom_target(
           ccov-${TARGET_NAME}
           COMMAND ${CMAKE_COMMAND}
@@ -434,11 +448,12 @@ function(add_code_coverage_all_targets)
     if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang"
        OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
 
+       # Used to get the shared object file list before doing the main all-processing
       add_custom_target(ccov-libs
                         COMMAND ;
                         COMMENT "libs ready for coverage report.")
 
-      # Targets
+      # Merge the profile data for all of the run executables
       add_custom_target(
         ccov-all-processing
         COMMAND ${LLVM_PROFDATA_PATH}
@@ -449,6 +464,7 @@ function(add_code_coverage_all_targets)
                 `cat
                 ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list`)
 
+                # Regex exclude only available for LLVM >= 7
       if(LLVM_COV_VERSION VERSION_GREATER_EQUAL "7.0.0")
         foreach(EXCLUDE_ITEM ${add_code_coverage_all_targets_EXCLUDE})
           set(EXCLUDE_REGEX ${EXCLUDE_REGEX}
@@ -456,6 +472,7 @@ function(add_code_coverage_all_targets)
         endforeach()
       endif()
 
+      # Print summary of the code coverage information to the command line
       add_custom_target(
         ccov-all-report
         COMMAND
@@ -467,6 +484,7 @@ function(add_code_coverage_all_targets)
           ${EXCLUDE_REGEX}
         DEPENDS ccov-all-processing)
 
+        # Generate HTML output of all added targets for perusal
       add_custom_target(
         ccov-all
         COMMAND
@@ -482,11 +500,12 @@ function(add_code_coverage_all_targets)
         DEPENDS ccov-all-processing)
 
     elseif(CMAKE_COMPILER_IS_GNUCXX)
-      # Targets
       set(COVERAGE_INFO "${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.info")
 
+      # Nothing required for gcov
       add_custom_target(ccov-all-processing COMMAND ;)
 
+      # Exclusion regex string creation
       foreach(EXCLUDE_ITEM ${add_code_coverage_all_targets_EXCLUDE})
         set(EXCLUDE_REGEX
             ${EXCLUDE_REGEX}
@@ -505,6 +524,7 @@ function(add_code_coverage_all_targets)
         set(EXCLUDE_COMMAND ;)
       endif()
 
+      # Generates HTML output of all targets for perusal
       add_custom_target(ccov-all
                         COMMAND ${LCOV_PATH}
                                 --directory

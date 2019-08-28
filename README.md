@@ -29,13 +29,13 @@ This is a collection of quite useful scripts that expand the possibilities for b
   - [clang-format](#clang-format)
   - [cmake-format](#cmake-format)
 
-## C++ Standards `c++-standards.cmake`
+## C++ Standards [`c++-standards.cmake`](c++-standards.cmake)
 
 Using the functions `cxx_11()`, `cxx_14()`, `cxx_17()` or `cxx_20()` this adds the appropriated flags for both unix and MSVC compilers, even for those before 3.11 with improper support.
 
 These obviously force the standard to be required, and also disables compiler-specific extensions, ie `--std=gnu++11`. This helps to prevent fragmenting the code base with items not available elsewhere, adhering to the agreed C++ standards only.
 
-## Sanitizer Builds `sanitizers.cmake`
+## Sanitizer Builds [`sanitizers.cmake`](sanitizers.cmake)
 
 Sanitizers are tools that perform checks during a program’s runtime and returns issues, and as such, along with unit testing, code coverage and static analysis, is another tool to add to the programmers toolbox. And of course, like the previous tools, are tragically simple to add into any project using CMake, allowing any project and developer to quickly and easily use.
 
@@ -67,7 +67,7 @@ These are used by declaring the `USE_SANITIZER` CMake variable as one of:
 - Undefined;Address
 - Leak
 
-## Code Coverage `code-coverage.cmake`
+## Code Coverage [`code-coverage.cmake`](code-coverage.cmake)
 
 > In computer science, test coverage is a measure used to describe the degree to which the source code of a program is executed when a particular test suite runs. A program with high test coverage, measured as a percentage, has had more of its source code executed during testing, which suggests it has a lower chance of containing undetected software bugs compared to a program with low test coverage. Many different metrics can be used to calculate test coverage; some of the most basic are the percentage of program subroutines and the percentage of program statements called during execution of the test suite. 
 >
@@ -149,7 +149,7 @@ add_executable(theExe main.cpp non_covered.cpp)
 target_code_coverage(theExe AUTO ALL EXCLUDE non_covered.cpp test/*) # As an executable target, adds to the 'ccov' and ccov-all' targets, and the reports will exclude the non-covered.cpp file, and any files in a test/ folder.
 ```
 
-## Compiler Options `compiler-options.cmake`
+## Compiler Options [`compiler-options.cmake`](compiler-options.cmake)
 
 Allows for easy use of some pre-made compiler options for the major compilers.
 
@@ -163,24 +163,24 @@ Using `-DENABLE_ALL_WARNINGS=ON` will enable almost all of the warnings availabl
 
 Using `-DENABLE_EFFECTIVE_CXX=ON` adds the `-Weffc++` for both GCC and clang.
 
-## Dependency Graph `dependency-graph.cmake`
+## Dependency Graph [`dependency-graph.cmake`](dependency-graph.cmake)
 
 CMake, with the dot application available, will build a visual representation of the library/executable dependencies, like so:
 ![Dependency Graph](dp-graph.png)
 
 ### Required Arguments
 
-OUTPUT_TYPE <str> - The type of output of `dot` to produce. Can be whatever `dot` itself supports (eg. png, ps, pdf).
+OUTPUT_TYPE *STR* - The type of output of `dot` to produce. Can be whatever `dot` itself supports (eg. png, ps, pdf).
 
 ### Optional Arguments
 
 ADD_TO_DEP_GRAPH - If specified, add this generated target to be a dependency of the more general `dep-graph` target.
 
-TARGET_NAME <str> - The name to give the doc target. (Default: doc-${PROJECT_NAME})
+TARGET_NAME *STR* - The name to give the doc target. (Default: doc-${PROJECT_NAME})
 
-OUTPUT_DIR <str> - The directory to place the generated output
+OUTPUT_DIR *STR* - The directory to place the generated output
 
-## Doxygen `doxygen.cmake`
+## Doxygen [`doxygen.cmake`](doxygen.cmake)
 
 Builds doxygen documentation with a default 'Doxyfile.in' or with a specified one, and can make the results installable (under the `doc` install target)
 
@@ -193,15 +193,15 @@ INSTALLABLE - Adds the generated documentation to the generic `install` target, 
 
 PROCESS_DOXYFILE - If set, then will process the found Doxyfile through the CMAKE `configure_file` function for macro replacements before using it. (@ONLY)
 
-TARGET_NAME <str> - The name to give the doc target. (Default: doc-${PROJECT_NAME})
+TARGET_NAME *STR* - The name to give the doc target. (Default: doc-${PROJECT_NAME})
 
-OUTPUT_DIR <str> - The directory to place the generated output. (Default: ${CMAKE_CURRENT_BINARY_DIR}/doc)
+OUTPUT_DIR *STR* - The directory to place the generated output. (Default: ${CMAKE_CURRENT_BINARY_DIR}/doc)
 
-INSTALL_PATH <str> - The path to install the documenttation under. (if not specified, defaults to 'share/${PROJECT_NAME})
+INSTALL_PATH *STR* - The path to install the documenttation under. (if not specified, defaults to 'share/${PROJECT_NAME})
 
-DOXYFILE_PATH <str> - The given doxygen file to use/process. (Defaults to'${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile')
+DOXYFILE_PATH *STR* - The given doxygen file to use/process. (Defaults to'${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile')
 
-## Tools `tools.cmake`
+## Tools [`tools.cmake`](tools.cmake)
 
 ### clang-tidy
 
@@ -225,7 +225,7 @@ This tool is another static analyzer in the vein of clang-tidy, which focuses on
 
 To use, add the `cppcheck()` function, with the arguments being the options to pass to the program.
 
-## Formatting `formatting.cmake`
+## Formatting [`formatting.cmake`](formatting.cmake)
 
 ### clang-format
 

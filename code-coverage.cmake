@@ -96,7 +96,8 @@ if(CODE_COVERAGE AND NOT CODE_COVERAGE_ADDED)
   add_custom_target(ccov-preprocessing
                     COMMAND ${CMAKE_COMMAND}
                             -E
-                            make_directory ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}
+                            make_directory
+                            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}
                     DEPENDS ccov-clean)
 
   if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang"
@@ -125,11 +126,9 @@ if(CODE_COVERAGE AND NOT CODE_COVERAGE_ADDED)
 
     # Targets
     add_custom_target(ccov-clean
-                      COMMAND rm
-                              -f
+                      COMMAND rm -f
                               ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
-                      COMMAND rm
-                              -f
+                      COMMAND rm -f
                               ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list)
 
   elseif(CMAKE_COMPILER_IS_GNUCXX)
@@ -160,7 +159,8 @@ if(CODE_COVERAGE AND NOT CODE_COVERAGE_ADDED)
     # Targets
     add_custom_target(ccov-clean
                       COMMAND ${LCOV_PATH}
-                              --directory ${CMAKE_BINARY_DIR}
+                              --directory
+                              ${CMAKE_BINARY_DIR}
                               --zerocounters)
 
   else()
@@ -226,24 +226,24 @@ function(target_code_coverage TARGET_NAME)
     get_target_property(target_type ${TARGET_NAME} TYPE)
     if(target_type STREQUAL "SHARED_LIBRARY" AND target_code_coverage_ALL)
       if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang"
-              OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
+         OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
         add_custom_target(
-                ccov-run-${TARGET_NAME}
-                COMMAND echo
-                "-object=$<TARGET_FILE:${TARGET_NAME}>"
-                >>
-                ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
-                DEPENDS ccov-preprocessing ${TARGET_NAME})
+          ccov-run-${TARGET_NAME}
+          COMMAND echo
+                  "-object=$<TARGET_FILE:${TARGET_NAME}>"
+                  >>
+                  ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
+          DEPENDS ccov-preprocessing ${TARGET_NAME})
 
         if(NOT TARGET ccov-libs)
-            message(
-                    FATAL_ERROR
-                    "Calling target_code_coverage with 'ALL' must be after a call to 'add_code_coverage_all_targets'."
+          message(
+            FATAL_ERROR
+              "Calling target_code_coverage with 'ALL' must be after a call to 'add_code_coverage_all_targets'."
             )
         endif()
 
         add_dependencies(ccov-libs ccov-run-${TARGET_NAME})
-     endif()
+      endif()
     endif()
 
     if(target_type STREQUAL "EXECUTABLE")
@@ -264,7 +264,8 @@ function(target_code_coverage TARGET_NAME)
           DEPENDS ccov-preprocessing ccov-libs ${TARGET_NAME})
 
         add_custom_target(ccov-processing-${TARGET_NAME}
-                          COMMAND ${LLVM_PROFDATA_PATH} merge
+                          COMMAND ${LLVM_PROFDATA_PATH}
+                                  merge
                                   -sparse
                                   ${TARGET_NAME}.profraw
                                   -o
@@ -279,21 +280,27 @@ function(target_code_coverage TARGET_NAME)
         endif()
 
         add_custom_target(ccov-show-${TARGET_NAME}
-                          COMMAND ${LLVM_COV_PATH} show $<TARGET_FILE:${TARGET_NAME}>
+                          COMMAND ${LLVM_COV_PATH}
+                                  show
+                                  $<TARGET_FILE:${TARGET_NAME}>
                                   -instr-profile=${TARGET_NAME}.profdata
                                   -show-line-counts-or-regions
                                   ${EXCLUDE_REGEX}
                           DEPENDS ccov-processing-${TARGET_NAME})
 
         add_custom_target(ccov-report-${TARGET_NAME}
-                          COMMAND ${LLVM_COV_PATH} report $<TARGET_FILE:${TARGET_NAME}>
+                          COMMAND ${LLVM_COV_PATH}
+                                  report
+                                  $<TARGET_FILE:${TARGET_NAME}>
                                   -instr-profile=${TARGET_NAME}.profdata
                                   ${EXCLUDE_REGEX}
                           DEPENDS ccov-processing-${TARGET_NAME})
 
         add_custom_target(
           ccov-${TARGET_NAME}
-          COMMAND ${LLVM_COV_PATH} show $<TARGET_FILE:${TARGET_NAME}>
+          COMMAND ${LLVM_COV_PATH}
+                  show
+                  $<TARGET_FILE:${TARGET_NAME}>
                   -instr-profile=${TARGET_NAME}.profdata
                   -show-line-counts-or-regions
                   -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${TARGET_NAME}
@@ -329,15 +336,24 @@ function(target_code_coverage TARGET_NAME)
 
         add_custom_target(
           ccov-${TARGET_NAME}
-          COMMAND ${CMAKE_COMMAND} -E remove ${COVERAGE_INFO}
-          COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
+          COMMAND ${CMAKE_COMMAND}
+                  -E
+                  remove
+                  ${COVERAGE_INFO}
+          COMMAND ${LCOV_PATH}
+                  --directory
+                  ${CMAKE_BINARY_DIR}
+                  --zerocounters
           COMMAND $<TARGET_FILE:${TARGET_NAME}>
           COMMAND ${LCOV_PATH}
-                  --directory ${CMAKE_BINARY_DIR}
-                  --base-directory ${CMAKE_SOURCE_DIR}
+                  --directory
+                  ${CMAKE_BINARY_DIR}
+                  --base-directory
+                  ${CMAKE_SOURCE_DIR}
                   --capture
                   --no-external
-                  --output-file ${COVERAGE_INFO}
+                  --output-file
+                  ${COVERAGE_INFO}
           COMMAND ${EXCLUDE_COMMAND}
           COMMAND ${GENHTML_PATH}
                   -o
@@ -418,20 +434,20 @@ function(add_code_coverage_all_targets)
     if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang"
        OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
 
-      add_custom_target(
-              ccov-libs
-              COMMAND ;
-              COMMENT "libs ready for coverage report."
-      )
+      add_custom_target(ccov-libs
+                        COMMAND ;
+                        COMMENT "libs ready for coverage report.")
 
       # Targets
       add_custom_target(
         ccov-all-processing
-        COMMAND ${LLVM_PROFDATA_PATH} merge
+        COMMAND ${LLVM_PROFDATA_PATH}
+                merge
                 -o
                 ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
                 -sparse
-                `cat ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list`)
+                `cat
+                ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list`)
 
       if(LLVM_COV_VERSION VERSION_GREATER_EQUAL "7.0.0")
         foreach(EXCLUDE_ITEM ${add_code_coverage_all_targets_EXCLUDE})
@@ -491,15 +507,20 @@ function(add_code_coverage_all_targets)
 
       add_custom_target(ccov-all
                         COMMAND ${LCOV_PATH}
-                                --directory ${CMAKE_BINARY_DIR}
+                                --directory
+                                ${CMAKE_BINARY_DIR}
                                 --capture
-                                --output-file ${COVERAGE_INFO}
+                                --output-file
+                                ${COVERAGE_INFO}
                         COMMAND ${EXCLUDE_COMMAND}
                         COMMAND ${GENHTML_PATH}
                                 -o
                                 ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged
                                 ${COVERAGE_INFO}
-                        COMMAND ${CMAKE_COMMAND} -E remove ${COVERAGE_INFO}
+                        COMMAND ${CMAKE_COMMAND}
+                                -E
+                                remove
+                                ${COVERAGE_INFO}
                         DEPENDS ccov-all-processing)
 
     endif()

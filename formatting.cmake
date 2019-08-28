@@ -77,7 +77,8 @@ function(clang_format TARGET_NAME)
       else()
         add_custom_target(${TARGET_NAME}
                           COMMAND ${CLANG_FORMAT_EXE}
-                                  -i -style=file
+                                  -i
+                                  -style=file
                                   ${FORMAT_FILES})
 
         if(NOT TARGET format)

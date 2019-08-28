@@ -21,12 +21,19 @@ else()
 endif()
 
 if(NOT DOT_EXE)
-  option(BUILD_DEP_GRAPH "Builds a visual representation of the dependencies of that included targets" OFF)
+  option(
+    BUILD_DEP_GRAPH
+    "Builds a visual representation of the dependencies of that included targets"
+    OFF)
 else()
-  option(BUILD_DEP_GRAPH "Builds a visual representation of the dependencies of that included targets" ON)
+  option(
+    BUILD_DEP_GRAPH
+    "Builds a visual representation of the dependencies of that included targets"
+    ON)
 endif()
 
-# Builds a dependency graph of the active code targets using the `dot` application
+# Builds a dependency graph of the active code targets using the `dot`
+# application
 #
 # This can only be used once per project, as each target generated is as
 # `doc-${PROJECT_NAME}` unless TARGET_NAME is specified.

@@ -192,11 +192,12 @@ endif()
 # AUTO - Adds the target to the 'ccov' target so that it can be run in a batch with others easily. Effective on executable targets.
 # ALL - Adds the target to the 'ccov-all' and 'ccov-all-report' targets, which merge several executable targets coverage data to a single report. Effective on executable targets.
 # EXCLUDE <REGEX_PATTERNS> - Excludes files of the patterns provided from coverage. **These do not copy to the 'all' targets.**
+# OBJECTS <TARGETS> - For executables ONLY, if the provided targets are shared libraries, adds coverage information to the output
 # ~~~
 function(target_code_coverage TARGET_NAME)
   # Argument parsing
   set(options AUTO ALL)
-  set(multi_value_keywords EXCLUDE)
+  set(multi_value_keywords EXCLUDE OBJECTS)
   cmake_parse_arguments(target_code_coverage
                         "${options}"
                         ""
@@ -254,6 +255,17 @@ function(target_code_coverage TARGET_NAME)
       if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang"
          OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
 
+         # If there are shared objects to also work with, generate the string to add them here
+         foreach(SO_TARGET ${target_code_coverage_OBJECTS})
+          # Check to see if the target is a shared object
+          if(TARGET ${SO_TARGET})
+            get_target_property(SO_TARGET_TYPE ${SO_TARGET} TYPE)
+            if(${SO_TARGET_TYPE} STREQUAL "SHARED_LIBRARY")
+              set(SO_OBJECTS ${SO_OBJECTS} -object=$<TARGET_FILE:${SO_TARGET}>)
+            endif()
+          endif()
+         endforeach()
+
         # Run the executable, generating raw profile data
         add_custom_target(
           ccov-run-${TARGET_NAME}
@@ -292,6 +304,7 @@ function(target_code_coverage TARGET_NAME)
                           COMMAND ${LLVM_COV_PATH}
                                   show
                                   $<TARGET_FILE:${TARGET_NAME}>
+                                  ${SO_OBJECTS}
                                   -instr-profile=${TARGET_NAME}.profdata
                                   -show-line-counts-or-regions
                                   ${EXCLUDE_REGEX}
@@ -302,6 +315,7 @@ function(target_code_coverage TARGET_NAME)
                           COMMAND ${LLVM_COV_PATH}
                                   report
                                   $<TARGET_FILE:${TARGET_NAME}>
+                                  ${SO_OBJECTS}
                                   -instr-profile=${TARGET_NAME}.profdata
                                   ${EXCLUDE_REGEX}
                           DEPENDS ccov-processing-${TARGET_NAME})
@@ -312,6 +326,7 @@ function(target_code_coverage TARGET_NAME)
           COMMAND ${LLVM_COV_PATH}
                   show
                   $<TARGET_FILE:${TARGET_NAME}>
+                  ${SO_OBJECTS}
                   -instr-profile=${TARGET_NAME}.profdata
                   -show-line-counts-or-regions
                   -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${TARGET_NAME}

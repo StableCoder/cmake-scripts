@@ -104,6 +104,8 @@ From this point, there are two primary methods for adding instrumentation to tar
 
 To add coverage targets, such as calling `make ccov` to generate the actual coverage information for perusal or consumption, call `target_code_coverage(<TARGET_NAME>)` on an *executable* target.
 
+**NOTE:** For more options, please check the actual [`code-coverage.cmake`](code-coverage.cmake) file.
+
 #### Example 1 - All targets instrumented
 
 In this case, the coverage information reported will will be that of the `theLib` library target and `theExe` executable.

@@ -131,6 +131,11 @@ if(CODE_COVERAGE AND NOT CODE_COVERAGE_ADDED)
                       COMMAND rm -f
                               ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list)
 
+    # Used to get the shared object file list before doing the main all-processing
+    add_custom_target(ccov-libs
+                      COMMAND ;
+                      COMMENT "libs ready for coverage report.")
+
   elseif(CMAKE_COMPILER_IS_GNUCXX)
     # Messages
     message(STATUS "Building with lcov Code Coverage Tools")
@@ -462,11 +467,6 @@ function(add_code_coverage_all_targets)
   if(CODE_COVERAGE)
     if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang"
        OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
-
-       # Used to get the shared object file list before doing the main all-processing
-      add_custom_target(ccov-libs
-                        COMMAND ;
-                        COMMENT "libs ready for coverage report.")
 
       # Merge the profile data for all of the run executables
       add_custom_target(

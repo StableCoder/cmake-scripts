@@ -1,35 +1,133 @@
+stages:
+  - Targeted Code Coverage
+  - All Code Coverage
+  - Fedora
+  - openSUSE
+
 variables:
-  GIT_SUBMODULE_STRATEGY: recursive
   CTEST_OUTPUT_ON_FAILURE: '1'
 
-Code Coverage:
-  image: stabletec/build-foe:fedora-clang
+# Targeted Code Coverage
+
+Targeted CC GCC Static:
+  image: stabletec/build-core:fedora-gcc
+  stage: Targeted Code Coverage
   tags:
     - docker-linux
   script:
-    - mkdir example/build && cd example/build
-    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON 
+    - mkdir build && cd build
+    - cmake ../example/code-coverage-target/ -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja
+    - ninja ccov
+  
+Targeted CC GCC Shared:
+  image: stabletec/build-core:fedora-gcc
+  variables:
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+  stage: Targeted Code Coverage
+  tags:
+    - docker-linux
+  script:
+    - mkdir build && cd build
+    - cmake ../example/code-coverage-target/ -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja
+    - ninja ccov
+
+Targeted CC Clang Static:
+  image: stabletec/build-core:fedora-clang
+  stage: Targeted Code Coverage
+  tags:
+    - docker-linux
+  script:
+    - mkdir build && cd build
+    - cmake ../example/code-coverage-target/ -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja
+    - ninja ccov
+    - ninja ccov-report
+  
+Targeted CC Clang Shared:
+  image: stabletec/build-core:fedora-clang
+  variables:
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+  stage: Targeted Code Coverage
+  tags:
+    - docker-linux
+  script:
+    - mkdir build && cd build
+    - cmake ../example/code-coverage-target/ -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja
+    - ninja ccov
+    - ninja ccov-report
+
+# All Code Coverage
+
+All CC GCC Static:
+  image: stabletec/build-core:fedora-gcc
+  stage: All Code Coverage
+  tags:
+    - docker-linux
+  script:
+    - mkdir build && cd build
+    - cmake ../example/code-coverage-all/ -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja
+    - ninja ccov
+    - ninja ccov-all
+  
+All CC GCC Shared:
+  image: stabletec/build-core:fedora-gcc
+  variables:
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+  stage: All Code Coverage
+  tags:
+    - docker-linux
+  script:
+    - mkdir build && cd build
+    - cmake ../example/code-coverage-all/ -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja
+    - ninja ccov
+    - ninja ccov-all
+
+All CC Clang Static:
+  image: stabletec/build-core:fedora-clang
+  stage: All Code Coverage
+  tags:
+    - docker-linux
+  script:
+    - mkdir build && cd build
+    - cmake ../example/code-coverage-all/ -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja
+    - ninja 
+    - ninja ccov-all
+    - ninja ccov-report
+    - ninja ccov-all-report
+  
+All CC Clang Shared:
+  image: stabletec/build-core:fedora-clang
+  variables:
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+  stage: All Code Coverage
+  tags:
+    - docker-linux
+  script:
+    - mkdir build && cd build
+    - cmake ../example/code-coverage-all/ -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
     - ninja
     - ninja ccov
     - ninja ccov-all
     - ninja ccov-report
     - ninja ccov-all-report
-  artifacts:
-    name: CodeCoverage
-    paths: 
-      - example/build/ccov
-    expire_in: 1 day
 
 # Fedora
 
 .fedora_template: &fedora_template
-  image: stabletec/build-foe:fedora-clang
+  stage: Fedora
+  image: stabletec/build-core:fedora-clang
   allow_failure: true
   tags:
     - docker-linux
   script:
-    - mkdir example/build && cd example/build
-    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
+    - mkdir build && cd build
+    - cmake ../example/all -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
     - ninja
     - ninja test
 
@@ -61,13 +159,14 @@ Fedora UndefinedSanitizer:
 # openSUSE
 
 .opensuse_template: &opensuse_template
-  image: stabletec/build-foe:opensuse-clang
+  stage: openSUSE
+  image: stabletec/build-core:opensuse-clang
   allow_failure: true
   tags:
     - docker-linux
   script:
-    - mkdir example/build && cd example/build
-    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
+    - mkdir build && cd build
+    - cmake ../example/all -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
     - ninja
     - ninja test
 

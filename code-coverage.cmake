@@ -196,12 +196,13 @@ endif()
 # Optional:
 # AUTO - Adds the target to the 'ccov' target so that it can be run in a batch with others easily. Effective on executable targets.
 # ALL - Adds the target to the 'ccov-all' and 'ccov-all-report' targets, which merge several executable targets coverage data to a single report. Effective on executable targets.
+# EXTERNAL - For GCC's lcov, allows the profiling of 'external' files from the processing directory
 # EXCLUDE <REGEX_PATTERNS> - Excludes files of the patterns provided from coverage. **These do not copy to the 'all' targets.**
 # OBJECTS <TARGETS> - For executables ONLY, if the provided targets are shared libraries, adds coverage information to the output
 # ~~~
 function(target_code_coverage TARGET_NAME)
   # Argument parsing
-  set(options AUTO ALL)
+  set(options AUTO ALL EXTERNAL)
   set(multi_value_keywords EXCLUDE OBJECTS)
   cmake_parse_arguments(target_code_coverage
                         "${options}"
@@ -367,6 +368,10 @@ function(target_code_coverage TARGET_NAME)
           set(EXCLUDE_COMMAND ;)
         endif()
 
+        if(NOT ${target_code_coverage_EXTERNAL})
+          set(EXTERNAL_OPTION --no-external)
+        endif()
+
         # Generates HTML output of the coverage information for perusal
         add_custom_target(
           ccov-${TARGET_NAME}
@@ -385,7 +390,7 @@ function(target_code_coverage TARGET_NAME)
                   --base-directory
                   ${CMAKE_SOURCE_DIR}
                   --capture
-                  --no-external
+                  ${EXTERNAL_OPTION}
                   --output-file
                   ${COVERAGE_INFO}
           COMMAND ${EXCLUDE_COMMAND}

@@ -504,6 +504,19 @@ function(add_code_coverage_all_targets)
           ${EXCLUDE_REGEX}
         DEPENDS ccov-all-processing)
 
+      # Export coverage information so continuous integration tools (e.g. Jenkins) can consume it
+      add_custom_target(
+        ccov-all-export
+        COMMAND
+          ${LLVM_COV_PATH}
+          export
+          `cat
+          ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list`
+          -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
+          -format="text"
+          ${EXCLUDE_REGEX} > ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.json
+        DEPENDS ccov-all-processing)
+
         # Generate HTML output of all added targets for perusal
       add_custom_target(
         ccov-all

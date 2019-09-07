@@ -488,7 +488,7 @@ function(add_code_coverage_all_targets)
       if(LLVM_COV_VERSION VERSION_GREATER_EQUAL "7.0.0")
         foreach(EXCLUDE_ITEM ${add_code_coverage_all_targets_EXCLUDE})
           set(EXCLUDE_REGEX ${EXCLUDE_REGEX}
-                            -ignore-filename-regex=${EXCLUDE_ITEM})
+                            -ignore-filename-regex='${EXCLUDE_ITEM}')
         endforeach()
       endif()
 

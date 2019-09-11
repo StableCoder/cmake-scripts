@@ -31,7 +31,7 @@ This is a collection of quite useful scripts that expand the possibilities for b
 
 ## C++ Standards [`c++-standards.cmake`](c++-standards.cmake)
 
-Using the functions `cxx_11()`, `cxx_14()`, `cxx_17()` or `cxx_20()` this adds the appropriated flags for both unix and MSVC compilers, even for those before 3.11 with improper support.
+Using the functions `cxx_11()`, `cxx_14()`, `cxx_17()` or `cxx_20()` this adds the appropriate flags for both unix and MSVC compilers, even for those before 3.11 with improper support.
 
 These obviously force the standard to be required, and also disables compiler-specific extensions, ie `--std=gnu++11`. This helps to prevent fragmenting the code base with items not available elsewhere, adhering to the agreed C++ standards only.
 
@@ -68,6 +68,8 @@ These are used by declaring the `USE_SANITIZER` CMake variable as one of:
 - Leak
 
 ## Code Coverage [`code-coverage.cmake`](code-coverage.cmake)
+
+![Code Coverage Examples](img/code-cov.png)
 
 > In computer science, test coverage is a measure used to describe the degree to which the source code of a program is executed when a particular test suite runs. A program with high test coverage, measured as a percentage, has had more of its source code executed during testing, which suggests it has a lower chance of containing undetected software bugs compared to a program with low test coverage. Many different metrics can be used to calculate test coverage; some of the most basic are the percentage of program subroutines and the percentage of program statements called during execution of the test suite. 
 >
@@ -166,7 +168,7 @@ Using `-DENABLE_EFFECTIVE_CXX=ON` adds the `-Weffc++` for both GCC and clang.
 ## Dependency Graph [`dependency-graph.cmake`](dependency-graph.cmake)
 
 CMake, with the dot application available, will build a visual representation of the library/executable dependencies, like so:
-![Dependency Graph](dp-graph.png)
+![Dependency Graph](img/dp-graph.png)
 
 ### Required Arguments
 

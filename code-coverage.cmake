@@ -218,12 +218,25 @@ function(target_code_coverage TARGET_NAME)
       target_compile_options(
         ${TARGET_NAME}
         PRIVATE -fprofile-instr-generate -fcoverage-mapping)
+       
+      # Amend the list of flags to be passed to the linker for targets
+      # that are executables, shared libraries or module libraries
       set_property(TARGET ${TARGET_NAME}
                    APPEND_STRING
                    PROPERTY LINK_FLAGS "-fprofile-instr-generate ")
       set_property(TARGET ${TARGET_NAME}
                    APPEND_STRING
                    PROPERTY LINK_FLAGS "-fcoverage-mapping ")
+   
+
+      # Amend the list of flags to be passed to the linker for targets
+      # being built as a static library
+      set_property(TARGET ${TARGET_NAME}
+                   APPEND_STRING
+                   PROPERTY STATIC_LIBRARY_FLAGS "-fcoverage-mapping ")
+      set_property(TARGET ${TARGET_NAME}
+                   APPEND_STRING
+                   PROPERTY STATIC_LIBRARY_FLAGS "-fprofile-instr-generate ")
     elseif(CMAKE_COMPILER_IS_GNUCXX)
       target_compile_options(${TARGET_NAME}
                              PRIVATE -fprofile-arcs -ftest-coverage)

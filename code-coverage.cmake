@@ -372,9 +372,9 @@ function(target_code_coverage TARGET_NAME)
           set(EXTERNAL_OPTION --no-external)
         endif()
 
-        # Generates HTML output of the coverage information for perusal
+        # Capture coverage data
         add_custom_target(
-          ccov-${TARGET_NAME}
+          ccov-capture-${TARGET_NAME}
           COMMAND ${CMAKE_COMMAND}
                   -E
                   remove
@@ -394,11 +394,16 @@ function(target_code_coverage TARGET_NAME)
                   --output-file
                   ${COVERAGE_INFO}
           COMMAND ${EXCLUDE_COMMAND}
+          DEPENDS ccov-preprocessing ${TARGET_NAME})
+
+        # Generates HTML output of the coverage information for perusal
+        add_custom_target(
+          ccov-${TARGET_NAME}
           COMMAND ${GENHTML_PATH}
                   -o
                   ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${TARGET_NAME}
                   ${COVERAGE_INFO}
-          DEPENDS ccov-preprocessing ${TARGET_NAME})
+          DEPENDS ccov-capture-${TARGET_NAME})
       endif()
 
       add_custom_command(
@@ -559,6 +564,10 @@ function(add_code_coverage_all_targets)
 
       # Capture coverage data
       add_custom_target(ccov-all-capture
+                        COMMAND ${CMAKE_COMMAND}
+                                -E
+                                remove
+                                ${COVERAGE_INFO}
                         COMMAND ${LCOV_PATH}
                                 --directory
                                 ${CMAKE_BINARY_DIR}
@@ -573,10 +582,6 @@ function(add_code_coverage_all_targets)
                         COMMAND ${GENHTML_PATH}
                                 -o
                                 ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged
-                                ${COVERAGE_INFO}
-                        COMMAND ${CMAKE_COMMAND}
-                                -E
-                                remove
                                 ${COVERAGE_INFO}
                         DEPENDS ccov-all-capture)
 

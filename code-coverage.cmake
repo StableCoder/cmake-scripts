@@ -557,8 +557,8 @@ function(add_code_coverage_all_targets)
         set(EXCLUDE_COMMAND ;)
       endif()
 
-      # Generates HTML output of all targets for perusal
-      add_custom_target(ccov-all
+      # Capture coverage data
+      add_custom_target(ccov-all-capture
                         COMMAND ${LCOV_PATH}
                                 --directory
                                 ${CMAKE_BINARY_DIR}
@@ -566,6 +566,10 @@ function(add_code_coverage_all_targets)
                                 --output-file
                                 ${COVERAGE_INFO}
                         COMMAND ${EXCLUDE_COMMAND}
+                        DEPENDS ccov-all-processing)
+
+      # Generates HTML output of all targets for perusal
+      add_custom_target(ccov-all
                         COMMAND ${GENHTML_PATH}
                                 -o
                                 ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged
@@ -574,7 +578,7 @@ function(add_code_coverage_all_targets)
                                 -E
                                 remove
                                 ${COVERAGE_INFO}
-                        DEPENDS ccov-all-processing)
+                        DEPENDS ccov-all-capture)
 
     endif()
 

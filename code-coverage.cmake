@@ -108,7 +108,7 @@ if(CODE_COVERAGE AND NOT CODE_COVERAGE_ADDED)
     if(NOT LLVM_COV_PATH)
       message(FATAL_ERROR "llvm-cov not found! Aborting.")
     else()
-      # Version number checking for 'EXCLUDE' compatability
+      # Version number checking for 'EXCLUDE' compatibility
       execute_process(COMMAND ${LLVM_COV_PATH} --version
                       OUTPUT_VARIABLE LLVM_COV_VERSION_CALL_OUTPUT)
       string(REGEX MATCH

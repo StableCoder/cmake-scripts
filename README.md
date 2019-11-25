@@ -18,9 +18,25 @@ This is a collection of quite useful scripts that expand the possibilities for b
 - [Compiler Options `compiler-options.cmake`](#compiler-options-compiler-optionscmake)
 - [Dependency Graph `dependency-graph.cmake`](#dependency-graph-dependency-graphcmake)
   - [Required Arguments](#required-arguments)
+    - [OUTPUT_TYPE *STR*](#output_type-str)
   - [Optional Arguments](#optional-arguments)
+    - [ADD_TO_DEP_GRAPH](#add_to_dep_graph)
+    - [TARGET_NAME *STR*](#target_name-str)
+    - [OUTPUT_DIR *STR*](#output_dir-str)
 - [Doxygen `doxygen.cmake`](#doxygen-doxygencmake)
-  - [Optional Arguments:](#optional-arguments)
+  - [Optional Arguments](#optional-arguments-1)
+    - [ADD_TO_DOC](#add_to_doc)
+    - [INSTALLABLE](#installable)
+    - [PROCESS_DOXYFILE](#process_doxyfile)
+    - [TARGET_NAME *STR*](#target_name-str-1)
+    - [OUTPUT_DIR *STR*](#output_dir-str-1)
+    - [INSTALL_PATH *STR*](#install_path-str)
+    - [DOXYFILE_PATH *STR*](#doxyfile_path-str)
+- [Prepare the Catch Test Framework `prepare_catch.cmake`](#prepare-the-catch-test-framework-prepare_catchcmake)
+  - [Optional Arguments](#optional-arguments-2)
+    - [COMPILED_CATCH](#compiled_catch)
+    - [CATCH1](#catch1)
+    - [CLONE](#clone)
 - [Tools `tools.cmake`](#tools-toolscmake)
   - [clang-tidy](#clang-tidy)
   - [include-what-you-use](#include-what-you-use)
@@ -173,15 +189,19 @@ CMake, with the dot application available, will build a visual representation of
 
 ### Required Arguments
 
-OUTPUT_TYPE *STR* - The type of output of `dot` to produce. Can be whatever `dot` itself supports (eg. png, ps, pdf).
+#### OUTPUT_TYPE *STR*
+The type of output of `dot` to produce. Can be whatever `dot` itself supports (eg. png, ps, pdf).
 
 ### Optional Arguments
 
-ADD_TO_DEP_GRAPH - If specified, add this generated target to be a dependency of the more general `dep-graph` target.
+#### ADD_TO_DEP_GRAPH
+If specified, add this generated target to be a dependency of the more general `dep-graph` target.
 
-TARGET_NAME *STR* - The name to give the doc target. (Default: doc-${PROJECT_NAME})
+#### TARGET_NAME *STR*
+The name to give the doc target. (Default: doc-${PROJECT_NAME})
 
-OUTPUT_DIR *STR* - The directory to place the generated output
+#### OUTPUT_DIR *STR*
+The directory to place the generated output
 
 ## Doxygen [`doxygen.cmake`](doxygen.cmake)
 
@@ -189,20 +209,45 @@ Builds doxygen documentation with a default 'Doxyfile.in' or with a specified on
 
 This can only be used once per project, as each target generated is as `doc-${PROJECT_NAME}` unless TARGET_NAME is specified.
 
-### Optional Arguments:
-ADD_TO_DOC - If specified, adds this generated target to be a dependency of the more general `doc` target.
+### Optional Arguments
 
-INSTALLABLE - Adds the generated documentation to the generic `install` target, under the `documentation` installation group.
+#### ADD_TO_DOC
+If specified, adds this generated target to be a dependency of the more general `doc` target.
 
-PROCESS_DOXYFILE - If set, then will process the found Doxyfile through the CMAKE `configure_file` function for macro replacements before using it. (@ONLY)
+#### INSTALLABLE
+Adds the generated documentation to the generic `install` target, under the `documentation` installation group.
 
-TARGET_NAME *STR* - The name to give the doc target. (Default: doc-${PROJECT_NAME})
+#### PROCESS_DOXYFILE
+If set, then will process the found Doxyfile through the CMAKE `configure_file` function for macro replacements before using it. (@ONLY)
 
-OUTPUT_DIR *STR* - The directory to place the generated output. (Default: ${CMAKE_CURRENT_BINARY_DIR}/doc)
+#### TARGET_NAME *STR*
+The name to give the doc target. (Default: doc-${PROJECT_NAME})
 
-INSTALL_PATH *STR* - The path to install the documenttation under. (if not specified, defaults to 'share/${PROJECT_NAME})
+#### OUTPUT_DIR *STR*
+The directory to place the generated output. (Default: ${CMAKE_CURRENT_BINARY_DIR}/doc)
 
-DOXYFILE_PATH *STR* - The given doxygen file to use/process. (Defaults to'${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile')
+#### INSTALL_PATH *STR*
+The path to install the documenttation under. (if not specified, defaults to 'share/${PROJECT_NAME})
+
+#### DOXYFILE_PATH *STR*
+The given doxygen file to use/process. (Defaults to'${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile')
+
+## Prepare the Catch Test Framework [`prepare_catch.cmake`](prepare_catch.cmake)
+
+The included `prepare_catch` function contained within attempts to add the infrastructure necessary for automatically adding C/C++ tests using the Catch2 library, including either an interface or pre-compiled 'catch' target library.
+
+It first attempts to find the header on the local machine, and failing that, clones the single header variant for use. It does make the determination between pre-C++11 and will use Catch1.X rather than Catch2 (when cloned), automatically or forced.. Adds a subdirectory of tests/ if it exists from the macro's calling location.
+
+### Optional Arguments
+
+#### COMPILED_CATCH
+If this option is specified, then generates the 'catch' target as a library with catch already pre-compiled as part of the library. Otherwise acts just an interface library for the header location.
+
+#### CATCH1
+Force the use of Catch1.X, rather than auto-detecting the C++ version in use.
+
+#### CLONE
+Force cloning of Catch, rather than attempting to use a locally-found variant.
 
 ## Tools [`tools.cmake`](tools.cmake)
 

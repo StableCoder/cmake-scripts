@@ -461,6 +461,8 @@ endfunction()
 # `target_code_coverage` with the `ALL` parameter, but merges all the coverage
 # data from them into a single large report  instead of the numerous smaller
 # reports.
+# Also adds the ccov-all-capture Generates an all-merged.info file, for use with 
+# coverage dashboards (e.g. codecov.io, coveralls).
 # ~~~
 # Optional:
 # EXCLUDE <REGEX_PATTERNS> - Excludes files of the regex patterns provided from coverage.

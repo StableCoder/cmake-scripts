@@ -182,6 +182,8 @@ Using `-DENABLE_ALL_WARNINGS=ON` will enable almost all of the warnings availabl
 
 Using `-DENABLE_EFFECTIVE_CXX=ON` adds the `-Weffc++` for both GCC and clang.
 
+Using `-DGENERATE_DEPENDENCY_DATA=ON` generates `.d` files along with regular object files on a per-source file basis on GCC/Clang compilers. These files contains the list of all header files used during compilation of that compilation unit.
+
 ## Dependency Graph [`dependency-graph.cmake`](dependency-graph.cmake)
 
 CMake, with the dot application available, will build a visual representation of the library/executable dependencies, like so:

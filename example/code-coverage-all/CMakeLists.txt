@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
-project(code-covare-all C CXX)
+project(code-coverage-all C CXX)
 
 # Set the searching location for cmake 'include' locations
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../..;")
-# Include the sanitizer module
+# Include the code coverage module
 include(code-coverage)
 
 # Require C++11

@@ -16,7 +16,23 @@
 #
 # clang-format
 #
-find_program(CLANG_FORMAT_EXE "clang-format")
+# If clang-format is not installed in a standard path, you can use the
+# CLANG_FORMAT_DIR CMake variable to tell CMake where clang-format is.
+#
+if(UNIX)
+  find_program(
+    CLANG_FORMAT_EXE
+    NAMES clang-format
+    PATHS ${CLANG_FORMAT_DIR} /usr/local /usr
+    PATH_SUFFIXES bin)
+elseif(WIN32)
+  find_program(
+    CLANG_FORMAT_EXE
+    NAMES clang-format.exe
+    PATHS ${CLANG_FORMAT_DIR} C:/
+    PATH_SUFFIXES "")
+endif()
+
 if(CLANG_FORMAT_EXE)
   message(STATUS "clang-format found: ${CLANG_FORMAT_EXE}")
 else()
@@ -89,7 +105,23 @@ endfunction()
 #
 # cmake-format
 #
-find_program(CMAKE_FORMAT_EXE "cmake-format")
+# If cmake-format is not installed in a standard path, you can use the
+# CMAKE_FORMAT_DIR CMake variable to tell CMake where cmake-format is.
+#
+if(UNIX)
+  find_program(
+    CMAKE_FORMAT_EXE
+    NAMES cmake-format
+    PATHS ${CMAKE_FORMAT_DIR} /usr/local /usr
+    PATH_SUFFIXES bin)
+elseif(WIN32)
+  find_program(
+    CMAKE_FORMAT_EXE
+    NAMES cmake-format.exe
+    PATHS ${CMAKE_FORMAT_DIR} C:/
+    PATH_SUFFIXES "")
+endif()
+
 if(CMAKE_FORMAT_EXE)
   message(STATUS "cmake-format found: ${CMAKE_FORMAT_EXE}")
 else()

@@ -13,17 +13,18 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-set(
-  USE_SANITIZER
-  ""
-  CACHE
-    STRING
-    "Compile with a sanitizer. Options are: Address, Memory, MemoryWithOrigins, Undefined, Thread, Leak, 'Address;Undefined'"
-  )
+set(USE_SANITIZER
+    ""
+    CACHE
+      STRING
+      "Compile with a sanitizer. Options are: Address, Memory, MemoryWithOrigins, Undefined, Thread, Leak, 'Address;Undefined'"
+)
 
 function(append value)
   foreach(variable ${ARGN})
-    set(${variable} "${${variable}} ${value}" PARENT_SCOPE)
+    set(${variable}
+        "${${variable}} ${value}"
+        PARENT_SCOPE)
   endforeach(variable)
 endfunction()
 
@@ -40,7 +41,7 @@ if(USE_SANITIZER)
        OR USE_SANITIZER MATCHES "([Uu]ndefined);([Aa]ddress)")
       message(STATUS "Building with Address, Undefined sanitizers")
       append("-fsanitize=address,undefined" CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
-    elseif("${USE_SANITIZER}" MATCHES "([Aa]ddress)")
+    elseif(USE_SANITIZER MATCHES "([Aa]ddress)")
       # Optional: -fno-optimize-sibling-calls -fsanitize-address-use-after-scope
       message(STATUS "Building with Address sanitizer")
       append("-fsanitize=address" CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
@@ -78,7 +79,7 @@ if(USE_SANITIZER)
       message(
         FATAL_ERROR
           "This sanitizer not yet supported in the MSVC environment: ${USE_SANITIZER}"
-        )
+      )
     endif()
   else()
     message(FATAL_ERROR "USE_SANITIZER is not supported on this platform.")

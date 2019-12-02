@@ -53,17 +53,10 @@ option(BUILD_DOCUMENTATION "Build API documentation using Doxygen. (make doc)"
 # ~~~
 function(build_docs)
   set(OPTIONS ADD_TO_DOC INSTALLABLE PROCESS_DOXYFILE)
-  set(SINGLE_VALUE_KEYWORDS
-      TARGET_NAME
-      INSTALL_PATH
-      DOXYFILE_PATH
-      OUTPUT_DIR)
+  set(SINGLE_VALUE_KEYWORDS TARGET_NAME INSTALL_PATH DOXYFILE_PATH OUTPUT_DIR)
   set(MULTI_VALUE_KEYWORDS)
-  cmake_parse_arguments(build_docs
-                        "${OPTIONS}"
-                        "${SINGLE_VALUE_KEYWORDS}"
-                        "${MULTI_VALUE_KEYWORDS}"
-                        ${ARGN})
+  cmake_parse_arguments(build_docs "${OPTIONS}" "${SINGLE_VALUE_KEYWORDS}"
+                        "${MULTI_VALUE_KEYWORDS}" ${ARGN})
 
   if(BUILD_DOCUMENTATION)
     if(NOT DOXYGEN_FOUND)
@@ -82,7 +75,7 @@ function(build_docs)
       message(
         SEND_ERROR
           "Could not find Doxyfile to use for procesing documentation at: ${DOXYFILE_PATH}"
-        )
+      )
       return()
     endif()
 
@@ -107,10 +100,11 @@ function(build_docs)
       set(TARGET_NAME doc-${PROJECT_NAME})
     endif()
 
-    add_custom_target(${TARGET_NAME}
-                      COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE}
-                      WORKING_DIRECTORY ${OUT_DIR}
-                      VERBATIM)
+    add_custom_target(
+      ${TARGET_NAME}
+      COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE}
+      WORKING_DIRECTORY ${OUT_DIR}
+      VERBATIM)
 
     if(build_docs_ADD_TO_DOC)
       if(NOT TARGET doc)
@@ -124,9 +118,10 @@ function(build_docs)
       if(NOT build_docs_INSTALL_PATH)
         set(build_docs_INSTALL_PATH share/${PROJECT_NAME})
       endif()
-      install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/
-              COMPONENT documentation
-              DESTINATION ${build_docs_INSTALL_PATH})
+      install(
+        DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/
+        COMPONENT documentation
+        DESTINATION ${build_docs_INSTALL_PATH})
     endif()
   endif()
 endfunction()

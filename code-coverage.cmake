@@ -80,10 +80,55 @@ option(
   OFF)
 
 # Programs
-find_program(LLVM_COV_PATH llvm-cov)
-find_program(LLVM_PROFDATA_PATH llvm-profdata)
-find_program(LCOV_PATH lcov)
-find_program(GENHTML_PATH genhtml)
+if(UNIX)
+  find_program(
+          LLVM_COV_PATH
+          NAMES llvm-cov
+          PATHS /usr/local/opt/llvm /usr /usr/local
+          PATH_SUFFIXES bin)
+
+  find_program(
+          LLVM_PROFDATA_PATH
+          NAMES llvm-profdata
+          PATHS /usr/local/opt/llvm /usr /usr/local
+          PATH_SUFFIXES bin)
+
+  find_program(
+          LCOV_PATH
+          NAMES lcov lcov.perl
+          PATHS /usr /usr/local
+          PATH_SUFFIXES bin)
+
+  find_program(
+          GENHTML_PATH
+          NAMES genhtml genhtml.perl
+          PATHS /usr /usr/local
+          PATH_SUFFIXES bin)
+elseif(WIN32)
+  find_program(
+          LLVM_COV_PATH
+          NAMES llvm-cov.exe
+          PATHS C:/
+          PATH_SUFFIXES "")
+
+  find_program(
+          LLVM_PROFDATA_PATH
+          NAMES llvm-profdata.exe
+          PATHS C:/
+          PATH_SUFFIXES "")
+
+  find_program(
+          LCOV_PATH
+          NAMES lcov.exe lcov.bat lcov.perl
+          PATHS C:/
+          PATH_SUFFIXES "")
+
+  find_program(
+          GENHTML_PATH
+          NAMES genhtml.exe genhtml.bat genhtml.perl
+          PATHS C:/
+          PATH_SUFFIXES "")
+endif()
 
 # Variables
 set(CMAKE_COVERAGE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/ccov)

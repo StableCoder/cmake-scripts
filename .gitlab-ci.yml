@@ -149,10 +149,9 @@ All CC Clang Shared:
 
 # Fedora
 
-.fedora_template: &fedora_template
+.fedora_success_template: &fedora_success_template
   stage: Fedora
   image: stabletec/build-core:fedora-clang
-  allow_failure: true
   tags:
     - docker-linux
   script:
@@ -161,37 +160,47 @@ All CC Clang Shared:
     - ninja
     - ninja test
 
+.fedora_failure_template: &fedora_failure_template
+  stage: Fedora
+  image: stabletec/build-core:fedora-clang
+  tags:
+    - docker-linux
+  script:
+    - mkdir build && cd build
+    - cmake ../example/all -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
+    - ninja
+    - "! ninja test"
+
 Fedora Static Analysis:
   variables:
-    CMAKE_OPTIONS: -DCLANG_TIDY=ON -DCPPCHECK=ON -DIWYU=ON
-  <<: *fedora_template
+    CMAKE_OPTIONS: -DCLANG_TIDY=ON -DCPPCHECK=ON
+  <<: *fedora_success_template
 
 Fedora ThreadSanitizer:
   variables:
     CMAKE_OPTIONS: -DUSE_SANITIZER=Thread
-  <<: *fedora_template
+  <<: *fedora_failure_template
 
 Fedora AddressSanitizer:
   variables:
     CMAKE_OPTIONS: -DUSE_SANITIZER=Address
-  <<: *fedora_template
+  <<: *fedora_failure_template
 
 Fedora LeakSanitizer:
   variables:
     CMAKE_OPTIONS: -DUSE_SANITIZER=Leak
-  <<: *fedora_template
+  <<: *fedora_failure_template
 
 Fedora UndefinedSanitizer:
   variables:
     CMAKE_OPTIONS: -DUSE_SANITIZER=Undefined
-  <<: *fedora_template
+  <<: *fedora_success_template
 
 # openSUSE
 
-.opensuse_template: &opensuse_template
+.opensuse_success_template: &opensuse_success_template
   stage: openSUSE
   image: stabletec/build-core:opensuse-clang
-  allow_failure: true
   tags:
     - docker-linux
   script:
@@ -200,27 +209,38 @@ Fedora UndefinedSanitizer:
     - ninja
     - ninja test
 
+.opensuse_failure_template: &opensuse_failure_template
+  stage: openSUSE
+  image: stabletec/build-core:opensuse-clang
+  tags:
+    - docker-linux
+  script:
+    - mkdir build && cd build
+    - cmake ../example/all -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
+    - ninja
+    - "! ninja test"
+
 openSUSE Static Analysis:
   variables:
-    CMAKE_OPTIONS: -DCLANG_TIDY=ON -DCPPCHECK=ON -DIWYU=ON
-  <<: *opensuse_template
+    CMAKE_OPTIONS: -DCLANG_TIDY=ON -DCPPCHECK=ON
+  <<: *opensuse_success_template
 
 openSUSE ThreadSanitizer:
   variables:
     CMAKE_OPTIONS: -DUSE_SANITIZER=Thread
-  <<: *opensuse_template
+  <<: *opensuse_failure_template
 
 openSUSE AddressSanitizer:
   variables:
     CMAKE_OPTIONS: -DUSE_SANITIZER=Address
-  <<: *opensuse_template
+  <<: *opensuse_failure_template
 
 openSUSE LeakSanitizer:
   variables:
     CMAKE_OPTIONS: -DUSE_SANITIZER=Leak
-  <<: *opensuse_template
+  <<: *opensuse_failure_template
 
 openSUSE UndefinedSanitizer:
   variables:
     CMAKE_OPTIONS: -DUSE_SANITIZER=Undefined
-  <<: *opensuse_template
+  <<: *opensuse_success_template

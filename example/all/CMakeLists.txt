@@ -15,10 +15,7 @@ include(dependency-graph)
 cxx_11()
 
 # Tools
-file(GLOB_RECURSE
-     FFILES
-     *.[hc]
-     *.[hc]pp)
+file(GLOB_RECURSE FFILES *.[hc] *.[hc]pp)
 clang_format(format ${FFILES})
 
 cmake_format(cmake-format ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
@@ -29,10 +26,7 @@ include_what_you_use(-Xiwyu)
 cppcheck(
   --enable=warning,performance,portability,missingInclude
   --template="[{severity}][{id}] {message} {callstack} \(On {file}:{line}\)"
-  --suppress=missingIncludeSystem
-  --quiet
-  --verbose
-  --force)
+  --suppress=missingIncludeSystem --quiet --verbose --force)
 
 enable_testing()
 

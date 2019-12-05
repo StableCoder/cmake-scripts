@@ -87,7 +87,8 @@ function(gen_dep_graph OUTPUT_TYPE)
               ${OUT_DIR}/${TARGET_NAME}.${OUTPUT_TYPE})
 
     add_custom_command(
-      TARGET ${TARGET_NAME} POST_BUILD
+      TARGET ${TARGET_NAME}
+      POST_BUILD
       COMMAND ;
       COMMENT
         "Dependency graph for ${TARGET_NAME} generated and located at ${OUT_DIR}/${TARGET_NAME}.${OUTPUT_TYPE}"

@@ -367,7 +367,8 @@ function(target_code_coverage TARGET_NAME)
       endif()
 
       add_custom_command(
-        TARGET ccov-${TARGET_NAME} POST_BUILD
+        TARGET ccov-${TARGET_NAME}
+        POST_BUILD
         COMMAND ;
         COMMENT
           "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${TARGET_NAME}/index.html in your browser to view the coverage report."
@@ -524,7 +525,8 @@ function(add_code_coverage_all_targets)
     endif()
 
     add_custom_command(
-      TARGET ccov-all POST_BUILD
+      TARGET ccov-all
+      POST_BUILD
       COMMAND ;
       COMMENT
         "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged/index.html in your browser to view the coverage report."

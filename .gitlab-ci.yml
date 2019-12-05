@@ -1,4 +1,5 @@
 stages:
+  - Analysis
   - Targeted Code Coverage
   - All Code Coverage
   - Fedora
@@ -6,6 +7,35 @@ stages:
 
 variables:
   CTEST_OUTPUT_ON_FAILURE: '1'
+
+# Analysis
+
+cmake-format Check:
+  image: stabletec/build-core:fedora
+  stage: Analysis
+  tags: 
+    - docker-linux
+  allow_failure: true
+  script:
+    - pip install cmake-format
+    - cmake-format --version
+    - cmake-format -i $(find . -name "*.cmake")
+    - cmake-format -i $(find . -name "CMakeLists.txt")
+    - git diff --exit-code
+
+clang-format Check:
+  image: stabletec/build-core:fedora
+  stage: Analysis
+  tags: 
+    - docker-linux
+  allow_failure: true
+  script:
+    - clang-format --version
+    - clang-format -i $(find . -name "*.c")
+    - clang-format -i $(find . -name "*.cpp")
+    - clang-format -i $(find . -name "*.h")
+    - clang-format -i $(find . -name "*.hpp")
+    - git diff --exit-code
 
 # Targeted Code Coverage
 

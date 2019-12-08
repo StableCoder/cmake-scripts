@@ -40,7 +40,7 @@ endif()
 # ~~~
 # Required Arguments:
 # OUTPUT_TYPE
-#   This is the output type, which doubles as the output file tyoe, such as pdf, png.
+#   This is the output type, which doubles as the output file type, such as pdf, png.
 #   This can be whatever the `dot` application allows.
 #
 # Options Arguments:
@@ -49,7 +49,7 @@ endif()
 #   `dep-graph` target.
 #
 # TARGET_NAME <str>
-#   The name to give the doc target. (Default: doc-${PROJECT_NAME})
+#   The name to give the doc target. (Default: dep-graph-${PROJECT_NAME})
 #
 # OUTPUT_DIR <str>
 #   The directory to place the generated output

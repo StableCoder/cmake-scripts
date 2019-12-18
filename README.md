@@ -101,7 +101,7 @@ To enable, turn on the `CODE_COVERAGE` variable.
 
 - GCOV/LCOV:
     - ccov : Generates HTML code coverage report for every target added with 'AUTO' parameter.
-    - ccov-${TARNGET_NAME} : Generates HTML code coverage report for the associated named target.
+    - ccov-${TARGET_NAME} : Generates HTML code coverage report for the associated named target.
     - ccov-all : Generates HTML code coverage report, merging every target added with 'ALL' parameter into a single detailed report.
     - ccov-all-capture : Generates an all-merged.info file, for use with coverage dashboards (e.g. codecov.io, coveralls).
 - LLVM-COV:

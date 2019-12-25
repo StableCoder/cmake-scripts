@@ -515,6 +515,7 @@ function(add_code_coverage_all_targets)
       add_custom_target(ccov-all-processing COMMAND ;)
 
       # Exclusion regex string creation
+      set(EXCLUDE_REGEX)
       foreach(EXCLUDE_ITEM ${add_code_coverage_all_targets_EXCLUDE})
         set(EXCLUDE_REGEX ${EXCLUDE_REGEX} --remove ${COVERAGE_INFO}
                           '${EXCLUDE_ITEM}')

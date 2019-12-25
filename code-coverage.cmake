@@ -192,15 +192,16 @@ endif()
 # AUTO - Adds the target to the 'ccov' target so that it can be run in a batch with others easily. Effective on executable targets.
 # ALL - Adds the target to the 'ccov-all' and 'ccov-all-report' targets, which merge several executable targets coverage data to a single report. Effective on executable targets.
 # EXTERNAL - For GCC's lcov, allows the profiling of 'external' files from the processing directory
-# COVERAGE_TARGET_NAME - Changes the outgoing target name so instead of `ccov-${TARGET_NAME}` it becomes `ccov-${COVERAGE_TARGET_NAME}`.
+# COVERAGE_TARGET_NAME - For executables ONLY, changes the outgoing target name so instead of `ccov-${TARGET_NAME}` it becomes `ccov-${COVERAGE_TARGET_NAME}`.
 # EXCLUDE <REGEX_PATTERNS> - Excludes files of the patterns provided from coverage. **These do not copy to the 'all' targets.**
 # OBJECTS <TARGETS> - For executables ONLY, if the provided targets are shared libraries, adds coverage information to the output
+# ARGS <ARGUMENTS> - For executables ONLY, append sthe given arguments to the associated ccov-* executable call
 # ~~~
 function(target_code_coverage TARGET_NAME)
   # Argument parsing
   set(options AUTO ALL EXTERNAL)
   set(single_value_keywords COVERAGE_TARGET_NAME)
-  set(multi_value_keywords EXCLUDE OBJECTS)
+  set(multi_value_keywords EXCLUDE OBJECTS ARGS)
   cmake_parse_arguments(target_code_coverage "${options}" "${single_value_keywords}"
                         "${multi_value_keywords}" ${ARGN})
 
@@ -208,6 +209,8 @@ function(target_code_coverage TARGET_NAME)
     # If a specific name was given, use that instead.
     set(target_code_coverage_COVERAGE_TARGET_NAME ${TARGET_NAME})
   endif()
+
+  message(STATUS "For the target ${target_code_coverage_COVERAGE_TARGET_NAME}, these are the arguments given to use: ${target_code_coverage_ARGS}")
 
   if(CODE_COVERAGE)
 
@@ -275,7 +278,7 @@ function(target_code_coverage TARGET_NAME)
         add_custom_target(
           ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME}
           COMMAND LLVM_PROFILE_FILE=${target_code_coverage_COVERAGE_TARGET_NAME}.profraw
-                  $<TARGET_FILE:${TARGET_NAME}>
+                  $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
           COMMAND echo "-object=$<TARGET_FILE:${TARGET_NAME}>" >>
                   ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
           COMMAND echo "${CMAKE_CURRENT_BINARY_DIR}/${target_code_coverage_COVERAGE_TARGET_NAME}.profraw " >>
@@ -331,7 +334,7 @@ function(target_code_coverage TARGET_NAME)
         # Run the executable, generating coverage information
         add_custom_target(
           ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME}
-          COMMAND $<TARGET_FILE:${TARGET_NAME}>
+          COMMAND $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
           DEPENDS ccov-preprocessing ${TARGET_NAME})
 
         # Generate exclusion string for use
@@ -356,7 +359,7 @@ function(target_code_coverage TARGET_NAME)
           ccov-capture-${target_code_coverage_COVERAGE_TARGET_NAME}
           COMMAND ${CMAKE_COMMAND} -E remove ${COVERAGE_INFO}
           COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
-          COMMAND $<TARGET_FILE:${TARGET_NAME}>
+          COMMAND $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
           COMMAND
             ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --base-directory
             ${CMAKE_SOURCE_DIR} --capture ${EXTERNAL_OPTION} --output-file

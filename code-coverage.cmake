@@ -211,11 +211,6 @@ function(target_code_coverage TARGET_NAME)
     set(target_code_coverage_COVERAGE_TARGET_NAME ${TARGET_NAME})
   endif()
 
-  message(
-    STATUS
-      "For the target ${target_code_coverage_COVERAGE_TARGET_NAME}, these are the arguments given to use: ${target_code_coverage_ARGS}"
-  )
-
   if(CODE_COVERAGE)
 
     # Add code coverage instrumentation to the target's linker command

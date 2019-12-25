@@ -156,7 +156,7 @@ target_code_coverage(theExe) # As an executable target, adds the 'ccov-theExe' t
 
 ```
 add_executable(theExe main.cpp non_covered.cpp)
-target_code_coverage(theExe EXCLUDE non_covered.cpp) # As an executable target, the reports will exclude the non-covered.cpp file.
+target_code_coverage(theExe EXCLUDE non_covered.cpp) # As an executable target, the reports will exclude the non_covered.cpp file.
 ```
 
 #### Example 3: Target added to the 'ccov' and 'ccov-all' targets

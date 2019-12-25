@@ -202,15 +202,19 @@ function(target_code_coverage TARGET_NAME)
   set(options AUTO ALL EXTERNAL)
   set(single_value_keywords COVERAGE_TARGET_NAME)
   set(multi_value_keywords EXCLUDE OBJECTS ARGS)
-  cmake_parse_arguments(target_code_coverage "${options}" "${single_value_keywords}"
-                        "${multi_value_keywords}" ${ARGN})
+  cmake_parse_arguments(
+    target_code_coverage "${options}" "${single_value_keywords}"
+    "${multi_value_keywords}" ${ARGN})
 
   if(NOT target_code_coverage_COVERAGE_TARGET_NAME)
     # If a specific name was given, use that instead.
     set(target_code_coverage_COVERAGE_TARGET_NAME ${TARGET_NAME})
   endif()
 
-  message(STATUS "For the target ${target_code_coverage_COVERAGE_TARGET_NAME}, these are the arguments given to use: ${target_code_coverage_ARGS}")
+  message(
+    STATUS
+      "For the target ${target_code_coverage_COVERAGE_TARGET_NAME}, these are the arguments given to use: ${target_code_coverage_ARGS}"
+  )
 
   if(CODE_COVERAGE)
 
@@ -253,7 +257,8 @@ function(target_code_coverage TARGET_NAME)
           )
         endif()
 
-        add_dependencies(ccov-libs ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME})
+        add_dependencies(ccov-libs
+                         ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME})
       endif()
     endif()
 
@@ -277,18 +282,22 @@ function(target_code_coverage TARGET_NAME)
         # Run the executable, generating raw profile data
         add_custom_target(
           ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME}
-          COMMAND LLVM_PROFILE_FILE=${target_code_coverage_COVERAGE_TARGET_NAME}.profraw
-                  $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
+          COMMAND
+            LLVM_PROFILE_FILE=${target_code_coverage_COVERAGE_TARGET_NAME}.profraw
+            $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
           COMMAND echo "-object=$<TARGET_FILE:${TARGET_NAME}>" >>
                   ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
-          COMMAND echo "${CMAKE_CURRENT_BINARY_DIR}/${target_code_coverage_COVERAGE_TARGET_NAME}.profraw " >>
-                  ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list
+          COMMAND
+            echo
+            "${CMAKE_CURRENT_BINARY_DIR}/${target_code_coverage_COVERAGE_TARGET_NAME}.profraw "
+            >> ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list
           DEPENDS ccov-preprocessing ccov-libs ${TARGET_NAME})
 
         # Merge the generated profile data so llvm-cov can process it
         add_custom_target(
           ccov-processing-${target_code_coverage_COVERAGE_TARGET_NAME}
-          COMMAND ${LLVM_PROFDATA_PATH} merge -sparse ${target_code_coverage_COVERAGE_TARGET_NAME}.profraw -o
+          COMMAND ${LLVM_PROFDATA_PATH} merge -sparse
+                  ${target_code_coverage_COVERAGE_TARGET_NAME}.profraw -o
                   ${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
           DEPENDS ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME})
 
@@ -305,16 +314,17 @@ function(target_code_coverage TARGET_NAME)
           ccov-show-${target_code_coverage_COVERAGE_TARGET_NAME}
           COMMAND
             ${LLVM_COV_PATH} show $<TARGET_FILE:${TARGET_NAME}> ${SO_OBJECTS}
-            -instr-profile=${target_code_coverage_COVERAGE_TARGET_NAME}.profdata -show-line-counts-or-regions
-            ${EXCLUDE_REGEX}
+            -instr-profile=${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
+            -show-line-counts-or-regions ${EXCLUDE_REGEX}
           DEPENDS ccov-processing-${target_code_coverage_COVERAGE_TARGET_NAME})
 
         # Print out a summary of the coverage information to the command line
         add_custom_target(
           ccov-report-${target_code_coverage_COVERAGE_TARGET_NAME}
-          COMMAND ${LLVM_COV_PATH} report $<TARGET_FILE:${TARGET_NAME}>
-                  ${SO_OBJECTS} -instr-profile=${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
-                  ${EXCLUDE_REGEX}
+          COMMAND
+            ${LLVM_COV_PATH} report $<TARGET_FILE:${TARGET_NAME}> ${SO_OBJECTS}
+            -instr-profile=${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
+            ${EXCLUDE_REGEX}
           DEPENDS ccov-processing-${target_code_coverage_COVERAGE_TARGET_NAME})
 
         # Generates HTML output of the coverage information for perusal
@@ -322,14 +332,16 @@ function(target_code_coverage TARGET_NAME)
           ccov-${target_code_coverage_COVERAGE_TARGET_NAME}
           COMMAND
             ${LLVM_COV_PATH} show $<TARGET_FILE:${TARGET_NAME}> ${SO_OBJECTS}
-            -instr-profile=${target_code_coverage_COVERAGE_TARGET_NAME}.profdata -show-line-counts-or-regions
+            -instr-profile=${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
+            -show-line-counts-or-regions
             -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${target_code_coverage_COVERAGE_TARGET_NAME}
             -format="html" ${EXCLUDE_REGEX}
           DEPENDS ccov-processing-${target_code_coverage_COVERAGE_TARGET_NAME})
 
       elseif(CMAKE_COMPILER_IS_GNUCXX)
         set(COVERAGE_INFO
-            "${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${target_code_coverage_COVERAGE_TARGET_NAME}.info")
+            "${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${target_code_coverage_COVERAGE_TARGET_NAME}.info"
+        )
 
         # Run the executable, generating coverage information
         add_custom_target(
@@ -370,9 +382,10 @@ function(target_code_coverage TARGET_NAME)
         # Generates HTML output of the coverage information for perusal
         add_custom_target(
           ccov-${target_code_coverage_COVERAGE_TARGET_NAME}
-          COMMAND ${GENHTML_PATH} -o
-                  ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${target_code_coverage_COVERAGE_TARGET_NAME}
-                  ${COVERAGE_INFO}
+          COMMAND
+            ${GENHTML_PATH} -o
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${target_code_coverage_COVERAGE_TARGET_NAME}
+            ${COVERAGE_INFO}
           DEPENDS ccov-capture-${target_code_coverage_COVERAGE_TARGET_NAME})
       endif()
 
@@ -395,7 +408,9 @@ function(target_code_coverage TARGET_NAME)
           if(NOT TARGET ccov-report)
             add_custom_target(ccov-report)
           endif()
-          add_dependencies(ccov-report ccov-report-${target_code_coverage_COVERAGE_TARGET_NAME})
+          add_dependencies(
+            ccov-report
+            ccov-report-${target_code_coverage_COVERAGE_TARGET_NAME})
         endif()
       endif()
 
@@ -408,7 +423,8 @@ function(target_code_coverage TARGET_NAME)
           )
         endif()
 
-        add_dependencies(ccov-all-processing ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME})
+        add_dependencies(ccov-all-processing
+                         ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME})
       endif()
     endif()
   endif()

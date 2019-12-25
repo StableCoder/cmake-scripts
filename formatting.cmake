@@ -39,7 +39,8 @@ endif()
 # ~~~
 function(clang_format TARGET_NAME)
   if(CLANG_FORMAT_EXE)
-    # Check through the ARGN's, determine existant files
+    set(FORMAT_FILES)
+    # Check through the ARGN's, determine existent files
     foreach(item IN LISTS ARGN)
       if(TARGET ${item})
         # If the item is a target, then we'll attempt to grab the associated
@@ -109,6 +110,7 @@ endif()
 # ~~~
 function(cmake_format TARGET_NAME)
   if(CMAKE_FORMAT_EXE)
+    set(FORMAT_FILES)
     # Determine files that exist
     foreach(iter IN LISTS ARGN)
       if(EXISTS ${iter})

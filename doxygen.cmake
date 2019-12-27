@@ -45,7 +45,7 @@ option(BUILD_DOCUMENTATION "Build API documentation using Doxygen. (make doc)"
 #   The directory to place the generated output. (Default: ${CMAKE_CURRENT_BINARY_DIR}/doc)
 #
 # INSTALL_PATH <str>
-#   The path to install the documenttation under. (if not specified, defaults to
+#   The path to install the documentation under. (if not specified, defaults to
 #  'share/${PROJECT_NAME})
 #
 # DOXYFILE_PATH <str>
@@ -74,7 +74,7 @@ function(build_docs)
     if(NOT EXISTS ${DOXYFILE_PATH})
       message(
         SEND_ERROR
-          "Could not find Doxyfile to use for procesing documentation at: ${DOXYFILE_PATH}"
+          "Could not find Doxyfile to use for processing documentation at: ${DOXYFILE_PATH}"
       )
       return()
     endif()

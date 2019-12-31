@@ -14,6 +14,7 @@
 # the License.
 
 find_program(DOT_EXE "dot")
+mark_as_advanced(FORCE DOT_EXE)
 if(DOT_EXE)
   message(STATUS "dot found: ${DOT_EXE}")
 else()

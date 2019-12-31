@@ -84,6 +84,8 @@ find_program(LLVM_COV_PATH llvm-cov)
 find_program(LLVM_PROFDATA_PATH llvm-profdata)
 find_program(LCOV_PATH lcov)
 find_program(GENHTML_PATH genhtml)
+# Hide behind the 'advanced' mode flag for GUI/ccmake
+mark_as_advanced(FORCE LLVM_COV_PATH LLVM_PROFDATA_PATH LCOV_PATH GENHTML_PATH)
 
 # Variables
 set(CMAKE_COVERAGE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/ccov)

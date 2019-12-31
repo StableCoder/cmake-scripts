@@ -17,6 +17,7 @@
 # clang-format
 #
 find_program(CLANG_FORMAT_EXE "clang-format")
+mark_as_advanced(FORCE CLANG_FORMAT_EXE)
 if(CLANG_FORMAT_EXE)
   message(STATUS "clang-format found: ${CLANG_FORMAT_EXE}")
 else()
@@ -91,6 +92,7 @@ endfunction()
 # cmake-format
 #
 find_program(CMAKE_FORMAT_EXE "cmake-format")
+mark_as_advanced(FORCE CMAKE_FORMAT_EXE)
 if(CMAKE_FORMAT_EXE)
   message(STATUS "cmake-format found: ${CMAKE_FORMAT_EXE}")
 else()

@@ -19,6 +19,7 @@ option(FORCE_CATCH_CLONE
 
 # Attempts to find a local header of the Catch test frameword
 find_file(HAVE_CATCH_HPP catch.hpp PATH_SUFFIXES catch2 catch)
+mark_as_advanced(FORCE HAVE_CATCH_HPP)
 
 # Attempts to add the infrastructure necessary for automatically adding C/C++
 # tests using the Catch2 library, including either an interface or pre-compiled

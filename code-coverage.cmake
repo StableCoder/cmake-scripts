@@ -197,7 +197,7 @@ endif()
 # COVERAGE_TARGET_NAME - For executables ONLY, changes the outgoing target name so instead of `ccov-${TARGET_NAME}` it becomes `ccov-${COVERAGE_TARGET_NAME}`.
 # EXCLUDE <REGEX_PATTERNS> - Excludes files of the patterns provided from coverage. **These do not copy to the 'all' targets.**
 # OBJECTS <TARGETS> - For executables ONLY, if the provided targets are shared libraries, adds coverage information to the output
-# ARGS <ARGUMENTS> - For executables ONLY, append sthe given arguments to the associated ccov-* executable call
+# ARGS <ARGUMENTS> - For executables ONLY, appends the given arguments to the associated ccov-* executable call
 # ~~~
 function(target_code_coverage TARGET_NAME)
   # Argument parsing

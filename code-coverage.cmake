@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2018 by George Cave - gcave@stablecoder.ca
+# Copyright (C) 2018-2020 by George Cave - gcave@stablecoder.ca
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -191,6 +191,8 @@ endif()
 # Required:
 # TARGET_NAME - Name of the target to generate code coverage for.
 # Optional:
+# PUBLIC - Sets the visibility for added compile options to targets to PUBLIC instead of the default of PRIVATE.
+# PUBLIC - Sets the visibility for added compile options to targets to INTERFACE instead of the default of PRIVATE.
 # AUTO - Adds the target to the 'ccov' target so that it can be run in a batch with others easily. Effective on executable targets.
 # ALL - Adds the target to the 'ccov-all' and 'ccov-all-report' targets, which merge several executable targets coverage data to a single report. Effective on executable targets.
 # EXTERNAL - For GCC's lcov, allows the profiling of 'external' files from the processing directory
@@ -201,12 +203,27 @@ endif()
 # ~~~
 function(target_code_coverage TARGET_NAME)
   # Argument parsing
-  set(options AUTO ALL EXTERNAL)
+  set(options
+      AUTO
+      ALL
+      EXTERNAL
+      PUBLIC
+      INTERFACE)
   set(single_value_keywords COVERAGE_TARGET_NAME)
   set(multi_value_keywords EXCLUDE OBJECTS ARGS)
   cmake_parse_arguments(
     target_code_coverage "${options}" "${single_value_keywords}"
     "${multi_value_keywords}" ${ARGN})
+
+  # Set the visibility of target functions to PUBLIC, INTERFACE or default to
+  # PRIVATE.
+  if(target_code_coverage_PUBLIC)
+    set(TARGET_VISIBILITY PUBLIC)
+  elseif(target_code_coverage_INTERFACE)
+    set(TARGET_VISIBILITY INTERFACE)
+  else()
+    set(TARGET_VISIBILITY PRIVATE)
+  endif()
 
   if(NOT target_code_coverage_COVERAGE_TARGET_NAME)
     # If a specific name was given, use that instead.
@@ -218,20 +235,23 @@ function(target_code_coverage TARGET_NAME)
     # Add code coverage instrumentation to the target's linker command
     if(CMAKE_C_COMPILER_ID MATCHES "(Apple)?[Cc]lang"
        OR CMAKE_CXX_COMPILER_ID MATCHES "(Apple)?[Cc]lang")
-      target_compile_options(${TARGET_NAME} PRIVATE -fprofile-instr-generate
-                                                    -fcoverage-mapping)
-      set_property(
-        TARGET ${TARGET_NAME}
-        APPEND_STRING
-        PROPERTY LINK_FLAGS "-fprofile-instr-generate ")
-      set_property(
-        TARGET ${TARGET_NAME}
-        APPEND_STRING
-        PROPERTY LINK_FLAGS "-fcoverage-mapping ")
+      target_compile_options(
+        ${TARGET_NAME}
+        ${TARGET_VISIBILITY}
+        -fprofile-instr-generate
+        -fcoverage-mapping)
+      target_link_options(
+        ${TARGET_NAME}
+        ${TARGET_VISIBILITY}
+        -fprofile-instr-generate
+        -fcoverage-mapping)
     elseif(CMAKE_COMPILER_IS_GNUCXX)
-      target_compile_options(${TARGET_NAME} PRIVATE -fprofile-arcs
-                                                    -ftest-coverage)
-      target_link_libraries(${TARGET_NAME} PRIVATE gcov)
+      target_compile_options(
+        ${TARGET_NAME}
+        ${TARGET_VISIBILITY}
+        -fprofile-arcs
+        -ftest-coverage)
+      target_link_libraries(${TARGET_NAME} ${TARGET_VISIBILITY} gcov)
     endif()
 
     # Targets

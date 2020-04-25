@@ -59,8 +59,12 @@ function(gen_dep_graph OUTPUT_TYPE)
   set(OPTIONS ADD_TO_DEP_GRAPH)
   set(SINGLE_VALUE_KEYWORDS TARGET_NAME OUTPUT_DIR)
   set(MULTI_VALUE_KEYWORDS)
-  cmake_parse_arguments(gen_dep_graph "${OPTIONS}" "${SINGLE_VALUE_KEYWORDS}"
-                        "${MULTI_VALUE_KEYWORDS}" ${ARGN})
+  cmake_parse_arguments(
+    gen_dep_graph
+    "${OPTIONS}"
+    "${SINGLE_VALUE_KEYWORDS}"
+    "${MULTI_VALUE_KEYWORDS}"
+    ${ARGN})
 
   if(BUILD_DEP_GRAPH)
     if(NOT DOT_EXE)
@@ -83,9 +87,10 @@ function(gen_dep_graph OUTPUT_TYPE)
       ${TARGET_NAME}
       COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}
               --graphviz=${CMAKE_CURRENT_BINARY_DIR}/graphviz/${TARGET_NAME}.dot
-      COMMAND ${DOT_EXE} -T${OUTPUT_TYPE}
-              ${CMAKE_CURRENT_BINARY_DIR}/graphviz/${TARGET_NAME}.dot -o
-              ${OUT_DIR}/${TARGET_NAME}.${OUTPUT_TYPE})
+      COMMAND
+        ${DOT_EXE} -T${OUTPUT_TYPE}
+        ${CMAKE_CURRENT_BINARY_DIR}/graphviz/${TARGET_NAME}.dot -o
+        ${OUT_DIR}/${TARGET_NAME}.${OUTPUT_TYPE})
 
     add_custom_command(
       TARGET ${TARGET_NAME}

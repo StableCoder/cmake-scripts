@@ -47,7 +47,10 @@ function(clang_format TARGET_NAME)
         # If the item is a target, then we'll attempt to grab the associated
         # source files from it.
         get_target_property(_TARGET_TYPE ${item} TYPE)
-        if(NOT _TARGET_TYPE STREQUAL "INTERFACE_LIBRARY")
+        if(NOT
+           _TARGET_TYPE
+           STREQUAL
+           "INTERFACE_LIBRARY")
           get_property(
             _TEMP
             TARGET ${item}

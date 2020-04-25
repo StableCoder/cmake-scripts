@@ -85,7 +85,12 @@ find_program(LLVM_PROFDATA_PATH llvm-profdata)
 find_program(LCOV_PATH lcov)
 find_program(GENHTML_PATH genhtml)
 # Hide behind the 'advanced' mode flag for GUI/ccmake
-mark_as_advanced(FORCE LLVM_COV_PATH LLVM_PROFDATA_PATH LCOV_PATH GENHTML_PATH)
+mark_as_advanced(
+  FORCE
+  LLVM_COV_PATH
+  LLVM_PROFDATA_PATH
+  LCOV_PATH
+  GENHTML_PATH)
 
 # Variables
 set(CMAKE_COVERAGE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/ccov)
@@ -112,8 +117,11 @@ if(CODE_COVERAGE AND NOT CODE_COVERAGE_ADDED)
       # Version number checking for 'EXCLUDE' compatibility
       execute_process(COMMAND ${LLVM_COV_PATH} --version
                       OUTPUT_VARIABLE LLVM_COV_VERSION_CALL_OUTPUT)
-      string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" LLVM_COV_VERSION
-                   ${LLVM_COV_VERSION_CALL_OUTPUT})
+      string(
+        REGEX MATCH
+              "[0-9]+\\.[0-9]+\\.[0-9]+"
+              LLVM_COV_VERSION
+              ${LLVM_COV_VERSION_CALL_OUTPUT})
 
       if(LLVM_COV_VERSION VERSION_LESS "7.0.0")
         message(
@@ -142,7 +150,10 @@ if(CODE_COVERAGE AND NOT CODE_COVERAGE_ADDED)
 
     if(CMAKE_BUILD_TYPE)
       string(TOUPPER ${CMAKE_BUILD_TYPE} upper_build_type)
-      if(NOT ${upper_build_type} STREQUAL "DEBUG")
+      if(NOT
+         ${upper_build_type}
+         STREQUAL
+         "DEBUG")
         message(
           WARNING
             "Code coverage results with an optimized (non-Debug) build may be misleading"
@@ -212,8 +223,11 @@ function(target_code_coverage TARGET_NAME)
   set(single_value_keywords COVERAGE_TARGET_NAME)
   set(multi_value_keywords EXCLUDE OBJECTS ARGS)
   cmake_parse_arguments(
-    target_code_coverage "${options}" "${single_value_keywords}"
-    "${multi_value_keywords}" ${ARGN})
+    target_code_coverage
+    "${options}"
+    "${single_value_keywords}"
+    "${multi_value_keywords}"
+    ${ARGN})
 
   # Set the visibility of target functions to PUBLIC, INTERFACE or default to
   # PRIVATE.
@@ -313,9 +327,10 @@ function(target_code_coverage TARGET_NAME)
         # Merge the generated profile data so llvm-cov can process it
         add_custom_target(
           ccov-processing-${target_code_coverage_COVERAGE_TARGET_NAME}
-          COMMAND ${LLVM_PROFDATA_PATH} merge -sparse
-                  ${target_code_coverage_COVERAGE_TARGET_NAME}.profraw -o
-                  ${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
+          COMMAND
+            ${LLVM_PROFDATA_PATH} merge -sparse
+            ${target_code_coverage_COVERAGE_TARGET_NAME}.profraw -o
+            ${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
           DEPENDS ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME})
 
         # Ignore regex only works on LLVM >= 7
@@ -368,8 +383,11 @@ function(target_code_coverage TARGET_NAME)
 
         # Generate exclusion string for use
         foreach(EXCLUDE_ITEM ${target_code_coverage_EXCLUDE})
-          set(EXCLUDE_REGEX ${EXCLUDE_REGEX} --remove ${COVERAGE_INFO}
-                            '${EXCLUDE_ITEM}')
+          set(EXCLUDE_REGEX
+              ${EXCLUDE_REGEX}
+              --remove
+              ${COVERAGE_INFO}
+              '${EXCLUDE_ITEM}')
         endforeach()
 
         if(EXCLUDE_REGEX)
@@ -473,8 +491,12 @@ endfunction()
 function(add_code_coverage_all_targets)
   # Argument parsing
   set(multi_value_keywords EXCLUDE)
-  cmake_parse_arguments(add_code_coverage_all_targets "" ""
-                        "${multi_value_keywords}" ${ARGN})
+  cmake_parse_arguments(
+    add_code_coverage_all_targets
+    ""
+    ""
+    "${multi_value_keywords}"
+    ${ARGN})
 
   if(CODE_COVERAGE)
     if(CMAKE_C_COMPILER_ID MATCHES "(Apple)?[Cc]lang"
@@ -539,8 +561,11 @@ function(add_code_coverage_all_targets)
       # Exclusion regex string creation
       set(EXCLUDE_REGEX)
       foreach(EXCLUDE_ITEM ${add_code_coverage_all_targets_EXCLUDE})
-        set(EXCLUDE_REGEX ${EXCLUDE_REGEX} --remove ${COVERAGE_INFO}
-                          '${EXCLUDE_ITEM}')
+        set(EXCLUDE_REGEX
+            ${EXCLUDE_REGEX}
+            --remove
+            ${COVERAGE_INFO}
+            '${EXCLUDE_ITEM}')
       endforeach()
 
       if(EXCLUDE_REGEX)

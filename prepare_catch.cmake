@@ -45,7 +45,12 @@ mark_as_advanced(FORCE HAVE_CATCH_HPP)
 # ~~~
 function(prepare_catch)
   set(options COMPILED_CATCH CATCH1 CLONE)
-  cmake_parse_arguments(build_tests "${options}" "" "" ${ARGN})
+  cmake_parse_arguments(
+    build_tests
+    "${options}"
+    ""
+    ""
+    ${ARGN})
 
   if(BUILD_TESTS AND NOT TARGET catch)
     if(NOT HAVE_CATCH_HPP

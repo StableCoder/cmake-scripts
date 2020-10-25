@@ -53,18 +53,10 @@ option(BUILD_DOCUMENTATION "Build API documentation using Doxygen. (make doc)"
 # ~~~
 function(build_docs)
   set(OPTIONS ADD_TO_DOC INSTALLABLE PROCESS_DOXYFILE)
-  set(SINGLE_VALUE_KEYWORDS
-      TARGET_NAME
-      INSTALL_PATH
-      DOXYFILE_PATH
-      OUTPUT_DIR)
+  set(SINGLE_VALUE_KEYWORDS TARGET_NAME INSTALL_PATH DOXYFILE_PATH OUTPUT_DIR)
   set(MULTI_VALUE_KEYWORDS)
-  cmake_parse_arguments(
-    build_docs
-    "${OPTIONS}"
-    "${SINGLE_VALUE_KEYWORDS}"
-    "${MULTI_VALUE_KEYWORDS}"
-    ${ARGN})
+  cmake_parse_arguments(build_docs "${OPTIONS}" "${SINGLE_VALUE_KEYWORDS}"
+                        "${MULTI_VALUE_KEYWORDS}" ${ARGN})
 
   if(BUILD_DOCUMENTATION)
     if(NOT DOXYGEN_FOUND)

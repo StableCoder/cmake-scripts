@@ -59,12 +59,8 @@ function(gen_dep_graph OUTPUT_TYPE)
   set(OPTIONS ADD_TO_DEP_GRAPH)
   set(SINGLE_VALUE_KEYWORDS TARGET_NAME OUTPUT_DIR)
   set(MULTI_VALUE_KEYWORDS)
-  cmake_parse_arguments(
-    gen_dep_graph
-    "${OPTIONS}"
-    "${SINGLE_VALUE_KEYWORDS}"
-    "${MULTI_VALUE_KEYWORDS}"
-    ${ARGN})
+  cmake_parse_arguments(gen_dep_graph "${OPTIONS}" "${SINGLE_VALUE_KEYWORDS}"
+                        "${MULTI_VALUE_KEYWORDS}" ${ARGN})
 
   if(BUILD_DEP_GRAPH)
     if(NOT DOT_EXE)

@@ -290,7 +290,7 @@ function(target_code_coverage TARGET_NAME)
           COMMAND
             LLVM_PROFILE_FILE=${target_code_coverage_COVERAGE_TARGET_NAME}.profraw
             $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
-          COMMAND echo "-object=$<TARGET_FILE:${TARGET_NAME}>" >>
+          COMMAND echo "-object=$<TARGET_FILE:${TARGET_NAME}>" ${SO_OBJECTS} >>
                   ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
           COMMAND
             echo

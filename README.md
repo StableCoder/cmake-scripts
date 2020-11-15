@@ -23,8 +23,17 @@ This is a collection of quite useful scripts that expand the possibilities for b
     - [ADD_TO_DEP_GRAPH](#add_to_dep_graph)
     - [TARGET_NAME *STR*](#target_name-str)
     - [OUTPUT_DIR *STR*](#output_dir-str)
-- [Doxygen `doxygen.cmake`](#doxygen-doxygencmake)
+- [GLSL Shader File Targeted Compilation`glsl_shaders.cmake`](#glsl-shader-file-targeted-compilationglsl_shaderscmake)
+  - [Example](#example)
+  - [Required Arguments](#required-arguments-1)
+    - [TARGET_NAME](#target_name)
   - [Optional Arguments](#optional-arguments-1)
+    - [INTERFACE *FILES*](#interface-files)
+    - [PUBLIC *FILES*](#public-files)
+    - [PRIVATE *FILES*](#private-files)
+    - [COMPILE_OPTIONS *OPTIONS*](#compile_options-options)
+- [Doxygen `doxygen.cmake`](#doxygen-doxygencmake)
+  - [Optional Arguments](#optional-arguments-2)
     - [ADD_TO_DOC](#add_to_doc)
     - [INSTALLABLE](#installable)
     - [PROCESS_DOXYFILE](#process_doxyfile)
@@ -33,7 +42,7 @@ This is a collection of quite useful scripts that expand the possibilities for b
     - [INSTALL_PATH *STR*](#install_path-str)
     - [DOXYFILE_PATH *STR*](#doxyfile_path-str)
 - [Prepare the Catch Test Framework `prepare_catch.cmake`](#prepare-the-catch-test-framework-prepare_catchcmake)
-  - [Optional Arguments](#optional-arguments-2)
+  - [Optional Arguments](#optional-arguments-3)
     - [COMPILED_CATCH](#compiled_catch)
     - [CATCH1](#catch1)
     - [CLONE](#clone)
@@ -204,6 +213,41 @@ The name to give the doc target. (Default: doc-${PROJECT_NAME})
 
 #### OUTPUT_DIR *STR*
 The directory to place the generated output
+
+## GLSL Shader File Targeted Compilation[`glsl_shaders.cmake`](glsl_shaders.cmake)
+
+This function acts much like the 'target_sources' function, as in raw GLSL shader files can be passed in and will be compiled using 'glslangValidator', provided it is available, where the compiled files will be located where the sources files are but with the '.spv' suffix appended.
+
+The first argument is the target that the files are associated with, and will be compiled as if it were a source file for it. All provided shaders are also only recompiled if the source shader file has been modified since the last compilation.
+
+### Example
+When calling `make vk_lib` the shaders will also be compiled with the library's `.c` files.
+
+```
+add_library(vk_lib lib.c, shader_manager.c)
+target_glsl_shaders(vk_lib
+    PRIVATE test.vert test.frag
+    COMPILE_OPTIONS --target-env vulkan1.1)
+```
+
+### Required Arguments
+
+#### TARGET_NAME
+Name of the target the shader files are associated with and to be compiled for.
+
+### Optional Arguments
+
+#### INTERFACE *FILES*
+ When the following shader files are added to a target, they are done so as 'INTERFACE' type files
+
+#### PUBLIC *FILES*
+When the following shader files are added to a target, they are done so as 'PUBLIC' type files
+
+#### PRIVATE *FILES*
+When the following shader files are added to a target, they are done so as 'PRIVATE' type files
+
+#### COMPILE_OPTIONS *OPTIONS*
+These are other options passed straight to the 'glslangValidator' call with the source shader file
 
 ## Doxygen [`doxygen.cmake`](doxygen.cmake)
 

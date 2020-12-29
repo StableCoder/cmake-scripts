@@ -31,7 +31,7 @@ The module will also define three cache variables::
 #]=======================================================================]
 
 find_path(fmt_INCLUDE_DIR NAMES fmt/format.h)
-find_library(fmt_LIBRARY NAMES fmt)
+find_library(fmt_LIBRARY NAMES fmt fmtd)
 
 set(fmt_INCLUDE_DIRS ${fmt_INCLUDE_DIR})
 set(fmt_LIBRARIES ${fmt_LIBRARY})

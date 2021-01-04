@@ -29,7 +29,7 @@ The module will also define these cache variables::
 
 find_path(glm_INCLUDE_DIR NAMES glm/glm.hpp)
 
-set(glm_INCLUDE_DIRS ${Vulkan_INCLUDE_DIR})
+set(glm_INCLUDE_DIRS ${glm_INCLUDE_DIR})
 
 find_package_handle_standard_args(glm DEFAULT_MSG glm_INCLUDE_DIR)
 

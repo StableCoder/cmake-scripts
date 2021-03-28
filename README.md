@@ -357,6 +357,8 @@ cmake_format(TARGET_NAME ${CMAKE_FILES})
 
 There are two callable objects here, `link_time_optimization` which applies LTO/IPO for all following targets, and `target_link_time_optimization` which applies it to a specified target.
 
+Doesn't work with GCC.
+
 ### Optional Arguments
 
 #### REQUIRED

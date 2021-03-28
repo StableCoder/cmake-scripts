@@ -16,6 +16,8 @@
 include(CheckIPOSupported)
 
 # Checks for, and enables IPO/LTO for all following targets
+#
+# Running with GCC seems to have no effect
 # ~~~
 # Optional:
 # REQUIRED - If this is passed in, CMake configuration will fail with an error if LTO/IPO is not supported
@@ -46,6 +48,8 @@ macro(link_time_optimization)
 endmacro()
 
 # Checks for, and enables IPO/LTO for the specified target
+#
+# Running with GCC seems to have no effect
 # ~~~
 # Required:
 # TARGET_NAME - Name of the target to generate code coverage for

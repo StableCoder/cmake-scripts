@@ -23,7 +23,7 @@ This is a collection of quite useful scripts that expand the possibilities for b
     - [ADD_TO_DEP_GRAPH](#add_to_dep_graph)
     - [TARGET_NAME *STR*](#target_name-str)
     - [OUTPUT_DIR *STR*](#output_dir-str)
-- [GLSL Shader File Targeted Compilation`glsl_shaders.cmake`](#glsl-shader-file-targeted-compilationglsl_shaderscmake)
+- [GLSL Shader File Targeted Compilation`glsl-shaders.cmake`](#glsl-shader-file-targeted-compilationglsl-shaderscmake)
   - [Example](#example)
   - [Required Arguments](#required-arguments-1)
     - [TARGET_NAME](#target_name)
@@ -41,7 +41,7 @@ This is a collection of quite useful scripts that expand the possibilities for b
     - [OUTPUT_DIR *STR*](#output_dir-str-1)
     - [INSTALL_PATH *STR*](#install_path-str)
     - [DOXYFILE_PATH *STR*](#doxyfile_path-str)
-- [Prepare the Catch Test Framework `prepare_catch.cmake`](#prepare-the-catch-test-framework-prepare_catchcmake)
+- [Prepare the Catch Test Framework `prepare-catch.cmake`](#prepare-the-catch-test-framework-prepare-catchcmake)
   - [Optional Arguments](#optional-arguments-3)
     - [COMPILED_CATCH](#compiled_catch)
     - [CATCH1](#catch1)
@@ -217,7 +217,7 @@ The name to give the doc target. (Default: doc-${PROJECT_NAME})
 #### OUTPUT_DIR *STR*
 The directory to place the generated output
 
-## GLSL Shader File Targeted Compilation[`glsl_shaders.cmake`](glsl_shaders.cmake)
+## GLSL Shader File Targeted Compilation[`glsl-shaders.cmake`](glsl-shaders.cmake)
 
 This function acts much like the 'target_sources' function, as in raw GLSL shader files can be passed in and will be compiled using 'glslangValidator', provided it is available, where the compiled files will be located where the sources files are but with the '.spv' suffix appended.
 
@@ -281,7 +281,7 @@ The path to install the documenttation under. (if not specified, defaults to 'sh
 #### DOXYFILE_PATH *STR*
 The given doxygen file to use/process. (Defaults to'${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile')
 
-## Prepare the Catch Test Framework [`prepare_catch.cmake`](prepare_catch.cmake)
+## Prepare the Catch Test Framework [`prepare-catch.cmake`](prepare-catch.cmake)
 
 The included `prepare_catch` function contained within attempts to add the infrastructure necessary for automatically adding C/C++ tests using the Catch2 library, including either an interface or pre-compiled 'catch' target library.
 

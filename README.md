@@ -53,6 +53,9 @@ This is a collection of quite useful scripts that expand the possibilities for b
 - [Formatting `formatting.cmake`](#formatting-formattingcmake)
   - [clang-format](#clang-format)
   - [cmake-format](#cmake-format)
+- [Link Time Optimization / Interprocedural Optimization `link-time-optimization.cmake`](#link-time-optimization--interprocedural-optimization-link-time-optimizationcmake)
+  - [Optional Arguments](#optional-arguments-4)
+    - [REQUIRED](#required)
 
 ## C++ Standards [`c++-standards.cmake`](c++-standards.cmake)
 
@@ -349,3 +352,12 @@ file(GLOB_RECURSE CMAKE_FILES
 
 cmake_format(TARGET_NAME ${CMAKE_FILES})
 ```
+
+## Link Time Optimization / Interprocedural Optimization [`link-time-optimization.cmake`](link-time-optimization.cmake)
+
+There are two callable objects here, `link_time_optimization` which applies LTO/IPO for all following targets, and `target_link_time_optimization` which applies it to a specified target.
+
+### Optional Arguments
+
+#### REQUIRED
+If this is passed in, CMake configuration will fail with an error if LTO/IPO is not supported

@@ -485,6 +485,12 @@ function(add_code_coverage_all_targets)
         )
 
         add_custom_target(
+          ccov-all-report
+          COMMENT
+            "The ccov-all-report target is a stub on Windows, individual ccov targets still work"
+          DEPENDS ccov-all-processing)
+
+        add_custom_target(
           ccov-all
           COMMENT
             "The ccov-all target is a stub on Windows, individual ccov targets still work"

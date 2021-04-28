@@ -99,6 +99,37 @@ Targeted CC Clang Shared:
     - ninja -C build ccov
     - ninja -C build ccov-report
 
+Targeted CC Clang Static (Windows):
+  image: stabletec/build-core:windows
+  stage: Targeted Code Coverage
+  tags:
+    - docker-windows
+    - amd64
+  variables:
+    CC: clang
+    CXX: clang++
+  script:
+    - cmake example/code-coverage-target/ -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build ccov
+    - ninja -C build ccov-report
+  
+Targeted CC Clang Shared (Windows):
+  image: stabletec/build-core:windows
+  stage: Targeted Code Coverage
+  tags:
+    - docker-windows
+    - amd64
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+  script:
+    - cmake example/code-coverage-target/ -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build ccov
+    - ninja -C build ccov-report
+
 # All Code Coverage
 
 All CC GCC Static:
@@ -153,6 +184,40 @@ All CC Clang Shared:
   stage: All Code Coverage
   tags:
     - docker-linux
+    - amd64
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+  script:
+    - cmake example/code-coverage-all/ -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build ccov
+    - ninja -C build ccov-all
+    - ninja -C build ccov-report
+    - ninja -C build ccov-all-report
+
+All CC Clang Static (Windows):
+  image: stabletec/build-core:windows
+  stage: All Code Coverage
+  tags:
+    - docker-windows
+    - amd64
+  variables:
+    CC: clang
+    CXX: clang++
+  script:
+    - cmake example/code-coverage-all/ -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build ccov-all
+    - ninja -C build ccov-report
+    - ninja -C build ccov-all-report
+  
+All CC Clang Shared (Windows):
+  image: stabletec/build-core:windows
+  stage: All Code Coverage
+  tags:
+    - docker-windows
     - amd64
   variables:
     CC: clang

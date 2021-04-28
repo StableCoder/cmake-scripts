@@ -9,6 +9,7 @@ include(code-coverage)
 # Require C++11
 include(c++-standards)
 cxx_11()
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 # This introduces the 'ccov-all' targets Also excludes the main file via a regex
 add_code_coverage_all_targets(EXCLUDE coverage.main.cpp)

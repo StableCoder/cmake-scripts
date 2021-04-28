@@ -9,6 +9,7 @@ include(code-coverage)
 # Require C++11
 include(c++-standards)
 cxx_11()
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 # The library
 add_library(lib ../src/coverage.cpp)

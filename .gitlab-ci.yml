@@ -49,10 +49,9 @@ Targeted CC GCC Static:
     CC: gcc
     CXX: g++
   script:
-    - mkdir build && cd build
-    - cmake ../example/code-coverage-target/ -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
-    - ninja
-    - ninja ccov
+    - cmake example/code-coverage-target/ -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build ccov
   
 Targeted CC GCC Shared:
   image: stabletec/build-core:fedora
@@ -65,10 +64,9 @@ Targeted CC GCC Shared:
     CXX: g++
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
   script:
-    - mkdir build && cd build
-    - cmake ../example/code-coverage-target/ -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
-    - ninja
-    - ninja ccov
+    - cmake example/code-coverage-target/ -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build ccov
 
 Targeted CC Clang Static:
   image: stabletec/build-core:fedora
@@ -79,13 +77,11 @@ Targeted CC Clang Static:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
   script:
-    - mkdir build && cd build
-    - cmake ../example/code-coverage-target/ -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
-    - ninja
-    - ninja ccov
-    - ninja ccov-report
+    - cmake example/code-coverage-target/ -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build ccov
+    - ninja -C build ccov-report
   
 Targeted CC Clang Shared:
   image: stabletec/build-core:fedora
@@ -98,11 +94,10 @@ Targeted CC Clang Shared:
     CXX: clang++
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
   script:
-    - mkdir build && cd build
-    - cmake ../example/code-coverage-target/ -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
-    - ninja
-    - ninja ccov
-    - ninja ccov-report
+    - cmake example/code-coverage-target/ -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build ccov
+    - ninja -C build ccov-report
 
 # All Code Coverage
 
@@ -116,11 +111,10 @@ All CC GCC Static:
     CC: gcc
     CXX: g++
   script:
-    - mkdir build && cd build
-    - cmake ../example/code-coverage-all/ -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
-    - ninja
-    - ninja ccov
-    - ninja ccov-all
+    - cmake example/code-coverage-all/ -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build ccov
+    - ninja -C build ccov-all
   
 All CC GCC Shared:
   image: stabletec/build-core:fedora
@@ -133,11 +127,10 @@ All CC GCC Shared:
     CXX: g++
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
   script:
-    - mkdir build && cd build
-    - cmake ../example/code-coverage-all/ -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
-    - ninja
-    - ninja ccov
-    - ninja ccov-all
+    - cmake example/code-coverage-all/ -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build ccov
+    - ninja -C build ccov-all
 
 All CC Clang Static:
   image: stabletec/build-core:fedora
@@ -149,13 +142,11 @@ All CC Clang Static:
     CC: clang
     CXX: clang++
   script:
-    - mkdir build && cd build
-    - cmake ../example/code-coverage-all/ -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
-    - ninja
-    - ninja 
-    - ninja ccov-all
-    - ninja ccov-report
-    - ninja ccov-all-report
+    - cmake example/code-coverage-all/ -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build ccov-all
+    - ninja -C build ccov-report
+    - ninja -C build ccov-all-report
   
 All CC Clang Shared:
   image: stabletec/build-core:fedora
@@ -168,13 +159,12 @@ All CC Clang Shared:
     CXX: clang++
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
   script:
-    - mkdir build && cd build
-    - cmake ../example/code-coverage-all/ -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
-    - ninja
-    - ninja ccov
-    - ninja ccov-all
-    - ninja ccov-report
-    - ninja ccov-all-report
+    - cmake example/code-coverage-all/ -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build ccov
+    - ninja -C build ccov-all
+    - ninja -C build ccov-report
+    - ninja -C build ccov-all-report
 
 # Fedora
 
@@ -185,10 +175,9 @@ All CC Clang Shared:
     - docker-linux
     - amd64
   script:
-    - mkdir build && cd build
-    - cmake ../example/all -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
-    - ninja
-    - ninja test
+    - cmake example/all -B build -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build test
 
 .fedora_failure_template: &fedora_failure_template
   stage: Fedora
@@ -197,10 +186,9 @@ All CC Clang Shared:
     - docker-linux
     - amd64
   script:
-    - mkdir build && cd build
-    - cmake ../example/all -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
-    - ninja
-    - "! ninja test"
+    - cmake example/all -B build -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
+    - ninja -C build
+    - "! ninja -C build test"
 
 Fedora Static Analysis:
   variables:
@@ -246,10 +234,9 @@ Fedora UndefinedSanitizer:
     - docker-linux
     - amd64
   script:
-    - mkdir build && cd build
-    - cmake ../example/all -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
-    - ninja
-    - ninja test
+    - cmake example/all -B build -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build test
 
 .opensuse_failure_template: &opensuse_failure_template
   stage: openSUSE
@@ -257,10 +244,9 @@ Fedora UndefinedSanitizer:
   tags:
     - docker-linux
   script:
-    - mkdir build && cd build
-    - cmake ../example/all -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
-    - ninja
-    - "! ninja test"
+    - cmake example/all -B build -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
+    - ninja -C build
+    - "! ninja -C build test"
 
 openSUSE Static Analysis:
   variables:

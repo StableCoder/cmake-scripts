@@ -126,8 +126,10 @@ if(CODE_COVERAGE AND NOT CODE_COVERAGE_ADDED)
     # Targets
     add_custom_target(
       ccov-clean
-      COMMAND rm -f ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
-      COMMAND rm -f ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list)
+      COMMAND ${CMAKE_COMMAND} -E rm -f
+              ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
+      COMMAND ${CMAKE_COMMAND} -E rm -f
+              ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list)
 
     # Used to get the shared object file list before doing the main all-
     # processing
@@ -251,8 +253,9 @@ function(target_code_coverage TARGET_NAME)
          OR CMAKE_CXX_COMPILER_ID MATCHES "(Apple)?[Cc]lang")
         add_custom_target(
           ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME}
-          COMMAND echo "-object=$<TARGET_FILE:${TARGET_NAME}>" >>
-                  ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
+          COMMAND
+            ${CMAKE_COMMAND} -E echo "-object=$<TARGET_FILE:${TARGET_NAME}>" >>
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
           DEPENDS ccov-preprocessing ${TARGET_NAME})
 
         if(NOT TARGET ccov-libs)
@@ -288,12 +291,14 @@ function(target_code_coverage TARGET_NAME)
         add_custom_target(
           ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME}
           COMMAND
+            ${CMAKE_COMMAND} -E env
             LLVM_PROFILE_FILE=${target_code_coverage_COVERAGE_TARGET_NAME}.profraw
             $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
-          COMMAND echo "-object=$<TARGET_FILE:${TARGET_NAME}>" ${SO_OBJECTS} >>
-                  ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
           COMMAND
-            echo
+            ${CMAKE_COMMAND} -E echo "-object=$<TARGET_FILE:${TARGET_NAME}>"
+            ${SO_OBJECTS} >> ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
+          COMMAND
+            ${CMAKE_COMMAND} -E echo
             "${CMAKE_CURRENT_BINARY_DIR}/${target_code_coverage_COVERAGE_TARGET_NAME}.profraw "
             >> ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list
           DEPENDS ccov-preprocessing ccov-libs ${TARGET_NAME})
@@ -376,7 +381,7 @@ function(target_code_coverage TARGET_NAME)
         # Capture coverage data
         add_custom_target(
           ccov-capture-${target_code_coverage_COVERAGE_TARGET_NAME}
-          COMMAND ${CMAKE_COMMAND} -E remove ${COVERAGE_INFO}
+          COMMAND ${CMAKE_COMMAND} -E rm -f ${COVERAGE_INFO}
           COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
           COMMAND $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
           COMMAND
@@ -472,55 +477,69 @@ function(add_code_coverage_all_targets)
     if(CMAKE_C_COMPILER_ID MATCHES "(Apple)?[Cc]lang"
        OR CMAKE_CXX_COMPILER_ID MATCHES "(Apple)?[Cc]lang")
 
-      # Merge the profile data for all of the run executables
-      add_custom_target(
-        ccov-all-processing
-        COMMAND
-          ${LLVM_PROFDATA_PATH} merge -o
-          ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata -sparse `cat
-          ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list`)
+      if(WIN32)
+        add_custom_target(
+          ccov-all-processing
+          COMMENT
+            "The ccov-all-processing target is a stub on Windows, individual ccov targets still work"
+        )
 
-      # Regex exclude only available for LLVM >= 7
-      if(LLVM_COV_VERSION VERSION_GREATER_EQUAL "7.0.0")
-        foreach(EXCLUDE_ITEM ${add_code_coverage_all_targets_EXCLUDE})
-          set(EXCLUDE_REGEX ${EXCLUDE_REGEX}
-                            -ignore-filename-regex='${EXCLUDE_ITEM}')
-        endforeach()
+        add_custom_target(
+          ccov-all
+          COMMENT
+            "The ccov-all target is a stub on Windows, individual ccov targets still work"
+          DEPENDS ccov-all-processing)
+      else()
+        # Merge the profile data for all of the run executables
+        add_custom_target(
+          ccov-all-processing
+          COMMAND
+            ${LLVM_PROFDATA_PATH} merge -o
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata -sparse `cat
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list`)
+
+        # Regex exclude only available for LLVM >= 7
+        if(LLVM_COV_VERSION VERSION_GREATER_EQUAL "7.0.0")
+          foreach(EXCLUDE_ITEM ${add_code_coverage_all_targets_EXCLUDE})
+            set(EXCLUDE_REGEX ${EXCLUDE_REGEX}
+                              -ignore-filename-regex='${EXCLUDE_ITEM}')
+          endforeach()
+        endif()
+
+        # Print summary of the code coverage information to the command line
+        add_custom_target(
+          ccov-all-report
+          COMMAND
+            ${LLVM_COV_PATH} report `cat
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list`
+            -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
+            ${EXCLUDE_REGEX}
+          DEPENDS ccov-all-processing)
+
+        # Export coverage information so continuous integration tools (e.g.
+        # Jenkins) can consume it
+        add_custom_target(
+          ccov-all-export
+          COMMAND
+            ${LLVM_COV_PATH} export `cat
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list`
+            -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
+            -format="text" ${EXCLUDE_REGEX} >
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.json
+          DEPENDS ccov-all-processing)
+
+        # Generate HTML output of all added targets for perusal
+        add_custom_target(
+          ccov-all
+          COMMAND
+            ${LLVM_COV_PATH} show `cat
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list`
+            -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
+            -show-line-counts-or-regions
+            -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged
+            -format="html" ${EXCLUDE_REGEX}
+          DEPENDS ccov-all-processing)
       endif()
-
-      # Print summary of the code coverage information to the command line
-      add_custom_target(
-        ccov-all-report
-        COMMAND
-          ${LLVM_COV_PATH} report `cat
-          ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list`
-          -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
-          ${EXCLUDE_REGEX}
-        DEPENDS ccov-all-processing)
-
-      # Export coverage information so continuous integration tools (e.g.
-      # Jenkins) can consume it
-      add_custom_target(
-        ccov-all-export
-        COMMAND
-          ${LLVM_COV_PATH} export `cat
-          ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list`
-          -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
-          -format="text" ${EXCLUDE_REGEX} >
-          ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.json
-        DEPENDS ccov-all-processing)
-
-      # Generate HTML output of all added targets for perusal
-      add_custom_target(
-        ccov-all
-        COMMAND
-          ${LLVM_COV_PATH} show `cat
-          ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list`
-          -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
-          -show-line-counts-or-regions
-          -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged
-          -format="html" ${EXCLUDE_REGEX}
-        DEPENDS ccov-all-processing)
 
     elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
                                                 "GNU")
@@ -546,7 +565,7 @@ function(add_code_coverage_all_targets)
       # Capture coverage data
       add_custom_target(
         ccov-all-capture
-        COMMAND ${CMAKE_COMMAND} -E remove ${COVERAGE_INFO}
+        COMMAND ${CMAKE_COMMAND} -E rm -f ${COVERAGE_INFO}
         COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --capture
                 --output-file ${COVERAGE_INFO}
         COMMAND ${EXCLUDE_COMMAND}

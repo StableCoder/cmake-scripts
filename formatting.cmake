@@ -69,20 +69,14 @@ function(clang_format TARGET_NAME)
 
     # Make the target
     if(FORMAT_FILES)
-      if(TARGET ${TARGET_NAME})
-        message(
-          ERROR
-          "Cannot create clang-format target '${TARGET_NAME}', already exists.")
-      else()
-        add_custom_target(${TARGET_NAME} COMMAND ${CLANG_FORMAT_EXE} -i
-                                                 -style=file ${FORMAT_FILES})
+      add_custom_target(${TARGET_NAME} COMMAND ${CLANG_FORMAT_EXE} -i
+                                               -style=file ${FORMAT_FILES})
 
-        if(NOT TARGET format)
-          add_custom_target(format)
-        endif()
-
-        add_dependencies(format ${TARGET_NAME})
+      if(NOT TARGET format)
+        add_custom_target(format)
       endif()
+
+      add_dependencies(format ${TARGET_NAME})
     endif()
 
   endif()

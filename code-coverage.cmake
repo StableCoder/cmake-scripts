@@ -205,7 +205,7 @@ endif()
 # TARGET_NAME - Name of the target to generate code coverage for.
 # Optional:
 # PUBLIC - Sets the visibility for added compile options to targets to PUBLIC instead of the default of PRIVATE.
-# PUBLIC - Sets the visibility for added compile options to targets to INTERFACE instead of the default of PRIVATE.
+# INTERFACE - Sets the visibility for added compile options to targets to INTERFACE instead of the default of PRIVATE.
 # AUTO - Adds the target to the 'ccov' target so that it can be run in a batch with others easily. Effective on executable targets.
 # ALL - Adds the target to the 'ccov-all' and 'ccov-all-report' targets, which merge several executable targets coverage data to a single report. Effective on executable targets.
 # EXTERNAL - For GCC's lcov, allows the profiling of 'external' files from the processing directory

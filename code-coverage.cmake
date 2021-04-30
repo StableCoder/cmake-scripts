@@ -210,7 +210,7 @@ endif()
 # ALL - Adds the target to the 'ccov-all' and 'ccov-all-report' targets, which merge several executable targets coverage data to a single report. Effective on executable targets.
 # EXTERNAL - For GCC's lcov, allows the profiling of 'external' files from the processing directory
 # COVERAGE_TARGET_NAME - For executables ONLY, changes the outgoing target name so instead of `ccov-${TARGET_NAME}` it becomes `ccov-${COVERAGE_TARGET_NAME}`.
-# EXCLUDE <REGEX_PATTERNS> - Excludes files of the patterns provided from coverage. **These do not copy to the 'all' targets.**
+# EXCLUDE <PATTERNS> - Excludes files of the patterns provided from coverage. Note that GCC/lcov excludes by glob pattern, and clang/LLVM excludes via regex! **These do not copy to the 'all' targets.**
 # OBJECTS <TARGETS> - For executables ONLY, if the provided targets are shared libraries, adds coverage information to the output
 # ARGS <ARGUMENTS> - For executables ONLY, appends the given arguments to the associated ccov-* executable call
 # ~~~
@@ -500,7 +500,7 @@ endfunction()
 # use with coverage dashboards (e.g. codecov.io, coveralls).
 # ~~~
 # Optional:
-# EXCLUDE <REGEX_PATTERNS> - Excludes files of the regex patterns provided from coverage.
+# EXCLUDE <PATTERNS> - Excludes files of the patterns provided from coverage. Note that GCC/lcov excludes by glob pattern, and clang/LLVM excludes via regex!
 # ~~~
 function(add_code_coverage_all_targets)
   # Argument parsing

@@ -201,6 +201,7 @@ endif()
 # ccov-show-${TARGET_NAME} : Prints to command line detailed per-line coverage information.
 # ccov-all : Generates HTML code coverage report, merging every target added with 'ALL' parameter into a single detailed report.
 # ccov-all-report : Prints summary per-file coverage information for every target added with ALL' parameter to the command line.
+# ccov-all-export : Exports the coverage report to a JSON file.
 #
 # Required:
 # TARGET_NAME - Name of the target to generate code coverage for.

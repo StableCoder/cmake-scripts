@@ -197,6 +197,7 @@ endif()
 # ccov-report : Generates HTML code coverage report for every target added with 'AUTO' parameter.
 # ccov-${TARGET_NAME} : Generates HTML code coverage report.
 # ccov-report-${TARGET_NAME} : Prints to command line summary per-file coverage information.
+# ccov-export-${TARGET_NAME} : Exports the coverage report to a JSON file.
 # ccov-show-${TARGET_NAME} : Prints to command line detailed per-line coverage information.
 # ccov-all : Generates HTML code coverage report, merging every target added with 'ALL' parameter into a single detailed report.
 # ccov-all-report : Prints summary per-file coverage information for every target added with ALL' parameter to the command line.
@@ -357,6 +358,17 @@ function(target_code_coverage TARGET_NAME)
             ${LLVM_COV_PATH} report $<TARGET_FILE:${TARGET_NAME}> ${SO_OBJECTS}
             -instr-profile=${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
             ${EXCLUDE_REGEX}
+          DEPENDS ccov-processing-${target_code_coverage_COVERAGE_TARGET_NAME})
+
+        # Export coverage information so continuous integration tools (e.g.
+        # Jenkins) can consume it
+        add_custom_target(
+          ccov-export-${target_code_coverage_COVERAGE_TARGET_NAME}
+          COMMAND
+            ${LLVM_COV_PATH} export $<TARGET_FILE:${TARGET_NAME}> ${SO_OBJECTS}
+            -instr-profile=${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
+            -format="text" ${EXCLUDE_REGEX} >
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${target_code_coverage_COVERAGE_TARGET_NAME}.json
           DEPENDS ccov-processing-${target_code_coverage_COVERAGE_TARGET_NAME})
 
         # Generates HTML output of the coverage information for perusal

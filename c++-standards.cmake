@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2018 by George Cave - gcave@stablecoder.ca
+# Copyright (C) 2018-2021 by George Cave - gcave@stablecoder.ca
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -61,6 +61,13 @@ endmacro()
 # Set the compiler standard to C++20
 macro(cxx_20)
   set(CMAKE_CXX_STANDARD 20)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_EXTENSIONS OFF)
+endmacro()
+
+# Set the compiler standard to C++23
+macro(cxx_23)
+  set(CMAKE_CXX_STANDARD 23)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   set(CMAKE_CXX_EXTENSIONS OFF)
 endmacro()

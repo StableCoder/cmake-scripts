@@ -299,17 +299,9 @@ function(target_code_coverage TARGET_NAME)
           endif()
         endforeach()
 
-        # Run the executable, generating raw profile data
-        add_custom_target(
-          ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME}-1
-          COMMAND
-            ${CMAKE_COMMAND} -E env
-            LLVM_PROFILE_FILE=${target_code_coverage_COVERAGE_TARGET_NAME}.profraw
-            $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
-          DEPENDS ccov-preprocessing ccov-libs ${TARGET_NAME})
-
-        # Make the run data available for further processing. Separated to allow
-        # Windows to run this target serially.
+        # Run the executable, generating raw profile data Make the run data
+        # available for further processing. Separated to allow Windows to run
+        # this target serially.
         add_custom_target(
           ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME}
           COMMAND
@@ -324,7 +316,7 @@ function(target_code_coverage TARGET_NAME)
             "${CMAKE_CURRENT_BINARY_DIR}/${target_code_coverage_COVERAGE_TARGET_NAME}.profraw"
             >> ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list
           JOB_POOL ccov_serial_pool
-          DEPENDS ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME}-1)
+          DEPENDS ccov-preprocessing ccov-libs ${TARGET_NAME})
 
         # Merge the generated profile data so llvm-cov can process it
         add_custom_target(

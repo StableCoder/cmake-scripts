@@ -487,14 +487,16 @@ endfunction()
 # any subdirectories. To add coverage instrumentation to only specific targets,
 # use `target_code_coverage`.
 function(add_code_coverage)
-  if(CMAKE_C_COMPILER_ID MATCHES "(Apple)?[Cc]lang"
-     OR CMAKE_CXX_COMPILER_ID MATCHES "(Apple)?[Cc]lang")
-    add_compile_options(-fprofile-instr-generate -fcoverage-mapping)
-    add_link_options(-fprofile-instr-generate -fcoverage-mapping)
-  elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
+  if(CODE_COVERAGE)
+    if(CMAKE_C_COMPILER_ID MATCHES "(Apple)?[Cc]lang"
+       OR CMAKE_CXX_COMPILER_ID MATCHES "(Apple)?[Cc]lang")
+      add_compile_options(-fprofile-instr-generate -fcoverage-mapping)
+      add_link_options(-fprofile-instr-generate -fcoverage-mapping)
+    elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
                                               "GNU")
-    add_compile_options(-fprofile-arcs -ftest-coverage)
-    link_libraries(gcov)
+      add_compile_options(-fprofile-arcs -ftest-coverage)
+      link_libraries(gcov)
+    endif()
   endif()
 endfunction()
 

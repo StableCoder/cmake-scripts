@@ -634,7 +634,7 @@ function(add_code_coverage_all_targets)
           COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --capture
                   --output-file ${COVERAGE_INFO}
           COMMAND ${EXCLUDE_COMMAND}
-          DEPENDS ccov-all-processing)
+          DEPENDS ccov-preprocessing ccov-all-processing)
       else()
         add_custom_target(
           ccov-all-capture
@@ -642,7 +642,7 @@ function(add_code_coverage_all_targets)
           COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --capture
                   --output-file ${COVERAGE_INFO}
           COMMAND ${EXCLUDE_COMMAND}
-          DEPENDS ccov-all-processing)
+          DEPENDS ccov-preprocessing ccov-all-processing)
       endif()
 
       # Generates HTML output of all targets for perusal

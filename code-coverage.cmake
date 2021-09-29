@@ -649,7 +649,7 @@ function(add_code_coverage_all_targets)
       add_custom_target(
         ccov-all
         COMMAND ${GENHTML_PATH} -o ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged
-                ${COVERAGE_INFO}
+                ${COVERAGE_INFO} -p ${CMAKE_SOURCE_DIR}
         DEPENDS ccov-all-capture)
 
     endif()

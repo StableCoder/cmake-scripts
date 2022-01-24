@@ -30,6 +30,14 @@ function(append value)
   endforeach(variable)
 endfunction()
 
+function(append_quoteless value)
+  foreach(variable ${ARGN})
+    set(${variable}
+        ${${variable}} ${value}
+        PARENT_SCOPE)
+  endforeach(variable)
+endfunction()
+
 function(test_san_flags return_var flags)
   set(QUIET_BACKUP ${CMAKE_REQUIRED_QUIET})
   set(CMAKE_REQUIRED_QUIET TRUE)
@@ -60,6 +68,11 @@ if(USE_SANITIZER)
       if(SANITIZER_ADDR_AVAILABLE)
         message(STATUS "  Building with Address sanitizer")
         append("${SANITIZER_ADDR_FLAG}" SANITIZER_SELECTED_FLAGS)
+
+        if(AFL)
+          append_quoteless(AFL_USE_ASAN=1 CMAKE_C_COMPILER_LAUNCHER
+                           CMAKE_CXX_COMPILER_LAUNCHER)
+        endif()
       else()
         message(
           FATAL_ERROR
@@ -84,6 +97,11 @@ if(USE_SANITIZER)
           message(STATUS "  Building with Memory sanitizer")
         endif()
         append("${SANITIZER_MEM_FLAG}" SANITIZER_SELECTED_FLAGS)
+
+        if(AFL)
+          append_quoteless(AFL_USE_MSAN=1 CMAKE_C_COMPILER_LAUNCHER
+                           CMAKE_CXX_COMPILER_LAUNCHER)
+        endif()
       else()
         message(
           FATAL_ERROR
@@ -102,6 +120,11 @@ if(USE_SANITIZER)
       if(SANITIZER_UB_AVAILABLE)
         message(STATUS "  Building with Undefined Behaviour sanitizer")
         append("${SANITIZER_UB_FLAG}" SANITIZER_SELECTED_FLAGS)
+
+        if(AFL)
+          append_quoteless(AFL_USE_UBSAN=1 CMAKE_C_COMPILER_LAUNCHER
+                           CMAKE_CXX_COMPILER_LAUNCHER)
+        endif()
       else()
         message(
           FATAL_ERROR
@@ -117,6 +140,11 @@ if(USE_SANITIZER)
       if(SANITIZER_THREAD_AVAILABLE)
         message(STATUS "  Building with Thread sanitizer")
         append("${SANITIZER_THREAD_FLAG}" SANITIZER_SELECTED_FLAGS)
+
+        if(AFL)
+          append_quoteless(AFL_USE_TSAN=1 CMAKE_C_COMPILER_LAUNCHER
+                           CMAKE_CXX_COMPILER_LAUNCHER)
+        endif()
       else()
         message(
           FATAL_ERROR "Thread sanitizer not available for ${CMAKE_CXX_COMPILER}"
@@ -131,6 +159,11 @@ if(USE_SANITIZER)
       if(SANITIZER_LEAK_AVAILABLE)
         message(STATUS "  Building with Leak sanitizer")
         append("${SANITIZER_LEAK_FLAG}" SANITIZER_SELECTED_FLAGS)
+
+        if(AFL)
+          append_quoteless(AFL_USE_LSAN=1 CMAKE_C_COMPILER_LAUNCHER
+                           CMAKE_CXX_COMPILER_LAUNCHER)
+        endif()
       else()
         message(
           FATAL_ERROR "Thread sanitizer not available for ${CMAKE_CXX_COMPILER}"
@@ -145,6 +178,11 @@ if(USE_SANITIZER)
       if(SANITIZER_CFI_AVAILABLE)
         message(STATUS "  Building with Control Flow Integrity(CFI) sanitizer")
         append("${SANITIZER_LEAK_FLAG}" SANITIZER_SELECTED_FLAGS)
+
+        if(AFL)
+          append_quoteless(AFL_USE_CFISAN=1 CMAKE_C_COMPILER_LAUNCHER
+                           CMAKE_CXX_COMPILER_LAUNCHER)
+        endif()
       else()
         message(
           FATAL_ERROR
@@ -167,6 +205,11 @@ if(USE_SANITIZER)
     if(USE_SANITIZER MATCHES "([Aa]ddress)")
       message(STATUS "Building with Address sanitizer")
       append("-fsanitize=address" CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
+
+      if(AFL)
+        append_quoteless(AFL_USE_ASAN=1 CMAKE_C_COMPILER_LAUNCHER
+                         CMAKE_CXX_COMPILER_LAUNCHER)
+      endif()
     else()
       message(
         FATAL_ERROR

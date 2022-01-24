@@ -15,6 +15,8 @@ This is a collection of quite useful scripts that expand the possibilities for b
       - [1b - Via target commands](#1b---via-target-commands)
     - [Example 2: Target instrumented, but with regex pattern of files to be excluded from report](#example-2-target-instrumented-but-with-regex-pattern-of-files-to-be-excluded-from-report)
     - [Example 3: Target added to the 'ccov' and 'ccov-all' targets](#example-3-target-added-to-the-ccov-and-ccov-all-targets)
+- [AFL Fuzzing Instrumentation `afl-fuzzing.cmake`](#afl-fuzzing-instrumentation-afl-fuzzingcmake)
+  - [Usage](#usage-1)
 - [Compiler Options `compiler-options.cmake`](#compiler-options-compiler-optionscmake)
 - [Dependency Graph `dependency-graph.cmake`](#dependency-graph-dependency-graphcmake)
   - [Required Arguments](#required-arguments)
@@ -181,6 +183,40 @@ add_code_coverage_all_targets(EXCLUDE test/*) # Adds the 'ccov-all' target set a
 add_executable(theExe main.cpp non_covered.cpp)
 target_code_coverage(theExe AUTO ALL EXCLUDE non_covered.cpp test/*) # As an executable target, adds to the 'ccov' and ccov-all' targets, and the reports will exclude the non-covered.cpp file, and any files in a test/ folder.
 ```
+
+## AFL Fuzzing Instrumentation [`afl-fuzzing.cmake`](afl-fuzzing.cmake)
+
+> American fuzzy lop is a security-oriented fuzzer that employs a novel type of compile-time instrumentation and genetic algorithms to automatically discover clean, interesting test cases that trigger new internal states in the targeted binary. This substantially improves the functional coverage for the fuzzed code. The compact synthesized corpora produced by the tool are also useful for seeding other, more labor- or resource-intensive testing regimes down the road.
+>
+> [american fuzzy lop](https://lcamtuf.coredump.cx/afl/)
+
+NOTE: This actually works based off the still-developed daughter project [AFL++](https://aflplus.plus/).
+
+### Usage
+
+To enable the use of AFL instrumentation, this file needs to be included into the CMake scripts at any point *before* any of the compilers are setup by CMake, typically at/before the first call to project(), or any part before compiler detection/validation occurs. This is since CMake does not support changing the compiler after it has been set:
+
+```
+cmake_minimum_required(VERSION 3.4)
+include(cmake/afl-fuzzing.cmake)
+project(Example C CXX)
+```
+
+Using `-DAFL=ON` will search for and switch to the AFL++ compiler wrappers that will instrument builds, or error if it cannot.
+
+Using `-DAFL_MODE=<MODE>` will attempt to use the specified  instrumentation type, see [here](https://github.com/AFLplusplus/AFLplusplus/blob/stable/docs/fuzzing_in_depth.md). Options are:
+- LTO
+- LLVM
+- GCC-PLUGIN
+- CLANG
+- GCC
+
+Using `-DAFL_ENV_OPTIONS=<...;...>` allows adding any number of AFL++'s instrumentation enabled via environment variables, and these will be prefixed to the build calls (see `afl-cc -hh`).
+
+As an example, a CMake configuration such as this:
+```cmake .. -DAFL_MODE=LTO -DAFL_ENV_OPTIONS=AFL_LLVM_THREADSAFE_INST=1;AFL_LLVM_LAF_ALL=1```
+would result in build commands such as this:
+```AFL_LLVM_THREADSAFE_INST=1 AFL_LLVM_LAF_ALL=1 afl-clang-lto --afl-lto <...>```
 
 ## Compiler Options [`compiler-options.cmake`](compiler-options.cmake)
 

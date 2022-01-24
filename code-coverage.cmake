@@ -493,7 +493,7 @@ function(add_code_coverage)
       add_compile_options(-fprofile-instr-generate -fcoverage-mapping)
       add_link_options(-fprofile-instr-generate -fcoverage-mapping)
     elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
-                                              "GNU")
+                                                "GNU")
       add_compile_options(-fprofile-arcs -ftest-coverage)
       link_libraries(gcov)
     endif()

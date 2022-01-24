@@ -84,6 +84,7 @@ A quick rundown of the tools available, and what they do:
     - Division by zero
     - Unreachable code
 - [MemorySanitizer](https://clang.llvm.org/docs/MemorySanitizer.html) detects uninitialized reads.
+- [Control Flow Integrity](https://clang.llvm.org/docs/ControlFlowIntegrity.html) is designed to detect certain forms of undefined behaviour that can potentially allow attackers to subvert the program's control flow.
 
 These are used by declaring the `USE_SANITIZER` CMake variable as string containing any of:
 - Address
@@ -92,6 +93,7 @@ These are used by declaring the `USE_SANITIZER` CMake variable as string contain
 - Undefined
 - Thread
 - Leak
+- CFI
 
 Multiple values are allowed, e.g. `-DUSE_SANITIZER=Address,Leak` but some sanitizers cannot be combined together, e.g.`-DUSE_SANITIZER=Address,Memory` will result in configuration error. The delimeter character is not required and `-DUSE_SANITIZER=AddressLeak` would work as well.
 

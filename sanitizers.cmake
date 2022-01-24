@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2018 by George Cave - gcave@stablecoder.ca
+# Copyright (C) 2018-2022 by George Cave - gcave@stablecoder.ca
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -19,7 +19,7 @@ set(USE_SANITIZER
     ""
     CACHE
       STRING
-      "Compile with a sanitizer. Options are: Address, Memory, MemoryWithOrigins, Undefined, Thread, Leak, 'Address;Undefined'"
+      "Compile with a sanitizer. Options are: Address, Memory, MemoryWithOrigins, Undefined, Thread, Leak, 'Address;Undefined', CFI"
 )
 
 function(append value)
@@ -123,6 +123,18 @@ if(USE_SANITIZER)
         append("${SANITIZER_LEAK_FLAG}" SANITIZER_SELECTED_FLAGS)
       else()
         message(FATAL_ERROR "Thread sanitizer not available for ${CMAKE_CXX_COMPILER}")
+      endif()
+    endif()
+
+    if(USE_SANITIZER MATCHES "([Cc][Ff][Ii])")
+      message(STATUS "Testing with Control Flow Integrity(CFI) sanitizer")
+      set(SANITIZER_CFI_FLAG "-fsanitize=cfi")
+      test_san_flags(SANITIZER_CFI_AVAILABLE ${SANITIZER_CFI_FLAG})
+      if (SANITIZER_CFI_AVAILABLE)
+        message(STATUS "  Building with Control Flow Integrity(CFI) sanitizer")
+        append("${SANITIZER_LEAK_FLAG}" SANITIZER_SELECTED_FLAGS)
+      else()
+        message(FATAL_ERROR "Control Flow Integrity(CFI) sanitizer not available for ${CMAKE_CXX_COMPILER}")
       endif()
     endif()
 

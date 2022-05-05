@@ -16,6 +16,7 @@ This is a collection of quite useful scripts that expand the possibilities for b
       - [1b - Via target commands](#1b---via-target-commands)
     - [Example 2: Target instrumented, but with regex pattern of files to be excluded from report](#example-2-target-instrumented-but-with-regex-pattern-of-files-to-be-excluded-from-report)
     - [Example 3: Target added to the 'ccov' and 'ccov-all' targets](#example-3-target-added-to-the-ccov-and-ccov-all-targets)
+    - [Example 4: Hook all targets](#example-4-hook-all-targets)
 - [AFL Fuzzing Instrumentation `afl-fuzzing.cmake`](#afl-fuzzing-instrumentation-afl-fuzzingcmake)
   - [Usage](#usage-2)
 - [Compiler Options `compiler-options.cmake`](#compiler-options-compiler-optionscmake)
@@ -176,6 +177,7 @@ To enable any code coverage instrumentation/targets, the single CMake option of 
 From this point, there are two primary methods for adding instrumentation to targets:
 1. A blanket instrumentation by calling `add_code_coverage()`, where all targets in that directory and all subdirectories are automatically instrumented.
 2. Per-target instrumentation by calling `target_code_coverage(<TARGET_NAME>)`, where the target is given and thus only that target is instrumented. This applies to both libraries and executables.
+3. Automatically add coverage for each target with `-DCCOV_TARGETS_HOOK=On` and `-DCCOV_TARGETS_HOOK_ARGS=...` for default values, requires `add_code_coverage()` or similar.
 
 To add coverage targets, such as calling `make ccov` to generate the actual coverage information for perusal or consumption, call `target_code_coverage(<TARGET_NAME>)` on an *executable* target.
 
@@ -222,6 +224,20 @@ add_code_coverage_all_targets(EXCLUDE test/*) # Adds the 'ccov-all' target set a
 
 add_executable(theExe main.cpp non_covered.cpp)
 target_code_coverage(theExe AUTO ALL EXCLUDE non_covered.cpp test/*) # As an executable target, adds to the 'ccov' and ccov-all' targets, and the reports will exclude the non-covered.cpp file, and any files in a test/ folder.
+```
+
+#### Example 4: Hook all targets
+```
+# this could be as well command line argument
+set(CCOV_TARGETS_HOOK ON) # enable 'add_executable' and 'add_library' hooks
+set(CCOV_TARGETS_HOOK_ARGS ALL AUTO) # set default arguments for coverage
+
+add_code_coverage() # Adds instrumentation to all targets
+
+add_library(theLib lib.cpp) # ccov-theLib target will be add
+
+add_executable(theExe main.cpp) # ccov-theExe target will be add
+target_link_libraries(theExe PRIVATE theLib)
 ```
 
 ## AFL Fuzzing Instrumentation [`afl-fuzzing.cmake`](afl-fuzzing.cmake)

@@ -72,12 +72,35 @@
 # add_executable(theExe main.cpp non_covered.cpp)
 # target_code_coverage(theExe AUTO ALL EXCLUDE non_covered.cpp test/*) # As an executable target, adds to the 'ccov' and ccov-all' targets, and the reports will exclude the non-covered.cpp file, and any files in a test/ folder.
 # ~~~
+#
+# Example 4: Hook all targets
+#
+# ~~~
+# set(CCOV_TARGETS_HOOK ON) # enable 'add_executable' and 'add_library' hooks
+# set(CCOV_TARGETS_HOOK_ARGS ALL AUTO) # set default arguments for coverage
+#
+# add_code_coverage() # Adds instrumentation to all targets
+#
+# add_library(theLib lib.cpp) # ccov-theLib target will be add
+#
+# add_executable(theExe main.cpp) # ccov-theExe target will be add
+# target_link_libraries(theExe PRIVATE theLib)
+# ~~~
 
 # Options
 option(
   CODE_COVERAGE
   "Builds targets with code coverage instrumentation. (Requires GCC or Clang)"
   OFF)
+
+option(
+  CCOV_TARGETS_HOOK
+  "Autocapture all new targets."
+  OFF)
+
+option(
+  CCOV_TARGETS_HOOK_ARGS
+  "Default arguments for all hooked targets.")
 
 # Programs
 find_program(LLVM_COV_PATH llvm-cov)
@@ -189,6 +212,25 @@ if(CODE_COVERAGE AND NOT CODE_COVERAGE_ADDED)
   else()
     message(FATAL_ERROR "Code coverage requires Clang or GCC. Aborting.")
   endif()
+
+  if (CCOV_TARGETS_HOOK)
+    if (COMMAND _add_executable)
+      message(FATAL_ERROR "add_executable was already redefined. Only one redefinitions is allowed.")
+    endif()
+    macro(add_executable)
+      _add_executable(${ARGV})
+      target_code_coverage(${ARGV0} ${CCOV_TARGETS_HOOK_ARGS})
+    endmacro(add_executable)
+
+    if (COMMAND _add_library)
+      message(FATAL_ERROR "add_library was already redefined. Only one redefinitions is allowed.")
+    endif()
+    macro(add_library)
+      _add_library(${ARGV})
+      target_code_coverage(${ARGV0} ${CCOV_TARGETS_HOOK_ARGS})
+    endmacro(add_library)
+  endif (CCOV_TARGETS_HOOK)
+
 endif()
 
 # Adds code coverage instrumentation to a library, or instrumentation/targets

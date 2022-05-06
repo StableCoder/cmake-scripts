@@ -208,6 +208,7 @@ endif()
 # Optional:
 # PUBLIC - Sets the visibility for added compile options to targets to PUBLIC instead of the default of PRIVATE.
 # INTERFACE - Sets the visibility for added compile options to targets to INTERFACE instead of the default of PRIVATE.
+# PLAIN - Do not set any target visibility (backward compatibility with old cmake projects)
 # AUTO - Adds the target to the 'ccov' target so that it can be run in a batch with others easily. Effective on executable targets.
 # ALL - Adds the target to the 'ccov-all' and 'ccov-all-report' targets, which merge several executable targets coverage data to a single report. Effective on executable targets.
 # EXTERNAL - For GCC's lcov, allows the profiling of 'external' files from the processing directory
@@ -218,7 +219,7 @@ endif()
 # ~~~
 function(target_code_coverage TARGET_NAME)
   # Argument parsing
-  set(options AUTO ALL EXTERNAL PUBLIC INTERFACE)
+  set(options AUTO ALL EXTERNAL PUBLIC INTERFACE PLAIN)
   set(single_value_keywords COVERAGE_TARGET_NAME)
   set(multi_value_keywords EXCLUDE OBJECTS ARGS)
   cmake_parse_arguments(
@@ -229,10 +230,16 @@ function(target_code_coverage TARGET_NAME)
   # PRIVATE.
   if(target_code_coverage_PUBLIC)
     set(TARGET_VISIBILITY PUBLIC)
+    set(TARGET_LINK_VISIBILITY PUBLIC)
   elseif(target_code_coverage_INTERFACE)
     set(TARGET_VISIBILITY INTERFACE)
+    set(TARGET_LINK_VISIBILITY INTERFACE)
+  elseif(target_code_coverage_PLAIN)
+    set(TARGET_VISIBILITY PUBLIC)
+    set(TARGET_LINK_VISIBILITY)
   else()
     set(TARGET_VISIBILITY PRIVATE)
+    set(TARGET_LINK_VISIBILITY PRIVATE)
   endif()
 
   if(NOT target_code_coverage_COVERAGE_TARGET_NAME)
@@ -253,7 +260,7 @@ function(target_code_coverage TARGET_NAME)
                                                 "GNU")
       target_compile_options(${TARGET_NAME} ${TARGET_VISIBILITY} -fprofile-arcs
                              -ftest-coverage)
-      target_link_libraries(${TARGET_NAME} ${TARGET_VISIBILITY} gcov)
+      target_link_libraries(${TARGET_NAME} ${TARGET_LINK_VISIBILITY} gcov)
     endif()
 
     # Targets

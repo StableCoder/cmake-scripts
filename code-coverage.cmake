@@ -407,38 +407,42 @@ function(target_code_coverage TARGET_NAME)
         # Capture coverage data
         if(${CMAKE_VERSION} VERSION_LESS "3.17.0")
           add_custom_target(
-            ccov-capture-${target_code_coverage_COVERAGE_TARGET_NAME}
+            ccov-clean-${target_code_coverage_COVERAGE_TARGET_NAME}
             COMMAND ${CMAKE_COMMAND} -E remove -f ${COVERAGE_INFO}
-            COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
-            COMMAND $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
-            COMMAND
-              ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --base-directory
-              ${CMAKE_SOURCE_DIR} --capture ${EXTERNAL_OPTION} --output-file
-              ${COVERAGE_INFO}
-            COMMAND ${EXCLUDE_COMMAND}
-            DEPENDS ccov-preprocessing ${TARGET_NAME})
+            COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters)
         else()
           add_custom_target(
-            ccov-capture-${target_code_coverage_COVERAGE_TARGET_NAME}
+            ccov-clean-${target_code_coverage_COVERAGE_TARGET_NAME}
             COMMAND ${CMAKE_COMMAND} -E rm -f ${COVERAGE_INFO}
-            COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
-            COMMAND $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
-            COMMAND
-              ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --base-directory
-              ${CMAKE_SOURCE_DIR} --capture ${EXTERNAL_OPTION} --output-file
-              ${COVERAGE_INFO}
-            COMMAND ${EXCLUDE_COMMAND}
-            DEPENDS ccov-preprocessing ${TARGET_NAME})
+            COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters)
         endif()
 
-        # Generates HTML output of the coverage information for perusal
         add_custom_target(
-          ccov-${target_code_coverage_COVERAGE_TARGET_NAME}
+          ccov-capture-${target_code_coverage_COVERAGE_TARGET_NAME}
+          COMMAND
+            ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --base-directory
+            ${CMAKE_SOURCE_DIR} --capture ${EXTERNAL_OPTION} --output-file
+            ${COVERAGE_INFO}
+          COMMAND ${EXCLUDE_COMMAND}
+          DEPENDS)
+
+        # Only generates HTML output of the coverage information for perusal
+        add_custom_target(
+          ccov-html-${target_code_coverage_COVERAGE_TARGET_NAME}
           COMMAND
             ${GENHTML_PATH} -o
             ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${target_code_coverage_COVERAGE_TARGET_NAME}
             ${COVERAGE_INFO}
           DEPENDS ccov-capture-${target_code_coverage_COVERAGE_TARGET_NAME})
+
+        # Generates HTML output of the coverage information for perusal
+        add_custom_target(
+          ccov-${target_code_coverage_COVERAGE_TARGET_NAME}
+          COMMAND
+          DEPENDS
+            ccov-clean-${target_code_coverage_COVERAGE_TARGET_NAME}
+            ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME}
+            ccov-html-${target_code_coverage_COVERAGE_TARGET_NAME})
       endif()
 
       add_custom_command(
@@ -455,6 +459,11 @@ function(target_code_coverage TARGET_NAME)
           add_custom_target(ccov)
         endif()
         add_dependencies(ccov ccov-${target_code_coverage_COVERAGE_TARGET_NAME})
+
+        if(NOT TARGET ccov-html)
+          add_custom_target(ccov-html)
+        endif()
+        add_dependencies(ccov-html ccov-html-${target_code_coverage_COVERAGE_TARGET_NAME})
 
         if(NOT CMAKE_C_COMPILER_ID MATCHES "GNU" AND NOT CMAKE_CXX_COMPILER_ID
                                                      MATCHES "GNU")
@@ -629,28 +638,35 @@ function(add_code_coverage_all_targets)
       # Capture coverage data
       if(${CMAKE_VERSION} VERSION_LESS "3.17.0")
         add_custom_target(
-          ccov-all-capture
+          ccov-all-clean
           COMMAND ${CMAKE_COMMAND} -E remove -f ${COVERAGE_INFO}
-          COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --capture
-                  --output-file ${COVERAGE_INFO}
-          COMMAND ${EXCLUDE_COMMAND}
-          DEPENDS ccov-preprocessing ccov-all-processing)
+          COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters)
       else()
         add_custom_target(
-          ccov-all-capture
+          ccov-all-clean
           COMMAND ${CMAKE_COMMAND} -E rm -f ${COVERAGE_INFO}
-          COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --capture
-                  --output-file ${COVERAGE_INFO}
-          COMMAND ${EXCLUDE_COMMAND}
-          DEPENDS ccov-preprocessing ccov-all-processing)
+          COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters)
       endif()
+
+      add_custom_target(
+        ccov-all-capture
+        COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --capture
+                --output-file ${COVERAGE_INFO}
+        COMMAND ${EXCLUDE_COMMAND}
+        DEPENDS)
+
+      # Only generates HTML output of all targets for perusal
+      add_custom_target(
+        ccov-all-html
+        COMMAND ${GENHTML_PATH} -o ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged
+                ${COVERAGE_INFO} -p ${CMAKE_SOURCE_DIR}
+        DEPENDS ccov-all-capture)
 
       # Generates HTML output of all targets for perusal
       add_custom_target(
         ccov-all
-        COMMAND ${GENHTML_PATH} -o ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged
-                ${COVERAGE_INFO} -p ${CMAKE_SOURCE_DIR}
-        DEPENDS ccov-all-capture)
+        COMMAND
+        DEPENDS ccov-preprocessing ccov-all-processing ccov-all-clean ccov-all-html)
 
     endif()
 

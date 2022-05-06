@@ -208,17 +208,39 @@ if(CODE_COVERAGE AND NOT CODE_COVERAGE_ADDED)
     if (COMMAND _add_executable)
       message(FATAL_ERROR "add_executable was already redefined. Only one redefinitions is allowed.")
     endif()
-    macro(add_executable)
-      _add_executable(${ARGV})
-      target_code_coverage(${ARGV0} ${CCOV_TARGETS_HOOK_ARGS})
+
+    set(CCOV_TARGETS_HOOK_LIST ${CCOV_TARGETS_HOOK_ARGS})
+    separate_arguments(CCOV_TARGETS_HOOK_LIST)
+
+    macro(add_executable target_name)
+      _add_executable(${target_name} ${ARGN})
+      if (${ARGC} GREATER 1)
+        string(TOUPPER ${ARGV1} TARGET_TYPE)
+      endif()
+      string(COMPARE NOTEQUAL "${TARGET_TYPE}" IMPORTED IS_NOT_IMPORTED)
+
+      if (IS_NOT_IMPORTED)
+          target_code_coverage(${target_name} ${CCOV_TARGETS_HOOK_LIST})
+      endif()
     endmacro(add_executable)
 
     if (COMMAND _add_library)
       message(FATAL_ERROR "add_library was already redefined. Only one redefinitions is allowed.")
     endif()
-    macro(add_library)
-      _add_library(${ARGV})
-      target_code_coverage(${ARGV0} ${CCOV_TARGETS_HOOK_ARGS})
+    macro(add_library target_name)
+      _add_library(${target_name} ${ARGN})
+      if (${ARGC} GREATER 1)
+        string(TOUPPER "${ARGV1}" TARGET_TYPE)
+      endif()
+      if (${ARGC} GREATER 2)
+        string(TOUPPER "${ARGV2}" IMPORTED_TYPE)
+      endif()
+      string(COMPARE NOTEQUAL "${TARGET_TYPE}" ALIAS IS_NOT_ALIAS)
+      string(COMPARE NOTEQUAL "${IMPORTED_TYPE}" IMPORTED IS_NOT_IMPORTED)
+
+      if (IS_NOT_ALIAS AND IS_NOT_IMPORTED)
+        target_code_coverage(${target_name} ${CCOV_TARGETS_HOOK_LIST})
+      endif()
     endmacro(add_library)
   endif (CCOV_TARGETS_HOOK)
 
@@ -249,6 +271,7 @@ endif()
 # Optional:
 # PUBLIC - Sets the visibility for added compile options to targets to PUBLIC instead of the default of PRIVATE.
 # INTERFACE - Sets the visibility for added compile options to targets to INTERFACE instead of the default of PRIVATE.
+# PLAIN - Do not set any target visibility (backward compatibility with old cmake projects)
 # AUTO - Adds the target to the 'ccov' target so that it can be run in a batch with others easily. Effective on executable targets.
 # ALL - Adds the target to the 'ccov-all' and 'ccov-all-report' targets, which merge several executable targets coverage data to a single report. Effective on executable targets.
 # EXTERNAL - For GCC's lcov, allows the profiling of 'external' files from the processing directory
@@ -259,7 +282,7 @@ endif()
 # ~~~
 function(target_code_coverage TARGET_NAME)
   # Argument parsing
-  set(options AUTO ALL EXTERNAL PUBLIC INTERFACE)
+  set(options AUTO ALL EXTERNAL PUBLIC INTERFACE PLAIN)
   set(single_value_keywords COVERAGE_TARGET_NAME)
   set(multi_value_keywords EXCLUDE OBJECTS ARGS)
   cmake_parse_arguments(
@@ -270,10 +293,16 @@ function(target_code_coverage TARGET_NAME)
   # PRIVATE.
   if(target_code_coverage_PUBLIC)
     set(TARGET_VISIBILITY PUBLIC)
+    set(TARGET_LINK_VISIBILITY PUBLIC)
   elseif(target_code_coverage_INTERFACE)
     set(TARGET_VISIBILITY INTERFACE)
+    set(TARGET_LINK_VISIBILITY INTERFACE)
+  elseif(target_code_coverage_PLAIN)
+    set(TARGET_VISIBILITY PUBLIC)
+    set(TARGET_LINK_VISIBILITY)
   else()
     set(TARGET_VISIBILITY PRIVATE)
+    set(TARGET_LINK_VISIBILITY PRIVATE)
   endif()
 
   if(NOT target_code_coverage_COVERAGE_TARGET_NAME)
@@ -294,7 +323,7 @@ function(target_code_coverage TARGET_NAME)
                                                 "GNU")
       target_compile_options(${TARGET_NAME} ${TARGET_VISIBILITY} -fprofile-arcs
                              -ftest-coverage)
-      target_link_libraries(${TARGET_NAME} ${TARGET_VISIBILITY} gcov)
+      target_link_libraries(${TARGET_NAME} ${TARGET_LINK_VISIBILITY} gcov)
     endif()
 
     # Targets

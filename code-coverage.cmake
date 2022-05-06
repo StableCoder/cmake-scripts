@@ -98,8 +98,7 @@ option(
   "Autocapture all new targets."
   OFF)
 
-option(
-  CCOV_TARGETS_HOOK_ARGS
+set(CCOV_TARGETS_HOOK_ARGS "" CACHE STRING
   "Default arguments for all hooked targets.")
 
 # Programs

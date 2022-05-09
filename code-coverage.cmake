@@ -72,12 +72,34 @@
 # add_executable(theExe main.cpp non_covered.cpp)
 # target_code_coverage(theExe AUTO ALL EXCLUDE non_covered.cpp test/*) # As an executable target, adds to the 'ccov' and ccov-all' targets, and the reports will exclude the non-covered.cpp file, and any files in a test/ folder.
 # ~~~
+#
+# Example 4: Hook all targets
+#
+# ~~~
+# set(CCOV_TARGETS_HOOK ON) # enable 'add_executable' and 'add_library' hooks
+# set(CCOV_TARGETS_HOOK_ARGS ALL AUTO) # set default arguments for coverage
+#
+# add_code_coverage() # Adds instrumentation to all targets
+#
+# add_library(theLib lib.cpp) # ccov-theLib target will be add
+#
+# add_executable(theExe main.cpp) # ccov-theExe target will be add
+# target_link_libraries(theExe PRIVATE theLib)
+# ~~~
 
 # Options
 option(
   CODE_COVERAGE
   "Builds targets with code coverage instrumentation. (Requires GCC or Clang)"
   OFF)
+
+option(
+  CCOV_TARGETS_HOOK
+  "Autocapture all new targets."
+  OFF)
+
+set(CCOV_TARGETS_HOOK_ARGS "" CACHE STRING
+  "Default arguments for all hooked targets.")
 
 # Programs
 find_program(LLVM_COV_PATH llvm-cov)
@@ -181,6 +203,47 @@ if(CODE_COVERAGE AND NOT CODE_COVERAGE_ADDED)
   else()
     message(FATAL_ERROR "Code coverage requires Clang or GCC. Aborting.")
   endif()
+
+  if (CCOV_TARGETS_HOOK)
+    if (COMMAND _add_executable)
+      message(FATAL_ERROR "add_executable was already redefined. Only one redefinitions is allowed.")
+    endif()
+
+    set(CCOV_TARGETS_HOOK_LIST ${CCOV_TARGETS_HOOK_ARGS})
+    separate_arguments(CCOV_TARGETS_HOOK_LIST)
+
+    macro(add_executable target_name)
+      _add_executable(${target_name} ${ARGN})
+      if (${ARGC} GREATER 1)
+        string(TOUPPER ${ARGV1} TARGET_TYPE)
+      endif()
+      string(COMPARE NOTEQUAL "${TARGET_TYPE}" IMPORTED IS_NOT_IMPORTED)
+
+      if (IS_NOT_IMPORTED)
+          target_code_coverage(${target_name} ${CCOV_TARGETS_HOOK_LIST})
+      endif()
+    endmacro(add_executable)
+
+    if (COMMAND _add_library)
+      message(FATAL_ERROR "add_library was already redefined. Only one redefinitions is allowed.")
+    endif()
+    macro(add_library target_name)
+      _add_library(${target_name} ${ARGN})
+      if (${ARGC} GREATER 1)
+        string(TOUPPER "${ARGV1}" TARGET_TYPE)
+      endif()
+      if (${ARGC} GREATER 2)
+        string(TOUPPER "${ARGV2}" IMPORTED_TYPE)
+      endif()
+      string(COMPARE NOTEQUAL "${TARGET_TYPE}" ALIAS IS_NOT_ALIAS)
+      string(COMPARE NOTEQUAL "${IMPORTED_TYPE}" IMPORTED IS_NOT_IMPORTED)
+
+      if (IS_NOT_ALIAS AND IS_NOT_IMPORTED)
+        target_code_coverage(${target_name} ${CCOV_TARGETS_HOOK_LIST})
+      endif()
+    endmacro(add_library)
+  endif (CCOV_TARGETS_HOOK)
+
 endif()
 
 # Adds code coverage instrumentation to a library, or instrumentation/targets

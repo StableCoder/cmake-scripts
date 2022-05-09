@@ -325,7 +325,7 @@ function(target_code_coverage TARGET_NAME)
             ${LLVM_PROFDATA_PATH} merge -sparse
             ${target_code_coverage_COVERAGE_TARGET_NAME}.profraw -o
             ${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
-          DEPENDS ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME})
+          DEPENDS)
 
         # Ignore regex only works on LLVM >= 7
         if(LLVM_COV_VERSION VERSION_GREATER_EQUAL "7.0.0")
@@ -364,9 +364,9 @@ function(target_code_coverage TARGET_NAME)
             ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${target_code_coverage_COVERAGE_TARGET_NAME}.json
           DEPENDS ccov-processing-${target_code_coverage_COVERAGE_TARGET_NAME})
 
-        # Generates HTML output of the coverage information for perusal
+        # Only generates HTML output of the coverage information for perusal
         add_custom_target(
-          ccov-${target_code_coverage_COVERAGE_TARGET_NAME}
+          ccov-html-${target_code_coverage_COVERAGE_TARGET_NAME}
           COMMAND
             ${LLVM_COV_PATH} show $<TARGET_FILE:${TARGET_NAME}> ${SO_OBJECTS}
             -instr-profile=${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
@@ -374,6 +374,15 @@ function(target_code_coverage TARGET_NAME)
             -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${target_code_coverage_COVERAGE_TARGET_NAME}
             -format="html" ${EXCLUDE_REGEX}
           DEPENDS ccov-processing-${target_code_coverage_COVERAGE_TARGET_NAME})
+
+        # Generates HTML output of the coverage information for perusal
+        add_custom_target(
+          ccov-${target_code_coverage_COVERAGE_TARGET_NAME}
+          COMMAND
+          DEPENDS
+            ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME}
+            ccov-processing-${target_code_coverage_COVERAGE_TARGET_NAME}
+            ccov-html-${target_code_coverage_COVERAGE_TARGET_NAME})
 
       elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
                                                   "GNU")
@@ -666,7 +675,7 @@ function(add_code_coverage_all_targets)
       add_custom_target(
         ccov-all
         COMMAND
-        DEPENDS ccov-preprocessing ccov-all-processing ccov-all-clean ccov-all-html)
+        DEPENDS ccov-preprocessing ccov-all-processing ccov-all-capture ccov-all-html)
 
     endif()
 

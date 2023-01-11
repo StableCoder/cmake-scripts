@@ -14,7 +14,8 @@ cmake-format Check:
   image: stabletec/build-core:fedora
   stage: Analysis
   tags:
-    - docker-linux
+    - container
+    - linux
   allow_failure: true
   script:
     - pip install cmake-format
@@ -27,7 +28,8 @@ clang-format Check:
   image: stabletec/build-core:fedora
   stage: Analysis
   tags:
-    - docker-linux
+    - container
+    - linux
   allow_failure: true
   script:
     - clang-format --version
@@ -43,7 +45,8 @@ Targeted CC GCC Static:
   image: stabletec/build-core:fedora
   stage: Targeted Code Coverage
   tags:
-    - docker-linux
+    - container
+    - linux
     - amd64
   variables:
     CC: gcc
@@ -57,7 +60,8 @@ Targeted CC GCC Shared:
   image: stabletec/build-core:fedora
   stage: Targeted Code Coverage
   tags:
-    - docker-linux
+    - container
+    - linux
     - amd64
   variables:
     CC: gcc
@@ -72,7 +76,8 @@ Targeted CC Clang Static:
   image: stabletec/build-core:fedora
   stage: Targeted Code Coverage
   tags:
-    - docker-linux
+    - container
+    - linux
     - amd64
   variables:
     CC: clang
@@ -87,7 +92,8 @@ Targeted CC Clang Shared:
   image: stabletec/build-core:fedora
   stage: Targeted Code Coverage
   tags:
-    - docker-linux
+    - container
+    - linux
     - amd64
   variables:
     CC: clang
@@ -103,7 +109,8 @@ Targeted CC Clang Static (Windows):
   image: stabletec/build-core:windows
   stage: Targeted Code Coverage
   tags:
-    - docker-windows
+    - container
+    - windows
     - amd64
   variables:
     CC: clang
@@ -118,7 +125,8 @@ Targeted CC Clang Shared (Windows):
   image: stabletec/build-core:windows
   stage: Targeted Code Coverage
   tags:
-    - docker-windows
+    - container
+    - windows
     - amd64
   variables:
     CC: clang
@@ -136,7 +144,8 @@ All CC GCC Static:
   image: stabletec/build-core:fedora
   stage: All Code Coverage
   tags:
-    - docker-linux
+    - container
+    - linux
     - amd64
   variables:
     CC: gcc
@@ -151,7 +160,8 @@ All CC GCC Shared:
   image: stabletec/build-core:fedora
   stage: All Code Coverage
   tags:
-    - docker-linux
+    - container
+    - linux
     - amd64
   variables:
     CC: gcc
@@ -167,7 +177,8 @@ All CC Clang Static:
   image: stabletec/build-core:fedora
   stage: All Code Coverage
   tags:
-    - docker-linux
+    - container
+    - linux
     - amd64
   variables:
     CC: clang
@@ -183,7 +194,8 @@ All CC Clang Shared:
   image: stabletec/build-core:fedora
   stage: All Code Coverage
   tags:
-    - docker-linux
+    - container
+    - linux
     - amd64
   variables:
     CC: clang
@@ -203,7 +215,8 @@ All CC Clang Shared:
   stage: Fedora
   image: stabletec/build-core:fedora
   tags:
-    - docker-linux
+    - container
+    - linux
     - amd64
   script:
     - cmake example/all -B build -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
@@ -214,7 +227,8 @@ All CC Clang Shared:
   stage: Fedora
   image: stabletec/build-core:fedora
   tags:
-    - docker-linux
+    - container
+    - linux
     - amd64
   script:
     - cmake example/all -B build -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
@@ -262,7 +276,8 @@ Fedora UndefinedSanitizer:
   stage: openSUSE
   image: stabletec/build-core:opensuse
   tags:
-    - docker-linux
+    - container
+    - linux
     - amd64
   script:
     - cmake example/all -B build -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
@@ -273,7 +288,8 @@ Fedora UndefinedSanitizer:
   stage: openSUSE
   image: stabletec/build-core:opensuse
   tags:
-    - docker-linux
+    - container
+    - linux
   script:
     - cmake example/all -B build -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
     - ninja -C build

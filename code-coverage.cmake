@@ -258,8 +258,9 @@ function(target_code_coverage TARGET_NAME)
                           -fprofile-instr-generate -fcoverage-mapping)
     elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
                                                 "GNU")
-      target_compile_options(${TARGET_NAME} ${TARGET_VISIBILITY} -fprofile-arcs
-                             -ftest-coverage -fno-elide-constructors -fno-default-inline)
+      target_compile_options(
+        ${TARGET_NAME} ${TARGET_VISIBILITY} -fprofile-arcs -ftest-coverage
+        $<$<COMPILE_LANGUAGE:CXX>:-fno-elide-constructors> -fno-default-inline)
       target_link_libraries(${TARGET_NAME} ${TARGET_LINK_VISIBILITY} gcov)
     endif()
 
@@ -501,7 +502,9 @@ function(add_code_coverage)
       add_link_options(-fprofile-instr-generate -fcoverage-mapping)
     elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
                                                 "GNU")
-      add_compile_options(-fprofile-arcs -ftest-coverage -fno-elide-constructors -fno-default-inline)
+      add_compile_options(
+        -fprofile-arcs -ftest-coverage
+        $<$<COMPILE_LANGUAGE:CXX>:-fno-elide-constructors> -fno-default-inline)
       link_libraries(gcov)
     endif()
   endif()

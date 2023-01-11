@@ -21,7 +21,9 @@ option(CPPCHECK "Turns on cppcheck processing if it is found." OFF)
 # as the options set.
 macro(clang_tidy)
   if(CLANG_TIDY AND CLANG_TIDY_EXE)
-    set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_EXE} ${ARGN} CACHE STRING "" FORCE)
+    set(CMAKE_CXX_CLANG_TIDY
+        ${CLANG_TIDY_EXE} ${ARGN}
+        CACHE STRING "" FORCE)
   endif()
 endmacro()
 
@@ -29,7 +31,9 @@ endmacro()
 # used as the options set.
 macro(include_what_you_use)
   if(IWYU AND IWYU_EXE)
-    set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE ${IWYU_EXE} ${ARGN} CACHE STRING "" FORCE)
+    set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE
+        ${IWYU_EXE} ${ARGN}
+        CACHE STRING "" FORCE)
   endif()
 endmacro()
 
@@ -37,7 +41,9 @@ endmacro()
 # options set.
 macro(cppcheck)
   if(CPPCHECK AND CPPCHECK_EXE)
-    set(CMAKE_CXX_CPPCHECK ${CPPCHECK_EXE} ${ARGN} CACHE STRING "" FORCE)
+    set(CMAKE_CXX_CPPCHECK
+        ${CPPCHECK_EXE} ${ARGN}
+        CACHE STRING "" FORCE)
   endif()
 endmacro()
 

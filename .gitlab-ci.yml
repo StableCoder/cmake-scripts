@@ -16,6 +16,7 @@ cmake-format Check:
   tags:
     - container
     - linux
+    - amd64
   allow_failure: true
   script:
     - pip install cmake-format
@@ -30,6 +31,7 @@ clang-format Check:
   tags:
     - container
     - linux
+    - amd64
   allow_failure: true
   script:
     - clang-format --version
@@ -290,6 +292,7 @@ Fedora UndefinedSanitizer:
   tags:
     - container
     - linux
+    - amd64
   script:
     - cmake example/all -B build -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
     - ninja -C build

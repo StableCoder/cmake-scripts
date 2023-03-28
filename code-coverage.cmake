@@ -310,7 +310,8 @@ function(target_code_coverage TARGET_NAME)
         add_custom_target(
           ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME}
           COMMAND
-            ${CMAKE_COMMAND} -E env ${target_code_coverage_PRE_ARGS}
+            ${CMAKE_COMMAND} -E env ${CMAKE_CROSSCOMPILING_EMULATOR}
+            ${target_code_coverage_PRE_ARGS}
             LLVM_PROFILE_FILE=${target_code_coverage_COVERAGE_TARGET_NAME}.profraw
             $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
           COMMAND
@@ -389,8 +390,9 @@ function(target_code_coverage TARGET_NAME)
         # Run the executable, generating coverage information
         add_custom_target(
           ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME}
-          COMMAND ${target_code_coverage_PRE_ARGS} $<TARGET_FILE:${TARGET_NAME}>
-                  ${target_code_coverage_ARGS}
+          COMMAND
+            ${CMAKE_CROSSCOMPILING_EMULATOR} ${target_code_coverage_PRE_ARGS}
+            $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
           DEPENDS ${TARGET_NAME})
 
         # Generate exclusion string for use
@@ -416,8 +418,9 @@ function(target_code_coverage TARGET_NAME)
             ccov-capture-${target_code_coverage_COVERAGE_TARGET_NAME}
             COMMAND ${CMAKE_COMMAND} -E remove -f ${COVERAGE_INFO}
             COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
-            COMMAND ${target_code_coverage_PRE_ARGS}
-                    $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
+            COMMAND
+              ${CMAKE_CROSSCOMPILING_EMULATOR} ${target_code_coverage_PRE_ARGS}
+              $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
             COMMAND
               ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --base-directory
               ${CMAKE_SOURCE_DIR} --capture ${EXTERNAL_OPTION} --output-file
@@ -429,8 +432,9 @@ function(target_code_coverage TARGET_NAME)
             ccov-capture-${target_code_coverage_COVERAGE_TARGET_NAME}
             COMMAND ${CMAKE_COMMAND} -E rm -f ${COVERAGE_INFO}
             COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
-            COMMAND ${target_code_coverage_PRE_ARGS}
-                    $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
+            COMMAND
+              ${CMAKE_CROSSCOMPILING_EMULATOR} ${target_code_coverage_PRE_ARGS}
+              $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
             COMMAND
               ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --base-directory
               ${CMAKE_SOURCE_DIR} --capture ${EXTERNAL_OPTION} --output-file

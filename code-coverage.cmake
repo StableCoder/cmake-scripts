@@ -84,6 +84,13 @@ find_program(LLVM_COV_PATH llvm-cov)
 find_program(LLVM_PROFDATA_PATH llvm-profdata)
 find_program(LCOV_PATH lcov)
 find_program(GENHTML_PATH genhtml)
+
+# Check if `xcrun` is present and if so use `xcrun llvm-cov` instead.
+find_program(XCRUN_PATH xcrun)
+if(XCRUN_PATH)
+    set(LLVM_COV_PATH "xcrun;llvm-cov")
+endif()
+
 # Hide behind the 'advanced' mode flag for GUI/ccmake
 mark_as_advanced(FORCE LLVM_COV_PATH LLVM_PROFDATA_PATH LCOV_PATH GENHTML_PATH)
 

@@ -13,10 +13,13 @@ variables:
 cmake-format Check:
   image: stabletec/build-core:fedora
   stage: Analysis
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le]
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   allow_failure: true
   script:
     - pip install cmake-format
@@ -28,10 +31,13 @@ cmake-format Check:
 clang-format Check:
   image: stabletec/build-core:fedora
   stage: Analysis
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le]
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   allow_failure: true
   script:
     - clang-format --version
@@ -43,13 +49,16 @@ clang-format Check:
 
 # Targeted Code Coverage
 
-Targeted CC GCC Static:
+Linux/Targeted CC GCC Static:
   image: stabletec/build-core:fedora
   stage: Targeted Code Coverage
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le]
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   variables:
     CC: gcc
     CXX: g++
@@ -57,14 +66,17 @@ Targeted CC GCC Static:
     - cmake example/code-coverage-target/ -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
     - ninja -C build
     - ninja -C build ccov
-  
-Targeted CC GCC Shared:
+
+Linux/Targeted CC GCC Shared:
   image: stabletec/build-core:fedora
   stage: Targeted Code Coverage
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le]
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   variables:
     CC: gcc
     CXX: g++
@@ -74,13 +86,16 @@ Targeted CC GCC Shared:
     - ninja -C build
     - ninja -C build ccov
 
-Targeted CC Clang Static:
+Linux/Targeted CC Clang Static:
   image: stabletec/build-core:fedora
   stage: Targeted Code Coverage
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le]
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   variables:
     CC: clang
     CXX: clang++
@@ -89,14 +104,17 @@ Targeted CC Clang Static:
     - ninja -C build
     - ninja -C build ccov
     - ninja -C build ccov-report
-  
-Targeted CC Clang Shared:
+
+Linux/Targeted CC Clang Shared:
   image: stabletec/build-core:fedora
   stage: Targeted Code Coverage
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le]
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   variables:
     CC: clang
     CXX: clang++
@@ -107,13 +125,44 @@ Targeted CC Clang Shared:
     - ninja -C build ccov
     - ninja -C build ccov-report
 
-Targeted CC Clang Static (Windows):
-  image: stabletec/build-core:windows
+macOS/Targeted CC AppleClang Static:
   stage: Targeted Code Coverage
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64]
   tags:
-    - container
-    - windows
-    - amd64
+    - macos
+    - ${ARCH}
+  script:
+    - cmake example/code-coverage-target/ -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build ccov
+    - ninja -C build ccov-report
+
+macOS/Targeted CC AppleClang Shared:
+  stage: Targeted Code Coverage
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64]
+  tags:
+    - macos
+    - ${ARCH}
+  variables:
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+  script:
+    - cmake example/code-coverage-target/ -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build ccov
+    - ninja -C build ccov-report
+
+macOS/Targeted CC Clang Static:
+  stage: Targeted Code Coverage
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64]
+  tags:
+    - macos
+    - ${ARCH}
   variables:
     CC: clang
     CXX: clang++
@@ -122,14 +171,54 @@ Targeted CC Clang Static (Windows):
     - ninja -C build
     - ninja -C build ccov
     - ninja -C build ccov-report
-  
-Targeted CC Clang Shared (Windows):
-  image: stabletec/build-core:windows
+
+macOS/Targeted CC Clang Shared:
   stage: Targeted Code Coverage
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64]
+  tags:
+    - macos
+    - ${ARCH}
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+  script:
+    - cmake example/code-coverage-target/ -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build ccov
+    - ninja -C build ccov-report
+
+Windows/Targeted CC Clang Static:
+  image: stabletec/build-core:windows-2019
+  stage: Targeted Code Coverage
+  parallel:
+    matrix:
+    - ARCH: [amd64]
   tags:
     - container
     - windows
-    - amd64
+    - ${ARCH}
+  variables:
+    CC: clang
+    CXX: clang++
+  script:
+    - cmake example/code-coverage-target/ -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build ccov
+    - ninja -C build ccov-report
+
+Windows/Targeted CC Clang Shared:
+  image: stabletec/build-core:windows-2019
+  stage: Targeted Code Coverage
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+  tags:
+    - container
+    - windows
+    - ${ARCH}
   variables:
     CC: clang
     CXX: clang++
@@ -142,13 +231,16 @@ Targeted CC Clang Shared (Windows):
 
 # All Code Coverage
 
-All CC GCC Static:
+Linux/All CC GCC Static:
   image: stabletec/build-core:fedora
   stage: All Code Coverage
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le]
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   variables:
     CC: gcc
     CXX: g++
@@ -157,14 +249,17 @@ All CC GCC Static:
     - ninja -C build
     - ninja -C build ccov
     - ninja -C build ccov-all
-  
-All CC GCC Shared:
+
+Linux/All CC GCC Shared:
   image: stabletec/build-core:fedora
   stage: All Code Coverage
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le]
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   variables:
     CC: gcc
     CXX: g++
@@ -175,13 +270,16 @@ All CC GCC Shared:
     - ninja -C build ccov
     - ninja -C build ccov-all
 
-All CC Clang Static:
+Linux/All CC Clang Static:
   image: stabletec/build-core:fedora
   stage: All Code Coverage
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le]
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   variables:
     CC: clang
     CXX: clang++
@@ -191,14 +289,131 @@ All CC Clang Static:
     - ninja -C build ccov-all
     - ninja -C build ccov-report
     - ninja -C build ccov-all-report
-  
-All CC Clang Shared:
+
+Linux/All CC Clang Shared:
   image: stabletec/build-core:fedora
   stage: All Code Coverage
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le]
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+  script:
+    - cmake example/code-coverage-all/ -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build ccov
+    - ninja -C build ccov-all
+    - ninja -C build ccov-report
+    - ninja -C build ccov-all-report
+
+macOS/All CC AppleClang Static:
+  stage: All Code Coverage
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64]
+  tags:
+    - macos
+    - ${ARCH}
+  script:
+    - cmake example/code-coverage-all/ -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build ccov-all
+    - ninja -C build ccov-report
+    - ninja -C build ccov-all-report
+
+macOS/All CC AppleClang Shared:
+  stage: All Code Coverage
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64]
+  tags:
+    - macos
+    - ${ARCH}
+  variables:
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+  script:
+    - cmake example/code-coverage-all/ -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build ccov
+    - ninja -C build ccov-all
+    - ninja -C build ccov-report
+    - ninja -C build ccov-all-report
+
+macOS/All CC Clang Static:
+  stage: All Code Coverage
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64]
+  tags:
+    - macos
+    - ${ARCH}
+  variables:
+    CC: clang
+    CXX: clang++
+  script:
+    - cmake example/code-coverage-all/ -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build ccov-all
+    - ninja -C build ccov-report
+    - ninja -C build ccov-all-report
+
+macOS/All CC Clang Shared:
+  stage: All Code Coverage
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64]
+  tags:
+    - macos
+    - ${ARCH}
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+  script:
+    - cmake example/code-coverage-all/ -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build ccov
+    - ninja -C build ccov-all
+    - ninja -C build ccov-report
+    - ninja -C build ccov-all-report
+
+Windows/All CC Clang Static:
+  image: stabletec/build-core:windows-2019
+  stage: All Code Coverage
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+  tags:
+    - container
+    - windows
+    - ${ARCH}
+  variables:
+    CC: clang
+    CXX: clang++
+  script:
+    - cmake example/code-coverage-all/ -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build ccov
+    - ninja -C build ccov-all
+    - ninja -C build ccov-report
+    - ninja -C build ccov-all-report
+  
+Windows/All CC Clang Shared:
+  image: stabletec/build-core:windows-2019
+  stage: All Code Coverage
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+  tags:
+    - container
+    - windows
+    - ${ARCH}
   variables:
     CC: clang
     CXX: clang++
@@ -216,10 +431,13 @@ All CC Clang Shared:
 .fedora_success_template: &fedora_success_template
   stage: Fedora
   image: stabletec/build-core:fedora
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64]
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   script:
     - cmake example/all -B build -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
     - ninja -C build
@@ -228,44 +446,47 @@ All CC Clang Shared:
 .fedora_failure_template: &fedora_failure_template
   stage: Fedora
   image: stabletec/build-core:fedora
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64]
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   script:
     - cmake example/all -B build -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
     - ninja -C build
     - "! ninja -C build test"
 
-Fedora Static Analysis:
+Fedora/Static Analysis:
   variables:
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -DCLANG_TIDY=ON -DCPPCHECK=ON
   <<: *fedora_success_template
 
-Fedora ThreadSanitizer:
+Fedora/ThreadSanitizer:
   variables:
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -DUSE_SANITIZER=Thread
   <<: *fedora_failure_template
 
-Fedora AddressSanitizer:
+Fedora/AddressSanitizer:
   variables:
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -DUSE_SANITIZER=Address
   <<: *fedora_failure_template
 
-Fedora LeakSanitizer:
+Fedora/LeakSanitizer:
   variables:
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -DUSE_SANITIZER=Leak
   <<: *fedora_failure_template
 
-Fedora UndefinedSanitizer:
+Fedora/UndefinedSanitizer:
   variables:
     CC: clang
     CXX: clang++
@@ -277,10 +498,13 @@ Fedora UndefinedSanitizer:
 .opensuse_success_template: &opensuse_success_template
   stage: openSUSE
   image: stabletec/build-core:opensuse
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64]
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   script:
     - cmake example/all -B build -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
     - ninja -C build
@@ -289,44 +513,47 @@ Fedora UndefinedSanitizer:
 .opensuse_failure_template: &opensuse_failure_template
   stage: openSUSE
   image: stabletec/build-core:opensuse
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64]
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   script:
     - cmake example/all -B build -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
     - ninja -C build
     - "! ninja -C build test"
 
-openSUSE Static Analysis:
+openSUSE/Static Analysis:
   variables:
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -DCLANG_TIDY=ON -DCPPCHECK=ON
   <<: *opensuse_success_template
 
-openSUSE ThreadSanitizer:
+openSUSE/ThreadSanitizer:
   variables:
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -DUSE_SANITIZER=Thread
   <<: *opensuse_failure_template
 
-openSUSE AddressSanitizer:
+openSUSE/AddressSanitizer:
   variables:
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -DUSE_SANITIZER=Address
   <<: *opensuse_failure_template
 
-openSUSE LeakSanitizer:
+openSUSE/LeakSanitizer:
   variables:
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -DUSE_SANITIZER=Leak
   <<: *opensuse_failure_template
 
-openSUSE UndefinedSanitizer:
+openSUSE/UndefinedSanitizer:
   variables:
     CC: clang
     CXX: clang++

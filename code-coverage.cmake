@@ -100,8 +100,20 @@ if(CODE_COVERAGE AND NOT CODE_COVERAGE_ADDED)
 
   if(CMAKE_C_COMPILER_ID MATCHES "(Apple)?[Cc]lang"
      OR CMAKE_CXX_COMPILER_ID MATCHES "(Apple)?[Cc]lang")
-    # Messages
-    message(STATUS "Building with llvm Code Coverage Tools")
+
+    if(CMAKE_C_COMPILER_ID MATCHES "AppleClang" OR CMAKE_CXX_COMPILER_ID
+                                                   MATCHES "AppleClang")
+      # When on macOS and using the Apple-provided toolchain, use the
+      # XCode-provided llvm toolchain via `xcrun`
+      message(
+        STATUS
+          "Building with XCode-provided llvm code coverage tools (via `xcrun`)")
+      set(LLVM_COV_PATH xcrun llvm-cov)
+      set(LLVM_PROFDATA_PATH xcrun llvm-profdata)
+    else()
+      # Use the regular llvm toolchain
+      message(STATUS "Building with llvm code coverage tools")
+    endif()
 
     if(NOT LLVM_COV_PATH)
       message(FATAL_ERROR "llvm-cov not found! Aborting.")

@@ -595,15 +595,28 @@ function(add_code_coverage_all_targets)
 
       # Export coverage information so continuous integration tools (e.g.
       # Jenkins) can consume it
-      add_custom_target(
-        ccov-all-export
-        COMMAND
-          ${LLVM_COV_PATH} export `cat
-          ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list`
-          -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
-          -format="text" ${EXCLUDE_REGEX} >
-          ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.json
-        DEPENDS ccov-all-processing)
+      if(WIN32)
+        add_custom_target(
+          ccov-all-export
+          COMMAND
+            powershell -Command $$FILELIST = Get-Content
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list\; llvm-cov.exe
+            export $$FILELIST
+            -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
+            -format="text" ${EXCLUDE_REGEX} >
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.json
+          DEPENDS ccov-all-processing)
+      else()
+        add_custom_target(
+          ccov-all-export
+          COMMAND
+            ${LLVM_COV_PATH} export `cat
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list`
+            -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
+            -format="text" ${EXCLUDE_REGEX} >
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.json
+          DEPENDS ccov-all-processing)
+      endif()
 
       # Generate HTML output of all added targets for perusal
       if(WIN32)

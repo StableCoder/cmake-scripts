@@ -129,7 +129,7 @@ macOS/Targeted CC AppleClang Static:
   stage: Targeted Code Coverage
   parallel:
     matrix:
-    - ARCH: [amd64, arm64]
+    - ARCH: [arm64]
   tags:
     - macos
     - ${ARCH}
@@ -143,7 +143,7 @@ macOS/Targeted CC AppleClang Shared:
   stage: Targeted Code Coverage
   parallel:
     matrix:
-    - ARCH: [amd64, arm64]
+    - ARCH: [arm64]
   tags:
     - macos
     - ${ARCH}
@@ -159,7 +159,7 @@ macOS/Targeted CC Clang Static:
   stage: Targeted Code Coverage
   parallel:
     matrix:
-    - ARCH: [amd64, arm64]
+    - ARCH: [arm64]
   tags:
     - macos
     - ${ARCH}
@@ -176,7 +176,7 @@ macOS/Targeted CC Clang Shared:
   stage: Targeted Code Coverage
   parallel:
     matrix:
-    - ARCH: [amd64, arm64]
+    - ARCH: [arm64]
   tags:
     - macos
     - ${ARCH}
@@ -316,7 +316,7 @@ macOS/All CC AppleClang Static:
   stage: All Code Coverage
   parallel:
     matrix:
-    - ARCH: [amd64, arm64]
+    - ARCH: [arm64]
   tags:
     - macos
     - ${ARCH}
@@ -331,7 +331,7 @@ macOS/All CC AppleClang Shared:
   stage: All Code Coverage
   parallel:
     matrix:
-    - ARCH: [amd64, arm64]
+    - ARCH: [arm64]
   tags:
     - macos
     - ${ARCH}
@@ -349,7 +349,7 @@ macOS/All CC Clang Static:
   stage: All Code Coverage
   parallel:
     matrix:
-    - ARCH: [amd64, arm64]
+    - ARCH: [arm64]
   tags:
     - macos
     - ${ARCH}
@@ -367,7 +367,7 @@ macOS/All CC Clang Shared:
   stage: All Code Coverage
   parallel:
     matrix:
-    - ARCH: [amd64, arm64]
+    - ARCH: [arm64]
   tags:
     - macos
     - ${ARCH}

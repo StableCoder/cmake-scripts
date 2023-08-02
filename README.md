@@ -20,32 +20,32 @@ This is a collection of quite useful scripts that expand the possibilities for b
 - [Compiler Options `compiler-options.cmake`](#compiler-options-compiler-optionscmake)
 - [Dependency Graph `dependency-graph.cmake`](#dependency-graph-dependency-graphcmake)
   - [Required Arguments](#required-arguments)
-    - [OUTPUT_TYPE *STR*](#output_type-str)
+    - [OUTPUT\_TYPE *STR*](#output_type-str)
   - [Optional Arguments](#optional-arguments)
-    - [ADD_TO_DEP_GRAPH](#add_to_dep_graph)
-    - [TARGET_NAME *STR*](#target_name-str)
-    - [OUTPUT_DIR *STR*](#output_dir-str)
+    - [ADD\_TO\_DEP\_GRAPH](#add_to_dep_graph)
+    - [TARGET\_NAME *STR*](#target_name-str)
+    - [OUTPUT\_DIR *STR*](#output_dir-str)
 - [GLSL Shader File Targeted Compilation`glsl-shaders.cmake`](#glsl-shader-file-targeted-compilationglsl-shaderscmake)
   - [Example](#example)
   - [Required Arguments](#required-arguments-1)
-    - [TARGET_NAME](#target_name)
+    - [TARGET\_NAME](#target_name)
   - [Optional Arguments](#optional-arguments-1)
     - [INTERFACE *FILES*](#interface-files)
     - [PUBLIC *FILES*](#public-files)
     - [PRIVATE *FILES*](#private-files)
-    - [COMPILE_OPTIONS *OPTIONS*](#compile_options-options)
+    - [COMPILE\_OPTIONS *OPTIONS*](#compile_options-options)
 - [Doxygen `doxygen.cmake`](#doxygen-doxygencmake)
   - [Optional Arguments](#optional-arguments-2)
-    - [ADD_TO_DOC](#add_to_doc)
+    - [ADD\_TO\_DOC](#add_to_doc)
     - [INSTALLABLE](#installable)
-    - [PROCESS_DOXYFILE](#process_doxyfile)
-    - [TARGET_NAME *STR*](#target_name-str-1)
-    - [OUTPUT_DIR *STR*](#output_dir-str-1)
-    - [INSTALL_PATH *STR*](#install_path-str)
-    - [DOXYFILE_PATH *STR*](#doxyfile_path-str)
+    - [PROCESS\_DOXYFILE](#process_doxyfile)
+    - [TARGET\_NAME *STR*](#target_name-str-1)
+    - [OUTPUT\_DIR *STR*](#output_dir-str-1)
+    - [INSTALL\_PATH *STR*](#install_path-str)
+    - [DOXYFILE\_PATH *STR*](#doxyfile_path-str)
 - [Prepare the Catch Test Framework `prepare-catch.cmake`](#prepare-the-catch-test-framework-prepare-catchcmake)
   - [Optional Arguments](#optional-arguments-3)
-    - [COMPILED_CATCH](#compiled_catch)
+    - [COMPILED\_CATCH](#compiled_catch)
     - [CATCH1](#catch1)
     - [CLONE](#clone)
 - [Tools `tools.cmake`](#tools-toolscmake)
@@ -338,27 +338,60 @@ Force cloning of Catch, rather than attempting to use a locally-found variant.
 
 ## Tools [`tools.cmake`](tools.cmake)
 
+The three tools in this are used via two provided functions each, for example for clang-tidy:
+```
+add_executable(big_test)
+
+clang_tidy()
+
+# Sources provided here are run with clang-tidy with no options
+add_executable(test2 main2.cpp)
+target_sources(big_test test2.c test2.cpp)
+
+clang_tidy(-header-filter='${CMAKE_SOURCE_DIR}/*')
+
+# Sources provided here are run with clang-tidy with the header-filter options provided to it from above
+add_execuable(test1 main1.cpp)
+target_sources(big_test test1.c test1.cpp)
+
+reset_clang_tidy()
+
+# Sources provided here are not run with clang-tidy at all
+add_executable(test3 main3.cpp)
+target_sources(big_test test3.c test3.cpp)
+
+clang_tidy()
+
+# Sources provided here are run with clang-tidy with no options
+add_executable(test4 main4.cpp)
+target_sources(big_test test4.c test4.cpp)
+```
+
 ### clang-tidy
 
 > clang-tidy is a clang-based C++ “linter” tool. Its purpose is to provide an extensible framework for diagnosing and fixing typical programming errors, like style violations, interface misuse, or bugs that can be deduced via static analysis. clang-tidy is modular and provides a convenient interface for writing new checks.
 >
-> [clang-tidy page](https://clang.llvm.org/extra/clang-tidy/)
+> [clang-tidy](https://clang.llvm.org/extra/clang-tidy/)
 
-When detected, [clang-tidy](https://clang.llvm.org/extra/clang-tidy/) can be enabled by using the option of `-DCLANG_TIDY=ON`, as it is disabled by default.
-
-To use, add the `clang_tidy()` function, with the arguments being the options to pass to the clang tidy program, such as '-checks=*'.
+To use, add the `clang_tidy()` macro, with the arguments being the options passed to the clang-tidy call in the form of `clang-tidy ${ARGS}`. The settings used with clang-tidy can be changed by calling `clang_tidy()` macro again. It can be turned off by calling the `reset_clang_tidy()` macro.
 
 ### include-what-you-use
 
-This tool helps to organize headers for all files encompass all items being used in that file, without accidentally relying upon headers deep down a chain of other headers. This is disabled by default, and can be enabled via have the program installed and adding `-DIWYU=ON`.
+> "Include what you use" means this: for every symbol (type, function variable, or macro) that you use in foo.cc, either foo.cc or foo.h should #include a .h file that exports the declaration of that symbol. The include-what-you-use tool is a program that can be built with the clang libraries in order to analyze #includes of source files to find include-what-you-use violations, and suggest fixes for them.
+>
+> The main goal of include-what-you-use is to remove superfluous #includes. It does this both by figuring out what #includes are not actually needed for this file (for both .cc and .h files), and replacing #includes with forward-declares when possible.
+>
+> [include-what-you-use](https://include-what-you-use.org/)
 
-To use, add the `include_what_you_use()` function, with the arguments being the options to pass to the program.
+To use, add the `include_what_you_use()` macro, with the arguments being the options passed to the include_what_you_use call in the form of `include-what-you-use ${ARGS}`. The settings used with include-what-you-use can be changed by calling `include_what_you_use()` macro again. It can be turned off by calling the `reset_include_what_you_use()` macro.
 
 ### cppcheck
 
-This tool is another static analyzer in the vein of clang-tidy, which focuses on having no false positives. This is by default disabled, and can be enabled via have the program installed and adding `-DCPPCHECK=ON`.
+> Cppcheck is a static analysis tool for C/C++ code. It provides unique code analysis to detect bugs and focuses on detecting undefined behaviour and dangerous coding constructs. The goal is to have very few false positives. Cppcheck is designed to be able to analyze your C/C++ code even if it has non-standard syntax (common in embedded projects). 
+> 
+> [cppcheck](http://cppcheck.net/)
 
-To use, add the `cppcheck()` function, with the arguments being the options to pass to the program.
+To use, add the `cppcheck()` macro, with the arguments being the options passed to the cppcheck call in the form of `cppcheck ${ARGS}`. The settings used with iwyu can be changed by calling `cppcheck()` macro again. It can be turned off by calling the `reset_cppcheck()` macro.
 
 ## Formatting [`formatting.cmake`](formatting.cmake)
 

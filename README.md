@@ -321,6 +321,8 @@ The given doxygen file to use/process. (Defaults to'${CMAKE_CURRENT_SOURCE_DIR}/
 
 ## Prepare the Catch Test Framework [`prepare-catch.cmake`](prepare-catch.cmake)
 
+**DEPRECATED**: Catch now has good CMake integration available natively, so this is no longer required and will be dropped in a future release.
+
 The included `prepare_catch` function contained within attempts to add the infrastructure necessary for automatically adding C/C++ tests using the Catch2 library, including either an interface or pre-compiled 'catch' target library.
 
 It first attempts to find the header on the local machine, and failing that, clones the single header variant for use. It does make the determination between pre-C++11 and will use Catch1.X rather than Catch2 (when cloned), automatically or forced.. Adds a subdirectory of tests/ if it exists from the macro's calling location.

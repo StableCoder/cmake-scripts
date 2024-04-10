@@ -21,6 +21,9 @@ option(FORCE_CATCH_CLONE
 find_file(HAVE_CATCH_HPP catch.hpp PATH_SUFFIXES catch2 catch)
 mark_as_advanced(FORCE HAVE_CATCH_HPP)
 
+# **DEPRECATED** Catch now has proper CMake integration, and this will be dropped
+# in a future release.
+#
 # Attempts to add the infrastructure necessary for automatically adding C/C++
 # tests using the Catch2 library, including either an interface or pre-compiled
 # 'catch' target library.

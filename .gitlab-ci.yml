@@ -22,6 +22,7 @@ cmake-format Check:
     - ${ARCH}
   allow_failure: true
   script:
+    - dnf install -y python3-pip
     - pip install cmake-format
     - cmake-format --version
     - cmake-format -i $(find . -name "*.cmake")

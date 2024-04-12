@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2018-2020 by George Cave - gcave@stablecoder.ca
+# Copyright (C) 2018-2024 by George Cave - gcave@stablecoder.ca
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -222,7 +222,7 @@ endif()
 # EXTERNAL - For GCC's lcov, allows the profiling of 'external' files from the processing directory
 # COVERAGE_TARGET_NAME - For executables ONLY, changes the outgoing target name so instead of `ccov-${TARGET_NAME}` it becomes `ccov-${COVERAGE_TARGET_NAME}`.
 # EXCLUDE <PATTERNS> - Excludes files of the patterns provided from coverage. Note that GCC/lcov excludes by glob pattern, and clang/LLVM excludes via regex! **These do not copy to the 'all' targets.**
-# OBJECTS <TARGETS> - For executables ONLY, if the provided targets are shared libraries, adds coverage information to the output
+# OBJECTS <TARGETS> - For executables ONLY, if the provided targets are static or shared libraries, adds coverage information to the output
 # PRE_ARGS <ARGUMENTS> - For executables ONLY, prefixes given arguments to the associated ccov-* executable call ($<PRE_ARGS> ccov-*)
 # ARGS <ARGUMENTS> - For executables ONLY, appends the given arguments to the associated ccov-* executable call (ccov-* $<ARGS>)
 # ~~~
@@ -304,14 +304,16 @@ function(target_code_coverage TARGET_NAME)
       if(CMAKE_C_COMPILER_ID MATCHES "(Apple)?[Cc]lang"
          OR CMAKE_CXX_COMPILER_ID MATCHES "(Apple)?[Cc]lang")
 
-        # If there are shared objects to also work with, generate the string to
-        # add them here
-        foreach(SO_TARGET ${target_code_coverage_OBJECTS})
+        # If there are static or shared objects to also work with, generate the
+        # string to add them here
+        foreach(LINKED_OBJECT ${target_code_coverage_OBJECTS})
           # Check to see if the target is a shared object
-          if(TARGET ${SO_TARGET})
-            get_target_property(SO_TARGET_TYPE ${SO_TARGET} TYPE)
-            if(${SO_TARGET_TYPE} STREQUAL "SHARED_LIBRARY")
-              set(SO_OBJECTS ${SO_OBJECTS} -object=$<TARGET_FILE:${SO_TARGET}>)
+          if(TARGET ${_TARGET})
+            get_target_property(LINKED_OBJECT_TYPE ${LINKED_OBJECT} TYPE)
+            if(${LINKED_OBJECT_TYPE} STREQUAL "STATIC_LIBRARY"
+               OR ${LINKED_OBJECT_TYPE} STREQUAL "SHARED_LIBRARY")
+              set(LINKED_OBJECTS ${LINKED_OBJECTS}
+                                 -object=$<TARGET_FILE:${LINKED_OBJECT}>)
             endif()
           endif()
         endforeach()
@@ -328,7 +330,8 @@ function(target_code_coverage TARGET_NAME)
             $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
           COMMAND
             ${CMAKE_COMMAND} -E echo "-object=$<TARGET_FILE:${TARGET_NAME}>"
-            ${SO_OBJECTS} >> ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
+            ${LINKED_OBJECTS} >>
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
           COMMAND
             ${CMAKE_COMMAND} -E echo
             "${CMAKE_CURRENT_BINARY_DIR}/${target_code_coverage_COVERAGE_TARGET_NAME}.profraw"
@@ -357,18 +360,18 @@ function(target_code_coverage TARGET_NAME)
         add_custom_target(
           ccov-show-${target_code_coverage_COVERAGE_TARGET_NAME}
           COMMAND
-            ${LLVM_COV_PATH} show $<TARGET_FILE:${TARGET_NAME}> ${SO_OBJECTS}
+            ${LLVM_COV_PATH} show $<TARGET_FILE:${TARGET_NAME}>
             -instr-profile=${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
-            -show-line-counts-or-regions ${EXCLUDE_REGEX}
+            -show-line-counts-or-regions ${LINKED_OBJECTS} ${EXCLUDE_REGEX}
           DEPENDS ccov-processing-${target_code_coverage_COVERAGE_TARGET_NAME})
 
         # Print out a summary of the coverage information to the command line
         add_custom_target(
           ccov-report-${target_code_coverage_COVERAGE_TARGET_NAME}
           COMMAND
-            ${LLVM_COV_PATH} report $<TARGET_FILE:${TARGET_NAME}> ${SO_OBJECTS}
+            ${LLVM_COV_PATH} report $<TARGET_FILE:${TARGET_NAME}>
             -instr-profile=${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
-            ${EXCLUDE_REGEX}
+            ${LINKED_OBJECTS} ${EXCLUDE_REGEX}
           DEPENDS ccov-processing-${target_code_coverage_COVERAGE_TARGET_NAME})
 
         # Export coverage information so continuous integration tools (e.g.
@@ -376,9 +379,9 @@ function(target_code_coverage TARGET_NAME)
         add_custom_target(
           ccov-export-${target_code_coverage_COVERAGE_TARGET_NAME}
           COMMAND
-            ${LLVM_COV_PATH} export $<TARGET_FILE:${TARGET_NAME}> ${SO_OBJECTS}
+            ${LLVM_COV_PATH} export $<TARGET_FILE:${TARGET_NAME}>
             -instr-profile=${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
-            -format="text" ${EXCLUDE_REGEX} >
+            -format="text" ${LINKED_OBJECTS} ${EXCLUDE_REGEX} >
             ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${target_code_coverage_COVERAGE_TARGET_NAME}.json
           DEPENDS ccov-processing-${target_code_coverage_COVERAGE_TARGET_NAME})
 
@@ -386,11 +389,11 @@ function(target_code_coverage TARGET_NAME)
         add_custom_target(
           ccov-${target_code_coverage_COVERAGE_TARGET_NAME}
           COMMAND
-            ${LLVM_COV_PATH} show $<TARGET_FILE:${TARGET_NAME}> ${SO_OBJECTS}
+            ${LLVM_COV_PATH} show $<TARGET_FILE:${TARGET_NAME}>
             -instr-profile=${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
             -show-line-counts-or-regions
             -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${target_code_coverage_COVERAGE_TARGET_NAME}
-            -format="html" ${EXCLUDE_REGEX}
+            -format="html" ${LINKED_OBJECTS} ${EXCLUDE_REGEX}
           DEPENDS ccov-processing-${target_code_coverage_COVERAGE_TARGET_NAME})
 
       elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES

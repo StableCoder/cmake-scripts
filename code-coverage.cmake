@@ -306,14 +306,14 @@ function(target_code_coverage TARGET_NAME)
 
         # If there are static or shared objects to also work with, generate the
         # string to add them here
-        foreach(LINKED_OBJECT ${target_code_coverage_OBJECTS})
+        foreach(LINK_OBJECT ${target_code_coverage_OBJECTS})
           # Check to see if the target is a shared object
-          if(TARGET ${_TARGET})
-            get_target_property(LINKED_OBJECT_TYPE ${LINKED_OBJECT} TYPE)
-            if(${LINKED_OBJECT_TYPE} STREQUAL "STATIC_LIBRARY"
-               OR ${LINKED_OBJECT_TYPE} STREQUAL "SHARED_LIBRARY")
+          if(TARGET ${LINK_OBJECT})
+            get_target_property(LINK_OBJECT_TYPE ${LINK_OBJECT} TYPE)
+            if(${LINK_OBJECT_TYPE} STREQUAL "STATIC_LIBRARY"
+               OR ${LINK_OBJECT_TYPE} STREQUAL "SHARED_LIBRARY")
               set(LINKED_OBJECTS ${LINKED_OBJECTS}
-                                 -object=$<TARGET_FILE:${LINKED_OBJECT}>)
+                                 -object=$<TARGET_FILE:${LINK_OBJECT}>)
             endif()
           endif()
         endforeach()

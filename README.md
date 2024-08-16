@@ -7,16 +7,17 @@ This is a collection of quite useful scripts that expand the possibilities for b
 
 - [C++ Standards `c++-standards.cmake`](#c-standards-c-standardscmake)
 - [Sanitizer Builds `sanitizers.cmake`](#sanitizer-builds-sanitizerscmake)
+  - [Usage](#usage)
 - [Code Coverage `code-coverage.cmake`](#code-coverage-code-coveragecmake)
   - [Added Targets](#added-targets)
-  - [Usage](#usage)
+  - [Usage](#usage-1)
     - [Example 1 - All targets instrumented](#example-1---all-targets-instrumented)
       - [1a - Via global command](#1a---via-global-command)
       - [1b - Via target commands](#1b---via-target-commands)
     - [Example 2: Target instrumented, but with regex pattern of files to be excluded from report](#example-2-target-instrumented-but-with-regex-pattern-of-files-to-be-excluded-from-report)
     - [Example 3: Target added to the 'ccov' and 'ccov-all' targets](#example-3-target-added-to-the-ccov-and-ccov-all-targets)
 - [AFL Fuzzing Instrumentation `afl-fuzzing.cmake`](#afl-fuzzing-instrumentation-afl-fuzzingcmake)
-  - [Usage](#usage-1)
+  - [Usage](#usage-2)
 - [Compiler Options `compiler-options.cmake`](#compiler-options-compiler-optionscmake)
 - [Dependency Graph `dependency-graph.cmake`](#dependency-graph-dependency-graphcmake)
   - [Required Arguments](#required-arguments)
@@ -88,16 +89,55 @@ A quick rundown of the tools available, and what they do:
 - [MemorySanitizer](https://clang.llvm.org/docs/MemorySanitizer.html) detects uninitialized reads.
 - [Control Flow Integrity](https://clang.llvm.org/docs/ControlFlowIntegrity.html) is designed to detect certain forms of undefined behaviour that can potentially allow attackers to subvert the program's control flow.
 
-These are used by declaring the `USE_SANITIZER` CMake variable as string containing any of:
-- Address
-- Memory
-- MemoryWithOrigins
-- Undefined
-- Thread
-- Leak
-- CFI
+### Usage
 
-Multiple values are allowed, e.g. `-DUSE_SANITIZER=Address,Leak` but some sanitizers cannot be combined together, e.g.`-DUSE_SANITIZER=Address,Memory` will result in configuration error. The delimeter character is not required and `-DUSE_SANITIZER=AddressLeak` would work as well.
+The most basic way to enable sanitizers is to simply call `add_sanitizer_support` with the desired sanitizer names, whereupon it will check for the availability and compatability of the combined flags and apply to following compile targets:
+```cmake
+# apply address and leak sanitizers
+add_sanitizer_support(address leak)
+# future targets will be compiled with '-fsanitize=address -fsanitize=leak'
+```
+
+Compile options on a per-sanitizer basis can be accomplished by calling `set_sanitizer_options` before with the name of the sanitizer and desired compile options:
+```cmake
+# set custom options that will be applies with that specific sanitizer
+set_sanitizer_options(address -fno-omit-frame-pointer)
+
+add_sanitizer_support(address leak)
+# future targets will be compiled with '-fsanitize=address -fno-omit-frame-pointer -fsanitize=leak'
+```
+
+Per-sanitizer compile options can also be set by setting the named `SANITIZER_${SANITIZER_NAME}_OPTIONS` variable before, either in script or via the command line.
+```cmake
+# CMake called from command line as `cmake -S . -B build -D SANITIZER_ADDRESS_OPTION='-fno-omit-frame-pointer'`
+
+add_sanitizer_support(address)
+# future targets will be compiled with '-fsanitize=address -fno-omit-frame-pointer' 
+# despite no call to `set_sanitizer_options`
+```
+
+To prevent custom sanitizer options from external source being overwritten, the `DEFAULT` option can be used, so that the flags are only used if none have been set previously:
+```cmake
+# command line has options set via command-line: `cmake -S . -B build -D SANITIZER_ADDRESS_OPTION='-fno-omit-frame-pointer'`
+
+# attempt to set custom options that will not apply since the variable already exists
+# and `DEFAULT` option is passed in.
+set_sanitizer_options(address DEFAULT -some-other-flag)
+
+add_sanitizer_support(address)
+# future targets will be compiled with '-fsanitize=address -fno-omit-frame-pointer'
+```
+
+Different sets of options used with the sanitizer can be accomplished by defining the sanitizer serparately with the call to `set_sanitizer_option`:
+```cmake
+# Despite both using the 'memory' sanitizer, which specific set of flags can be chosen
+# when calling `add_sanitizer_support` with either 'memory' or 'memorywithorigins'
+set_sanitizer_options(memory DEFAULT -fno-omit-frame-pointer)
+set_sanitizer_options(memorywithorigins DEFAULT
+                      SANITIZER memory
+                      -fno-omit-frame-pointer 
+                      -fsanitize-memory-track-origins)
+```
 
 ## Code Coverage [`code-coverage.cmake`](code-coverage.cmake)
 

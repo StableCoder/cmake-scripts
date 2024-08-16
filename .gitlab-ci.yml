@@ -2,8 +2,7 @@ stages:
   - Analysis
   - Targeted Code Coverage
   - All Code Coverage
-  - Fedora
-  - openSUSE
+  - Sanitizers
 
 variables:
   CTEST_OUTPUT_ON_FAILURE: "1"
@@ -427,10 +426,10 @@ Windows/All CC Clang Shared:
     - ninja -C build ccov-report
     - ninja -C build ccov-all-report
 
-# Fedora
+# Sanitizers
 
-.fedora_success_template: &fedora_success_template
-  stage: Fedora
+.linux_success_template: &linux_success_template
+  stage: Sanitizers
   image: stabletec/build-core:fedora
   parallel:
     matrix:
@@ -444,8 +443,8 @@ Windows/All CC Clang Shared:
     - ninja -C build
     - ninja -C build test
 
-.fedora_failure_template: &fedora_failure_template
-  stage: Fedora
+.linux_failure_template: &linux_failure_template
+  stage: Sanitizers
   image: stabletec/build-core:fedora
   parallel:
     matrix:
@@ -459,37 +458,79 @@ Windows/All CC Clang Shared:
     - ninja -C build
     - "! ninja -C build test"
 
-Fedora/Static Analysis:
+Linux/Static Analysis:
   variables:
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -DCLANG_TIDY=ON -DCPPCHECK=ON
-  <<: *fedora_success_template
+  <<: *linux_success_template
 
-Fedora/ThreadSanitizer:
+Linux/Clang/ThreadSanitizer:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -DUSE_SANITIZER=Thread
-  <<: *fedora_failure_template
+    CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=thread
+  <<: *linux_failure_template
 
-Fedora/AddressSanitizer:
+Linux/Clang/AddressSanitizer:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -DUSE_SANITIZER=Address
-  <<: *fedora_failure_template
+    CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=address
+  <<: *linux_failure_template
 
-Fedora/LeakSanitizer:
+Linux/Clang/LeakSanitizer:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -DUSE_SANITIZER=Leak
-  <<: *fedora_failure_template
+    CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=leak
+  <<: *linux_failure_template
 
-Fedora/UndefinedSanitizer:
+Linux/Clang/MemorySanitizer:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -DUSE_SANITIZER=Undefined
-  <<: *fedora_success_template
+    CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=memory
+  <<: *linux_failure_template
+
+Linux/Clang/UndefinedSanitizer:
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=undefined
+  <<: *linux_success_template
+
+Linux/Clang/ThreadSanitizer (LEGACY):
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -D USE_SANITIZER=thread
+  <<: *linux_failure_template
+
+Linux/Clang/AddressSanitizer (LEGACY):
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -D USE_SANITIZER=address
+  <<: *linux_failure_template
+
+Linux/Clang/LeakSanitizer (LEGACY):
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -D USE_SANITIZER=leak
+  <<: *linux_failure_template
+
+Linux/Clang/MemorySanitizer (LEGACY):
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -D USE_SANITIZER=memory
+  <<: *linux_failure_template
+
+Linux/Clang/UndefinedSanitizer (LEGACY):
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -D USE_SANITIZER=undefined
+  <<: *linux_success_template

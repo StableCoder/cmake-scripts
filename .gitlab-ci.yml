@@ -465,6 +465,11 @@ Linux/Static Analysis:
     CMAKE_OPTIONS: -DCLANG_TIDY=ON -DCPPCHECK=ON
   <<: *linux_success_template
 
+Linux/GCC/ThreadSanitizer:
+  variables:
+    CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=thread
+  <<: *linux_failure_template
+
 Linux/Clang/ThreadSanitizer:
   variables:
     CC: clang
@@ -472,11 +477,21 @@ Linux/Clang/ThreadSanitizer:
     CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=thread
   <<: *linux_failure_template
 
+Linux/GCC/AddressSanitizer:
+  variables:
+    CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=address
+  <<: *linux_failure_template
+
 Linux/Clang/AddressSanitizer:
   variables:
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=address
+  <<: *linux_failure_template
+
+Linux/GCC/LeakSanitizer:
+  variables:
+    CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=leak
   <<: *linux_failure_template
 
 Linux/Clang/LeakSanitizer:
@@ -492,6 +507,11 @@ Linux/Clang/MemorySanitizer:
     CXX: clang++
     CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=memory
   <<: *linux_failure_template
+
+Linux/GCC/UndefinedSanitizer:
+  variables:
+    CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=undefined
+  <<: *linux_success_template
 
 Linux/Clang/UndefinedSanitizer:
   variables:

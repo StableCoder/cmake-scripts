@@ -554,3 +554,72 @@ Linux/Clang/UndefinedSanitizer (LEGACY):
     CXX: clang++
     CMAKE_OPTIONS: -D USE_SANITIZER=undefined
   <<: *linux_success_template
+
+.macos_success_template: &macos_success_template
+  stage: Sanitizers
+  parallel:
+    matrix:
+      - ARCH: [arm64]
+  tags:
+    - macos
+    - ${ARCH}
+  script:
+    - cmake example/all -B build -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
+    - ninja -C build
+    - ninja -C build test
+
+.macos_failure_template: &macos_failure_template
+  stage: Sanitizers
+  parallel:
+    matrix:
+      - ARCH: [arm64]
+  tags:
+    - macos
+    - ${ARCH}
+  script:
+    - cmake example/all -B build -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
+    - ninja -C build
+    - "! ninja -C build test"
+
+macOS/AppleClang/ThreadSanitizer:
+  variables:
+    CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=thread
+  <<: *macos_failure_template
+
+macOS/Clang/ThreadSanitizer:
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=thread
+  <<: *macos_failure_template
+
+macOS/AppleClang/AddressSanitizer:
+  variables:
+    CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=address
+  <<: *macos_failure_template
+
+macOS/Clang/AddressSanitizer:
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=address
+  <<: *macos_failure_template
+
+macOS/Clang/LeakSanitizer:
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=leak
+  <<: *macos_failure_template
+
+macOS/AppleClang/UndefinedSanitizer:
+  variables:
+    CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=undefined
+  <<: *macos_success_template
+
+macOS/Clang/UndefinedSanitizer:
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=undefined
+  <<: *macos_success_template

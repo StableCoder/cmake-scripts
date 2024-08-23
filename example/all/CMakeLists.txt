@@ -14,7 +14,7 @@ include(dependency-graph)
 cxx_11()
 
 # Tools
-if(NOT WIN32)
+if(UNIX AND NOT APPLE)
   file(GLOB_RECURSE FFILES *.[hc] *.[hc]pp)
   clang_format(format ${FFILES})
 

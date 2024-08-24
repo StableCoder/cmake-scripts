@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2018-2021 by George Cave - gcave@stablecoder.ca
+# Copyright (C) 2018-2024 by George Cave - gcave@stablecoder.ca
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -21,8 +21,8 @@ macro(cxx_11)
 
   if(MSVC_VERSION GREATER_EQUAL "1900" AND CMAKE_VERSION LESS 3.10)
     include(CheckCXXCompilerFlag)
-    check_cxx_compiler_flag("/std:c++11" _cpp_latest_flag_supported)
-    if(_cpp_latest_flag_supported)
+    check_cxx_compiler_flag("/std:c++11" _cpp_11_flag_supported)
+    if(_cpp_11_flag_supported)
       add_compile_options("/std:c++11")
     endif()
   endif()
@@ -36,8 +36,8 @@ macro(cxx_14)
 
   if(MSVC_VERSION GREATER_EQUAL "1900" AND CMAKE_VERSION LESS 3.10)
     include(CheckCXXCompilerFlag)
-    check_cxx_compiler_flag("/std:c++14" _cpp_latest_flag_supported)
-    if(_cpp_latest_flag_supported)
+    check_cxx_compiler_flag("/std:c++14" _cpp_14_flag_supported)
+    if(_cpp_14_flag_supported)
       add_compile_options("/std:c++14")
     endif()
   endif()
@@ -51,8 +51,8 @@ macro(cxx_17)
 
   if(MSVC_VERSION GREATER_EQUAL "1900" AND CMAKE_VERSION LESS 3.10)
     include(CheckCXXCompilerFlag)
-    check_cxx_compiler_flag("/std:c++17" _cpp_latest_flag_supported)
-    if(_cpp_latest_flag_supported)
+    check_cxx_compiler_flag("/std:c++17" _cpp_17_flag_supported)
+    if(_cpp_17_flag_supported)
       add_compile_options("/std:c++17")
     endif()
   endif()

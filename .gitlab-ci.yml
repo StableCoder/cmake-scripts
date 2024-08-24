@@ -623,3 +623,18 @@ macOS/Clang/UndefinedSanitizer:
     CXX: clang++
     CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=undefined
   <<: *macos_success_template
+
+Windows/MSVC/Address Sanitizer:
+  image: stabletec/build-core:windows-2019
+  stage: Sanitizers
+  parallel:
+    matrix:
+      - ARCH: [amd64]
+  tags:
+    - container
+    - windows
+    - ${ARCH}
+  script:
+    - cmake example/all/ -B build -GNinja -D EXAMPLE_USE_SANITIZER=address
+    - ninja -C build
+    - ninja -C build test ; if ($? -ne 0) { return 0 } else { return 1 }

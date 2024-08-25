@@ -98,11 +98,22 @@ function(append_quoteless value)
   endforeach(variable)
 endfunction()
 
-function(test_san_flags RETURN_VAR)
+function(test_san_flags RETURN_VAR LINK_OPTIONS)
   set(QUIET_BACKUP ${CMAKE_REQUIRED_QUIET})
   set(CMAKE_REQUIRED_QUIET TRUE)
   unset(${RETURN_VAR} CACHE)
-  set(FLAGS_BACKUP ${CMAKE_REQUIRED_FLAGS})
+
+  # backup test flags
+  set(OPTION_FLAGS_BACKUP ${CMAKE_REQUIRED_FLAGS})
+  set(LINK_FLAGS_BACKUP ${CMAKE_REQUIRED_LINK_OPTIONS})
+
+  # set link options
+  unset(CMAKE_REQUIRED_LINK_OPTIONS)
+  foreach(ARG ${${LINK_OPTIONS}})
+    set(CMAKE_REQUIRED_LINK_OPTIONS ${CMAKE_REQUIRED_LINK_OPTIONS};${ARG})
+  endforeach()
+
+  # set compile options
   unset(CMAKE_REQUIRED_FLAGS)
   unset(test_san_flags_OPTION_TEST CACHE)
   foreach(ARG ${ARGN})
@@ -115,10 +126,16 @@ function(test_san_flags RETURN_VAR)
     endif()
     set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${ARG}")
   endforeach()
+
+  # actually test if compilation can occur with given compiler/link options
   if(NOT DEFINED test_san_flags_OPTION_TEST OR test_san_flags_OPTION_TEST)
     check_cxx_source_compiles("int main() { return 0; }" ${RETURN_VAR})
   endif()
-  set(CMAKE_REQUIRED_FLAGS "${FLAGS_BACKUP}")
+
+  # reset backed-up flags
+  set(CMAKE_REQUIRED_LINK_OPTIONS "${LINK_FLAGS_BACKUP}")
+  set(CMAKE_REQUIRED_FLAGS "${OPTION_FLAGS_BACKUP}")
+
   set(CMAKE_REQUIRED_QUIET "${QUIET_BACKUP}")
 endfunction()
 
@@ -194,8 +211,11 @@ function(set_sanitizer_options SANITIZER_NAME)
 
     # check if the compile option combination can compile
     unset(SANITIZER_${UPPER_SANITIZER_NAME}_AVAILABLE CACHE)
+    set(set_sanitizer_options_LINK_OPTIONS
+        -fsanitize=${SANITIZER_${UPPER_SANITIZER_NAME}_SANITIZER})
     test_san_flags(
       SANITIZER_${UPPER_SANITIZER_NAME}_AVAILABLE
+      set_sanitizer_options_LINK_OPTIONS
       -fsanitize=${SANITIZER_${UPPER_SANITIZER_NAME}_SANITIZER};${set_sanitizer_options_UNPARSED_ARGUMENTS}
     )
 
@@ -295,8 +315,9 @@ function(add_sanitizer_support)
         SANITIZER_COMPILE_OPTIONS_GLOBAL_CACHE)
     # set of flags needs to be tested for compatability
     unset(SANITIZER_SELECTED_OPTIONS_AVAILABLE CACHE)
-    test_san_flags(SANITIZER_SELECTED_OPTIONS_AVAILABLE
-                   "${SANITIZER_COMPILE_OPTIONS_SELECTED}")
+    test_san_flags(
+      SANITIZER_SELECTED_OPTIONS_AVAILABLE SANITIZER_SELECTED_LINK_OPTIONS
+      ${SANITIZER_COMPILE_OPTIONS_SELECTED})
 
     # whatever the result, cache it to reduce repeating test
     set(SANITIZER_COMPILE_OPTIONS_GLOBAL_CACHE

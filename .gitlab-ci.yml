@@ -602,7 +602,7 @@ Windows/MSVC/Address Sanitizer:
   script:
     - cmake example/all/ -B build -GNinja -D EXAMPLE_USE_SANITIZER=address
     - ninja -C build
-    - ninja -C build test ; if ($? -ne 0) { return 0 } else { return 1 }
+    - ninja -C build test ; if ($? -ne 0) { exit 1 } else { exit 0 }
 
 # Legacy Sanitizer
 
@@ -674,7 +674,7 @@ Windows/MSVC/Address Sanitizer (LEGACY):
   script:
     - cmake example/all/ -B build -GNinja -D USE_SANITIZER=address
     - ninja -C build
-    - ninja -C build test ; if ($? -ne 0) { return 0 } else { return 1 }
+    - ninja -C build test ; if ($? -ne 0) { exit 1 } else { exit 0 }
 
 macOS/AppleClang/ThreadSanitizer (LEGACY):
   variables:

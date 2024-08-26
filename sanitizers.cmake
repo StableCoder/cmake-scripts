@@ -337,14 +337,31 @@ endfunction()
 if(SANITIZER_ENABLE_LEGACY_SUPPORT OR USE_SANITIZER)
   set(SANITIZER_LEGACY_SUPPORT ON)
 
-  set_sanitizer_options(address DEFAULT -fno-omit-frame-pointer)
-  set_sanitizer_options(leak DEFAULT -fno-omit-frame-pointer)
-  set_sanitizer_options(memory DEFAULT -fno-omit-frame-pointer)
-  set_sanitizer_options(memorywithorigins DEFAULT SANITIZER memory
-                        -fno-omit-frame-pointer -fsanitize-memory-track-origins)
-  set_sanitizer_options(undefined DEFAULT -fno-omit-frame-pointer)
-  set_sanitizer_options(thread DEFAULT -fno-omit-frame-pointer)
-  set_sanitizer_options(cfi DEFAULT -fno-omit-frame-pointer)
+  # The older variants used to add this flag, but since MSVC doesn't support it,
+  # do a check and add it only if available
+  set(QUIET_BACKUP ${CMAKE_REQUIRED_QUIET})
+  set(CMAKE_REQUIRED_QUIET TRUE)
+  unset(SANITIZER_LEGACY_DEFAULT_COMMON_OPTIONS)
+  check_cxx_compiler_flag(-fno-omit-frame-pointer
+                          SANITIZER_OMIT_FRAME_POINTER_AVAILABLE)
+  set(CMAKE_REQUIRED_QUIET "${QUIET_BACKUP}")
+  if(SANITIZER_OMIT_FRAME_POINTER_AVAILABLE)
+    set(SANITIZER_LEGACY_DEFAULT_COMMON_OPTIONS -fno-omit-frame-pointer)
+  endif()
+
+  set_sanitizer_options(address DEFAULT
+                        ${SANITIZER_LEGACY_DEFAULT_COMMON_OPTIONS})
+  set_sanitizer_options(leak DEFAULT ${SANITIZER_LEGACY_DEFAULT_COMMON_OPTIONS})
+  set_sanitizer_options(memory DEFAULT
+                        ${SANITIZER_LEGACY_DEFAULT_COMMON_OPTIONS})
+  set_sanitizer_options(
+    memorywithorigins DEFAULT SANITIZER memory
+    ${SANITIZER_LEGACY_DEFAULT_COMMON_OPTIONS} -fsanitize-memory-track-origins)
+  set_sanitizer_options(undefined DEFAULT
+                        ${SANITIZER_LEGACY_DEFAULT_COMMON_OPTIONS})
+  set_sanitizer_options(thread DEFAULT
+                        ${SANITIZER_LEGACY_DEFAULT_COMMON_OPTIONS})
+  set_sanitizer_options(cfi DEFAULT ${SANITIZER_LEGACY_DEFAULT_COMMON_OPTIONS})
 
   set(USE_SANITIZER
       ""

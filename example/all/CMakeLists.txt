@@ -61,11 +61,9 @@ target_code_coverage(lsanFail AUTO ALL)
 add_test(lsan lsanFail)
 
 # Fails with AddressSanitizer
-if(EXAMPLE_USE_SANITIZER MATCHES "([Aa]ddress)")
-  add_executable(asanFail ../src/asan_fail.cpp)
-  target_code_coverage(asanFail AUTO ALL)
-  add_test(asan asanFail)
-endif()
+add_executable(asanFail ../src/asan_fail.cpp)
+target_code_coverage(asanFail AUTO ALL)
+add_test(asan asanFail)
 
 # Fails with MemorySanitizer
 add_executable(msanFail ../src/msan_fail.cpp)

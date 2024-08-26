@@ -520,41 +520,6 @@ Linux/Clang/UndefinedSanitizer:
     CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=undefined
   <<: *linux_success_template
 
-Linux/Clang/ThreadSanitizer (LEGACY):
-  variables:
-    CC: clang
-    CXX: clang++
-    CMAKE_OPTIONS: -D USE_SANITIZER=thread
-  <<: *linux_failure_template
-
-Linux/Clang/AddressSanitizer (LEGACY):
-  variables:
-    CC: clang
-    CXX: clang++
-    CMAKE_OPTIONS: -D USE_SANITIZER=address
-  <<: *linux_failure_template
-
-Linux/Clang/LeakSanitizer (LEGACY):
-  variables:
-    CC: clang
-    CXX: clang++
-    CMAKE_OPTIONS: -D USE_SANITIZER=leak
-  <<: *linux_failure_template
-
-Linux/Clang/MemorySanitizer (LEGACY):
-  variables:
-    CC: clang
-    CXX: clang++
-    CMAKE_OPTIONS: -D USE_SANITIZER=memory
-  <<: *linux_failure_template
-
-Linux/Clang/UndefinedSanitizer (LEGACY):
-  variables:
-    CC: clang
-    CXX: clang++
-    CMAKE_OPTIONS: -D USE_SANITIZER=undefined
-  <<: *linux_success_template
-
 .macos_success_template: &macos_success_template
   stage: Sanitizers
   parallel:
@@ -638,3 +603,118 @@ Windows/MSVC/Address Sanitizer:
     - cmake example/all/ -B build -GNinja -D EXAMPLE_USE_SANITIZER=address
     - ninja -C build
     - ninja -C build test ; if ($? -ne 0) { return 0 } else { return 1 }
+
+# Legacy Sanitizer
+
+Linux/GCC/ThreadSanitizer (LEGACY):
+  variables:
+    CMAKE_OPTIONS: -D USE_SANITIZER=thread
+  <<: *linux_failure_template
+
+Linux/Clang/ThreadSanitizer (LEGACY):
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -D USE_SANITIZER=thread
+  <<: *linux_failure_template
+
+Linux/GCC/AddressSanitizer (LEGACY):
+  variables:
+    CMAKE_OPTIONS: -D USE_SANITIZER=address
+  <<: *linux_failure_template
+
+Linux/Clang/AddressSanitizer (LEGACY):
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -D USE_SANITIZER=address
+  <<: *linux_failure_template
+
+Linux/GCC/LeakSanitizer (LEGACY):
+  variables:
+    CMAKE_OPTIONS: -D USE_SANITIZER=leak
+  <<: *linux_failure_template
+
+Linux/Clang/LeakSanitizer (LEGACY):
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -D USE_SANITIZER=leak
+  <<: *linux_failure_template
+
+Linux/Clang/MemorySanitizer (LEGACY):
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -D USE_SANITIZER=memory
+  <<: *linux_failure_template
+
+Linux/GCC/UndefinedSanitizer (LEGACY):
+  variables:
+    CMAKE_OPTIONS: -D USE_SANITIZER=undefined
+  <<: *linux_success_template
+
+Linux/Clang/UndefinedSanitizer (LEGACY):
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -D USE_SANITIZER=undefined
+  <<: *linux_success_template
+
+Windows/MSVC/Address Sanitizer (LEGACY):
+  image: stabletec/build-core:windows-2019
+  stage: Sanitizers
+  parallel:
+    matrix:
+      - ARCH: [amd64]
+  tags:
+    - container
+    - windows
+    - ${ARCH}
+  script:
+    - cmake example/all/ -B build -GNinja -D USE_SANITIZER=address
+    - ninja -C build
+    - ninja -C build test ; if ($? -ne 0) { return 0 } else { return 1 }
+
+macOS/AppleClang/ThreadSanitizer (LEGACY):
+  variables:
+    CMAKE_OPTIONS: -D USE_SANITIZER=thread
+  <<: *macos_failure_template
+
+macOS/Clang/ThreadSanitizer (LEGACY):
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -D USE_SANITIZER=thread
+  <<: *macos_failure_template
+
+macOS/AppleClang/AddressSanitizer (LEGACY):
+  variables:
+    CMAKE_OPTIONS: -D USE_SANITIZER=address
+  <<: *macos_failure_template
+
+macOS/Clang/AddressSanitizer (LEGACY):
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -D USE_SANITIZER=address
+  <<: *macos_failure_template
+
+macOS/Clang/LeakSanitizer (LEGACY):
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -D USE_SANITIZER=leak
+  <<: *macos_failure_template
+
+macOS/AppleClang/UndefinedSanitizer (LEGACY):
+  variables:
+    CMAKE_OPTIONS: -D USE_SANITIZER=undefined
+  <<: *macos_success_template
+
+macOS/Clang/UndefinedSanitizer (LEGACY):
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -D USE_SANITIZER=undefined
+  <<: *macos_success_template

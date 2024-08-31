@@ -4,9 +4,6 @@ stages:
   - All Code Coverage
   - Sanitizers
 
-variables:
-  CTEST_OUTPUT_ON_FAILURE: "1"
-
 # Analysis
 
 cmake-format Check:
@@ -441,7 +438,7 @@ Windows/All CC Clang Shared:
   script:
     - cmake example/all -B build -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
     - ninja -C build
-    - ninja -C build test
+    - ctest --test-dir build --output-on-failure ${CTEST_OPTIONS}
 
 .linux_failure_template: &linux_failure_template
   stage: Sanitizers
@@ -456,7 +453,7 @@ Windows/All CC Clang Shared:
   script:
     - cmake example/all -B build -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
     - ninja -C build
-    - "! ninja -C build test"
+    - "! ctest --test-dir build --output-on-failure ${CTEST_OPTIONS}"
 
 Linux/Static Analysis:
   variables:
@@ -511,6 +508,7 @@ Linux/Clang/MemorySanitizer:
 Linux/GCC/UndefinedSanitizer:
   variables:
     CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=undefined
+    CTEST_OPTIONS: --verbose
   <<: *linux_success_template
 
 Linux/Clang/UndefinedSanitizer:
@@ -518,6 +516,7 @@ Linux/Clang/UndefinedSanitizer:
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=undefined
+    CTEST_OPTIONS: --verbose
   <<: *linux_success_template
 
 .macos_success_template: &macos_success_template
@@ -531,7 +530,7 @@ Linux/Clang/UndefinedSanitizer:
   script:
     - cmake example/all -B build -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
     - ninja -C build
-    - ninja -C build test
+    - ctest --test-dir build --output-on-failure ${CTEST_OPTIONS}
 
 .macos_failure_template: &macos_failure_template
   stage: Sanitizers
@@ -544,7 +543,7 @@ Linux/Clang/UndefinedSanitizer:
   script:
     - cmake example/all -B build -GNinja -DCMAKE_BUILD_TYPE=Release ${CMAKE_OPTIONS}
     - ninja -C build
-    - "! ninja -C build test"
+    - "! ctest --test-dir build --output-on-failure ${CTEST_OPTIONS}"
 
 macOS/AppleClang/ThreadSanitizer:
   variables:
@@ -580,6 +579,7 @@ macOS/Clang/LeakSanitizer:
 macOS/AppleClang/UndefinedSanitizer:
   variables:
     CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=undefined
+    CTEST_OPTIONS: --verbose
   <<: *macos_success_template
 
 macOS/Clang/UndefinedSanitizer:
@@ -587,6 +587,7 @@ macOS/Clang/UndefinedSanitizer:
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=undefined
+    CTEST_OPTIONS: --verbose
   <<: *macos_success_template
 
 Windows/MSVC/Address Sanitizer:
@@ -600,9 +601,9 @@ Windows/MSVC/Address Sanitizer:
     - windows
     - ${ARCH}
   script:
-    - cmake example/all/ -B build -GNinja -D EXAMPLE_USE_SANITIZER=address
+    - cmake example/all/ -B build -GNinja -D EXAMPLE_USE_SANITIZER=address $env:CMAKE_OPTIONS
     - ninja -C build
-    - ninja -C build test ; if ($? -ne 0) { exit 1 } else { exit 0 }
+    - ctest --test-dir build --output-on-failure $env:CTEST_OPTIONS ; if ($? -ne 0) { exit 1 } else { exit 0 }
 
 # Legacy Sanitizer
 
@@ -652,6 +653,7 @@ Linux/Clang/MemorySanitizer (LEGACY):
 Linux/GCC/UndefinedSanitizer (LEGACY):
   variables:
     CMAKE_OPTIONS: -D USE_SANITIZER=undefined
+    CTEST_OPTIONS: --verbose
   <<: *linux_success_template
 
 Linux/Clang/UndefinedSanitizer (LEGACY):
@@ -659,6 +661,7 @@ Linux/Clang/UndefinedSanitizer (LEGACY):
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -D USE_SANITIZER=undefined
+    CTEST_OPTIONS: --verbose
   <<: *linux_success_template
 
 Windows/MSVC/Address Sanitizer (LEGACY):
@@ -674,7 +677,7 @@ Windows/MSVC/Address Sanitizer (LEGACY):
   script:
     - cmake example/all/ -B build -GNinja -D USE_SANITIZER=address
     - ninja -C build
-    - ninja -C build test ; if ($? -ne 0) { exit 1 } else { exit 0 }
+    - ctest --test-dir build --output-on-failure $env:CTEST_OPTIONS ; if ($? -ne 0) { exit 1 } else { exit 0 }
 
 macOS/AppleClang/ThreadSanitizer (LEGACY):
   variables:
@@ -710,6 +713,7 @@ macOS/Clang/LeakSanitizer (LEGACY):
 macOS/AppleClang/UndefinedSanitizer (LEGACY):
   variables:
     CMAKE_OPTIONS: -D USE_SANITIZER=undefined
+    CTEST_OPTIONS: --verbose
   <<: *macos_success_template
 
 macOS/Clang/UndefinedSanitizer (LEGACY):
@@ -717,4 +721,5 @@ macOS/Clang/UndefinedSanitizer (LEGACY):
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -D USE_SANITIZER=undefined
+    CTEST_OPTIONS: --verbose
   <<: *macos_success_template

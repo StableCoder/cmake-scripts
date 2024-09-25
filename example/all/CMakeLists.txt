@@ -53,12 +53,12 @@ if(EXAMPLE_USE_SANITIZER)
 endif()
 
 # Fails with ThreadSanitizer
-add_executable(tsanFail ../src/tsan_fail.cpp)
-target_code_coverage(tsanFail AUTO ALL)
+add_executable(tsan_data_race ../src/tsan/data_race.cpp)
+target_code_coverage(tsan_data_race AUTO ALL)
 if(UNIX)
-  target_link_libraries(tsanFail PUBLIC pthread)
+  target_link_libraries(tsan_data_race PUBLIC pthread)
 endif()
-add_test(tsan tsanFail)
+add_test(tsan_data_race tsan_data_race)
 
 # Fails with LeakSanitizer
 add_executable(lsan_direct_leak ../src/lsan/direct_leak.c)

@@ -188,7 +188,7 @@ macOS/Targeted CC Clang Shared:
     - ninja -C build ccov-report
 
 Windows/Targeted CC Clang Static:
-  image: stabletec/build-core:windows-2019
+  image: stabletec/build-core:windows-ltsc2022
   stage: Targeted Code Coverage
   parallel:
     matrix:
@@ -196,6 +196,7 @@ Windows/Targeted CC Clang Static:
   tags:
     - container
     - windows
+    - ltsc2022
     - ${ARCH}
   variables:
     CC: clang
@@ -207,7 +208,7 @@ Windows/Targeted CC Clang Static:
     - ninja -C build ccov-report
 
 Windows/Targeted CC Clang Shared:
-  image: stabletec/build-core:windows-2019
+  image: stabletec/build-core:windows-ltsc2022
   stage: Targeted Code Coverage
   parallel:
     matrix:
@@ -215,6 +216,7 @@ Windows/Targeted CC Clang Shared:
   tags:
     - container
     - windows
+    - ltsc2022
     - ${ARCH}
   variables:
     CC: clang
@@ -381,7 +383,7 @@ macOS/All CC Clang Shared:
     - ninja -C build ccov-all-report
 
 Windows/All CC Clang Static:
-  image: stabletec/build-core:windows-2019
+  image: stabletec/build-core:windows-ltsc2022
   stage: All Code Coverage
   parallel:
     matrix:
@@ -389,6 +391,7 @@ Windows/All CC Clang Static:
   tags:
     - container
     - windows
+    - ltsc2022
     - ${ARCH}
   variables:
     CC: clang
@@ -402,7 +405,7 @@ Windows/All CC Clang Static:
     - ninja -C build ccov-all-report
 
 Windows/All CC Clang Shared:
-  image: stabletec/build-core:windows-2019
+  image: stabletec/build-core:windows-ltsc2022
   stage: All Code Coverage
   parallel:
     matrix:
@@ -410,6 +413,7 @@ Windows/All CC Clang Shared:
   tags:
     - container
     - windows
+    - ltsc2022
     - ${ARCH}
   variables:
     CC: clang
@@ -591,7 +595,7 @@ macOS/Clang/UndefinedSanitizer:
   <<: *macos_success_template
 
 Windows/MSVC/Address Sanitizer:
-  image: stabletec/build-core:windows-2019
+  image: stabletec/build-core:windows-ltsc2022
   stage: Sanitizers
   parallel:
     matrix:
@@ -599,6 +603,7 @@ Windows/MSVC/Address Sanitizer:
   tags:
     - container
     - windows
+    - ltsc2022
     - ${ARCH}
   script:
     - cmake example/all/ -B build -GNinja -D EXAMPLE_USE_SANITIZER=address $env:CMAKE_OPTIONS
@@ -665,7 +670,7 @@ Linux/Clang/UndefinedSanitizer (LEGACY):
   <<: *linux_success_template
 
 Windows/MSVC/Address Sanitizer (LEGACY):
-  image: stabletec/build-core:windows-2019
+  image: stabletec/build-core:windows-ltsc2022
   stage: Sanitizers
   parallel:
     matrix:
@@ -673,6 +678,7 @@ Windows/MSVC/Address Sanitizer (LEGACY):
   tags:
     - container
     - windows
+    - ltsc2022
     - ${ARCH}
   script:
     - cmake example/all/ -B build -GNinja -D USE_SANITIZER=address

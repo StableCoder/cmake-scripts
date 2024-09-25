@@ -61,9 +61,13 @@ endif()
 add_test(tsan tsanFail)
 
 # Fails with LeakSanitizer
-add_executable(lsanFail ../src/lsan_fail.c)
-target_code_coverage(lsanFail AUTO ALL)
-add_test(lsan lsanFail)
+add_executable(lsan_direct_leak ../src/lsan/direct_leak.c)
+target_code_coverage(lsan_direct_leak AUTO ALL)
+add_test(lsan_direct_leak lsan_direct_leak)
+
+add_executable(lsan_indirect_leak ../src/lsan/indirect_leak.c)
+target_code_coverage(lsan_indirect_leak AUTO ALL)
+add_test(lsan_indirect_leak lsan_indirect_leak)
 
 # Fails with AddressSanitizer
 if(EXAMPLE_USE_SANITIZER STREQUAL "address")

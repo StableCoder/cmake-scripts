@@ -35,13 +35,17 @@ enable_testing()
 # Sanitizers
 include(sanitizers)
 
-set_sanitizer_options(address DEFAULT)
+set_sanitizer_options(address DEFAULT -fsanitize-address-use-after-scope)
 set_sanitizer_options(leak DEFAULT)
 set_sanitizer_options(memory DEFAULT)
 set_sanitizer_options(memorywithorigins DEFAULT SANITIZER memory
                       -fsanitize-memory-track-origins)
 set_sanitizer_options(undefined DEFAULT)
 set_sanitizer_options(thread DEFAULT)
+
+set(EXAMPLE_USE_SANITIZER
+    ""
+    CACHE STRING "Sanitizer to use with examples")
 
 if(EXAMPLE_USE_SANITIZER)
   add_sanitizer_support(${EXAMPLE_USE_SANITIZER})

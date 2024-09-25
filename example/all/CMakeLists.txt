@@ -102,9 +102,15 @@ target_code_coverage(asan_use_after_scope AUTO ALL)
 add_test(asan_use_after_scope asan_use_after_scope)
 
 # Fails with MemorySanitizer
-add_executable(msanFail ../src/msan_fail.cpp)
-target_code_coverage(msanFail AUTO ALL)
-add_test(msan msanFail)
+add_executable(msan_uninitialized_value_used
+               ../src/msan/uninitialized_value_used.c)
+target_code_coverage(msan_uninitialized_value_used AUTO ALL)
+add_test(msan_uninitialized_value_used msan_uninitialized_value_used)
+
+add_executable(msan_uninitialized_pointer_used
+               ../src/msan/uninitialized_pointer_used.c)
+target_code_coverage(msan_uninitialized_pointer_used AUTO ALL)
+add_test(msan_uninitialized_pointer_used msan_uninitialized_pointer_used)
 
 # Fails with UndefinedBehaviourSanitizer
 add_executable(ubsanFail ../src/ubsan_fail.cpp)

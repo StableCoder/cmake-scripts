@@ -35,7 +35,8 @@ enable_testing()
 # Sanitizers
 include(sanitizers)
 
-set_sanitizer_options(address DEFAULT -fsanitize-address-use-after-scope)
+set_sanitizer_options(address DEFAULT -fsanitize-address-use-after-scope
+                      -fsanitize-address-use-after-return=runtime)
 set_sanitizer_options(leak DEFAULT)
 set_sanitizer_options(memory DEFAULT)
 set_sanitizer_options(memorywithorigins DEFAULT SANITIZER memory
@@ -65,9 +66,36 @@ target_code_coverage(lsanFail AUTO ALL)
 add_test(lsan lsanFail)
 
 # Fails with AddressSanitizer
-add_executable(asanFail ../src/asan_fail.cpp)
-target_code_coverage(asanFail AUTO ALL)
-add_test(asan asanFail)
+if(EXAMPLE_USE_SANITIZER STREQUAL "address")
+  # double-free now has solid detection without sanitizers too
+  add_executable(asan_double_free ../src/asan/double_free.c)
+  target_code_coverage(asan_double_free AUTO ALL)
+  add_test(asan_double_free asan_double_free)
+endif()
+
+add_executable(asan_out_of_bounds_global ../src/asan/out_of_bounds_global.c)
+target_code_coverage(asan_out_of_bounds_global AUTO ALL)
+add_test(asan_out_of_bounds_global asan_out_of_bounds_global)
+
+add_executable(asan_out_of_bounds_heap ../src/asan/out_of_bounds_heap.c)
+target_code_coverage(asan_out_of_bounds_heap AUTO ALL)
+add_test(asan_out_of_bounds_heap asan_out_of_bounds_heap)
+
+add_executable(asan_out_of_bounds_stack ../src/asan/out_of_bounds_stack.c)
+target_code_coverage(asan_out_of_bounds_stack AUTO ALL)
+add_test(asan_out_of_bounds_stack asan_out_of_bounds_stack)
+
+add_executable(asan_use_after_free ../src/asan/use_after_free.c)
+target_code_coverage(asan_use_after_free AUTO ALL)
+add_test(asan_use_after_free asan_use_after_free)
+
+add_executable(asan_use_after_return ../src/asan/use_after_return.c)
+target_code_coverage(asan_use_after_return AUTO ALL)
+add_test(asan_use_after_return asan_use_after_return)
+
+add_executable(asan_use_after_scope ../src/asan/use_after_scope.c)
+target_code_coverage(asan_use_after_scope AUTO ALL)
+add_test(asan_use_after_scope asan_use_after_scope)
 
 # Fails with MemorySanitizer
 add_executable(msanFail ../src/msan_fail.cpp)

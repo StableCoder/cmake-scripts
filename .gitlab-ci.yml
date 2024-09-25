@@ -469,6 +469,18 @@ Linux/Static Analysis:
     CMAKE_OPTIONS: -D CLANG_TIDY=ON -D CPPCHECK=ON
   <<: *linux_success_template
 
+Linux/GCC/Baseline:
+  variables:
+    CTEST_OPTIONS: --verbose
+  <<: *linux_success_template
+
+Linux/Clang/Baseline:
+  variables:
+    CC: clang
+    CXX: clang++
+    CTEST_OPTIONS: --verbose
+  <<: *linux_success_template
+
 Linux/GCC/ThreadSanitizer:
   variables:
     CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=thread
@@ -551,6 +563,18 @@ Linux/Clang/UndefinedSanitizer:
     - cmake -S example/all -B build -G Ninja -D CMAKE_BUILD_TYPE=Debug ${CMAKE_OPTIONS}
     - ninja -C build
     - "! ctest --test-dir build --output-on-failure ${CTEST_OPTIONS}"
+
+macOS/AppleClang/Baseline:
+  variables:
+    CTEST_OPTIONS: --verbose
+  <<: *macos_success_template
+
+macOS/Clang/Baseline:
+  variables:
+    CC: clang
+    CXX: clang++
+    CTEST_OPTIONS: --verbose
+  <<: *macos_success_template
 
 macOS/AppleClang/ThreadSanitizer:
   variables:

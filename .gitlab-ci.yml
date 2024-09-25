@@ -4,6 +4,9 @@ stages:
   - All Code Coverage
   - Sanitizers
 
+variables:
+  ASAN_OPTIONS: detect_leaks=1
+
 # Analysis
 
 cmake-format Check:

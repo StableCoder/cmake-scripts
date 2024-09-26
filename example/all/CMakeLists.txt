@@ -41,7 +41,7 @@ set_sanitizer_options(leak DEFAULT)
 set_sanitizer_options(memory DEFAULT)
 set_sanitizer_options(memorywithorigins DEFAULT SANITIZER memory
                       -fsanitize-memory-track-origins)
-set_sanitizer_options(undefined DEFAULT)
+set_sanitizer_options(undefined DEFAULT -fno-sanitize-recover=undefined)
 set_sanitizer_options(thread DEFAULT)
 
 set(EXAMPLE_USE_SANITIZER
@@ -113,6 +113,13 @@ target_code_coverage(msan_uninitialized_pointer_used AUTO ALL)
 add_test(msan_uninitialized_pointer_used msan_uninitialized_pointer_used)
 
 # Fails with UndefinedBehaviourSanitizer
-add_executable(ubsanFail ../src/ubsan_fail.cpp)
-target_code_coverage(ubsanFail AUTO ALL)
-add_test(ubsan ubsanFail)
+add_executable(ubsan_dereferencing_misaligned_pointer
+               ../src/ubsan/dereferencing_misaligned_pointer.c)
+target_code_coverage(ubsan_dereferencing_misaligned_pointer AUTO ALL)
+add_test(ubsan_dereferencing_misaligned_pointer
+         ubsan_dereferencing_misaligned_pointer)
+
+add_executable(ubsan_signed_integer_overflow
+               ../src/ubsan/signed_integer_overflow.c)
+target_code_coverage(ubsan_signed_integer_overflow AUTO ALL)
+add_test(ubsan_signed_integer_overflow ubsan_signed_integer_overflow)

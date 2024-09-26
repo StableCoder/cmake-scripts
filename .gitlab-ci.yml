@@ -469,16 +469,10 @@ Linux/Static Analysis:
     CMAKE_OPTIONS: -D CLANG_TIDY=ON -D CPPCHECK=ON
   <<: *linux_success_template
 
-Linux/GCC/Baseline:
-  variables:
-    CTEST_OPTIONS: --verbose
-  <<: *linux_success_template
-
 Linux/Clang/Baseline:
   variables:
     CC: clang
     CXX: clang++
-    CTEST_OPTIONS: --verbose
   <<: *linux_success_template
 
 Linux/GCC/ThreadSanitizer:
@@ -527,16 +521,14 @@ Linux/Clang/MemorySanitizer:
 Linux/GCC/UndefinedSanitizer:
   variables:
     CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=undefined
-    CTEST_OPTIONS: --verbose
-  <<: *linux_success_template
+  <<: *linux_failure_template
 
 Linux/Clang/UndefinedSanitizer:
   variables:
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=undefined
-    CTEST_OPTIONS: --verbose
-  <<: *linux_success_template
+  <<: *linux_failure_template
 
 .macos_success_template: &macos_success_template
   stage: Sanitizers
@@ -565,15 +557,12 @@ Linux/Clang/UndefinedSanitizer:
     - "! ctest --test-dir build --output-on-failure ${CTEST_OPTIONS}"
 
 macOS/AppleClang/Baseline:
-  variables:
-    CTEST_OPTIONS: --verbose
   <<: *macos_success_template
 
 macOS/Clang/Baseline:
   variables:
     CC: clang
     CXX: clang++
-    CTEST_OPTIONS: --verbose
   <<: *macos_success_template
 
 macOS/AppleClang/ThreadSanitizer:
@@ -610,16 +599,14 @@ macOS/Clang/LeakSanitizer:
 macOS/AppleClang/UndefinedSanitizer:
   variables:
     CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=undefined
-    CTEST_OPTIONS: --verbose
-  <<: *macos_success_template
+  <<: *macos_failure_template
 
 macOS/Clang/UndefinedSanitizer:
   variables:
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=undefined
-    CTEST_OPTIONS: --verbose
-  <<: *macos_success_template
+  <<: *macos_failure_template
 
 Windows/MSVC/Address Sanitizer:
   image: stabletec/build-core:windows-ltsc2022
@@ -684,14 +671,6 @@ Linux/Clang/MemorySanitizer (LEGACY):
 
 Linux/GCC/UndefinedSanitizer (LEGACY):
   variables:
-    CMAKE_OPTIONS: -D USE_SANITIZER=undefined
-    CTEST_OPTIONS: --verbose
-  <<: *linux_success_template
-
-Linux/Clang/UndefinedSanitizer (LEGACY):
-  variables:
-    CC: clang
-    CXX: clang++
     CMAKE_OPTIONS: -D USE_SANITIZER=undefined
     CTEST_OPTIONS: --verbose
   <<: *linux_success_template

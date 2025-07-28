@@ -86,13 +86,9 @@ function(gen_dep_graph OUTPUT_TYPE)
       COMMAND
         ${DOT_EXE} -T${OUTPUT_TYPE}
         ${CMAKE_CURRENT_BINARY_DIR}/graphviz/${TARGET_NAME}.dot -o
-        ${OUT_DIR}/${TARGET_NAME}.${OUTPUT_TYPE})
-
-    add_custom_command(
-      TARGET ${TARGET_NAME}
-      POST_BUILD
-      COMMAND ;
-      COMMENT
+        ${OUT_DIR}/${TARGET_NAME}.${OUTPUT_TYPE}
+      COMMAND
+        ${CMAKE_COMMAND} -E echo
         "Dependency graph for ${TARGET_NAME} generated and located at ${OUT_DIR}/${TARGET_NAME}.${OUTPUT_TYPE}"
     )
 

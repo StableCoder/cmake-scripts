@@ -465,16 +465,11 @@ function(target_code_coverage TARGET_NAME)
             ${GENHTML_PATH} -o
             ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${target_code_coverage_COVERAGE_TARGET_NAME}
             ${COVERAGE_INFO}
+          COMMAND
+            ${CMAKE_COMMAND} -E echo
+            "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${target_code_coverage_COVERAGE_TARGET_NAME}/index.html in your browser to view the coverage report."
           DEPENDS ccov-capture-${target_code_coverage_COVERAGE_TARGET_NAME})
       endif()
-
-      add_custom_command(
-        TARGET ccov-${target_code_coverage_COVERAGE_TARGET_NAME}
-        POST_BUILD
-        COMMAND ;
-        COMMENT
-          "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${target_code_coverage_COVERAGE_TARGET_NAME}/index.html in your browser to view the coverage report."
-      )
 
       # AUTO
       if(target_code_coverage_AUTO)
@@ -692,16 +687,10 @@ function(add_code_coverage_all_targets)
         ccov-all
         COMMAND ${GENHTML_PATH} -o ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged
                 ${COVERAGE_INFO} -p ${CMAKE_SOURCE_DIR}
+        COMMAND
+          ${CMAKE_COMMAND} -E echo
+          "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged/index.html in your browser to view the coverage report."
         DEPENDS ccov-all-capture)
-
     endif()
-
-    add_custom_command(
-      TARGET ccov-all
-      POST_BUILD
-      COMMAND ;
-      COMMENT
-        "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged/index.html in your browser to view the coverage report."
-    )
   endif()
 endfunction()

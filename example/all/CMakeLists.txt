@@ -107,10 +107,12 @@ add_executable(msan_uninitialized_value_used
 target_code_coverage(msan_uninitialized_value_used AUTO ALL)
 add_test(msan_uninitialized_value_used msan_uninitialized_value_used)
 
-add_executable(msan_uninitialized_pointer_used
-               ../src/msan/uninitialized_pointer_used.c)
-target_code_coverage(msan_uninitialized_pointer_used AUTO ALL)
-add_test(msan_uninitialized_pointer_used msan_uninitialized_pointer_used)
+if("${EXAMPLE_USE_SANITIZER}" STREQUAL "memory")
+  add_executable(msan_uninitialized_pointer_used
+                 ../src/msan/uninitialized_pointer_used.c)
+  target_code_coverage(msan_uninitialized_pointer_used AUTO ALL)
+  add_test(msan_uninitialized_pointer_used msan_uninitialized_pointer_used)
+endif()
 
 # Fails with UndefinedBehaviourSanitizer
 add_executable(ubsan_dereferencing_misaligned_pointer

@@ -736,6 +736,7 @@ function(add_code_coverage_all_targets)
         ccov-all
         COMMAND
         DEPENDS ccov-preprocessing ccov-all-processing ccov-all-capture ccov-all-html)
+
     endif()
   endif()
 endfunction()

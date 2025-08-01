@@ -14,7 +14,7 @@ cmake-format Check:
   stage: Analysis
   parallel:
     matrix:
-      - ARCH: [amd64, arm64, ppc64le]
+      - ARCH: [amd64]
   tags:
     - container
     - linux
@@ -33,7 +33,7 @@ clang-format Check:
   stage: Analysis
   parallel:
     matrix:
-      - ARCH: [amd64, arm64, ppc64le]
+      - ARCH: [amd64]
   tags:
     - container
     - linux

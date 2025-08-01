@@ -485,30 +485,12 @@ function(target_code_coverage TARGET_NAME)
         add_custom_target(
           ccov-clean-${target_code_coverage_COVERAGE_TARGET_NAME}
           COMMAND ${CMAKE_COMMAND} -E remove -f ${COVERAGE_INFO}
-          COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
-          COMMAND
-            ${CMAKE_CROSSCOMPILING_EMULATOR} ${target_code_coverage_PRE_ARGS}
-            $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
-          COMMAND
-            ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --base-directory
-            ${CMAKE_SOURCE_DIR} --capture ${EXTERNAL_OPTION} --output-file
-            ${COVERAGE_INFO}
-          COMMAND ${EXCLUDE_COMMAND}
-          DEPENDS ${TARGET_NAME})
+          COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters)
       else()
         add_custom_target(
           ccov-clean-${target_code_coverage_COVERAGE_TARGET_NAME}
           COMMAND ${CMAKE_COMMAND} -E rm -f ${COVERAGE_INFO}
-          COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
-          COMMAND
-            ${CMAKE_CROSSCOMPILING_EMULATOR} ${target_code_coverage_PRE_ARGS}
-            $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
-          COMMAND
-            ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --base-directory
-            ${CMAKE_SOURCE_DIR} --capture ${EXTERNAL_OPTION} --output-file
-            ${COVERAGE_INFO}
-          COMMAND ${EXCLUDE_COMMAND}
-          DEPENDS ${TARGET_NAME})
+          COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters)
       endif()
 
       add_custom_target(
@@ -747,17 +729,13 @@ function(add_code_coverage_all_targets)
       add_custom_target(
         ccov-all-clean
         COMMAND ${CMAKE_COMMAND} -E remove -f ${COVERAGE_INFO}
-        COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --capture
-                --output-file ${COVERAGE_INFO}
-        COMMAND ${EXCLUDE_COMMAND}
+        COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
         DEPENDS ccov-all-processing)
     else()
       add_custom_target(
         ccov-all-clean
         COMMAND ${CMAKE_COMMAND} -E rm -f ${COVERAGE_INFO}
-        COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --capture
-                --output-file ${COVERAGE_INFO}
-        COMMAND ${EXCLUDE_COMMAND}
+        COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
         DEPENDS ccov-all-processing)
     endif()
 

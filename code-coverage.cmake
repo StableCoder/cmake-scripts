@@ -780,8 +780,7 @@ function(add_code_coverage_all_targets)
     add_custom_target(
       ccov-all
       COMMAND
-      DEPENDS ccov-preprocessing ccov-all-processing ccov-all-capture
-              ccov-all-html)
+      DEPENDS ccov-all-processing ccov-all-capture ccov-all-html)
 
   endif()
 endfunction()

@@ -471,14 +471,6 @@ function(target_code_coverage TARGET_NAME)
           "${CMAKE_COVERAGE_DATA_DIRECTORY}/${target_code_coverage_COVERAGE_TARGET_NAME}.info"
       )
 
-      # Run the executable, generating coverage information
-      add_custom_target(
-        ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME}
-        COMMAND
-          ${CMAKE_CROSSCOMPILING_EMULATOR} ${target_code_coverage_PRE_ARGS}
-          $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
-        DEPENDS ${TARGET_NAME})
-
       # Generate exclusion string for use
       foreach(EXCLUDE_ITEM ${target_code_coverage_EXCLUDE})
         set(EXCLUDE_REGEX ${EXCLUDE_REGEX} --remove ${COVERAGE_INFO}
@@ -509,14 +501,32 @@ function(target_code_coverage TARGET_NAME)
           COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters)
       endif()
 
+      # Run the executable, generating coverage information
+      add_custom_command(
+        OUTPUT ${target_code_coverage_COVERAGE_TARGET_NAME}.ccov-run
+        COMMAND
+          ${CMAKE_CROSSCOMPILING_EMULATOR} ${target_code_coverage_PRE_ARGS}
+          $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
+        COMMAND # add a dummy file to use as a dependency to indicate the target
+                # has been run and data collected
+                ${CMAKE_COMMAND} -E touch
+                ${target_code_coverage_COVERAGE_TARGET_NAME}.ccov-run
+        DEPENDS ${TARGET_NAME})
       add_custom_target(
-        ccov-capture-${target_code_coverage_COVERAGE_TARGET_NAME}
+        ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME}
+        DEPENDS ${target_code_coverage_COVERAGE_TARGET_NAME}.ccov-run)
+
+      add_custom_command(
+        OUTPUT ${COVERAGE_INFO}
         COMMAND
           ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --base-directory
           ${CMAKE_SOURCE_DIR} --capture ${EXTERNAL_OPTION} --output-file
           ${COVERAGE_INFO}
         COMMAND ${EXCLUDE_COMMAND}
-        DEPENDS)
+        DEPENDS ${target_code_coverage_COVERAGE_TARGET_NAME}.ccov-run)
+      add_custom_target(
+        ccov-capture-${target_code_coverage_COVERAGE_TARGET_NAME}
+        DEPENDS ${COVERAGE_INFO})
 
       # Only generates HTML output of the coverage information for perusal
       add_custom_target(
@@ -528,15 +538,12 @@ function(target_code_coverage TARGET_NAME)
         COMMAND
           ${CMAKE_COMMAND} -E echo
           "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${target_code_coverage_COVERAGE_TARGET_NAME}/index.html in your browser to view the coverage report."
-        DEPENDS ccov-capture-${target_code_coverage_COVERAGE_TARGET_NAME})
+        DEPENDS ${COVERAGE_INFO})
 
       # Generates HTML output of the coverage information for perusal
       add_custom_target(
         ccov-${target_code_coverage_COVERAGE_TARGET_NAME}
-        COMMAND
-        DEPENDS ccov-clean-${target_code_coverage_COVERAGE_TARGET_NAME}
-                ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME}
-                ccov-html-${target_code_coverage_COVERAGE_TARGET_NAME})
+        DEPENDS ccov-html-${target_code_coverage_COVERAGE_TARGET_NAME})
     endif()
 
     # AUTO
@@ -737,8 +744,7 @@ function(add_code_coverage_all_targets)
                                               "GNU")
     set(COVERAGE_INFO "${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/ccov-all.info")
 
-    # Nothing required for gcov
-    add_custom_target(ccov-all-processing COMMAND ;)
+    add_custom_target(ccov-all-run)
 
     # Exclusion regex string creation
     set(EXCLUDE_REGEX)
@@ -769,12 +775,13 @@ function(add_code_coverage_all_targets)
         DEPENDS ccov-all-processing)
     endif()
 
-    add_custom_target(
-      ccov-all-capture
-      COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --capture
-              --output-file ${COVERAGE_INFO}
+    add_custom_command(
+      OUTPUT ${COVERAGE_INFO}
+      COMMAND ${LCOV_PATH} --ignore-errors unused --directory
+              ${CMAKE_BINARY_DIR} --capture --output-file ${COVERAGE_INFO}
       COMMAND ${EXCLUDE_COMMAND}
-      DEPENDS)
+      DEPENDS ccov-all-run)
+    add_custom_target(ccov-all-capture DEPENDS ${COVERAGE_INFO})
 
     # Only generates HTML output of all targets for perusal
     add_custom_target(
@@ -784,13 +791,13 @@ function(add_code_coverage_all_targets)
       COMMAND
         ${CMAKE_COMMAND} -E echo
         "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged/index.html in your browser to view the coverage report."
-      DEPENDS ccov-all-capture)
+      DEPENDS ${COVERAGE_INFO})
 
     # Generates HTML output of all targets for perusal
     add_custom_target(
       ccov-all
       COMMAND
-      DEPENDS ccov-all-processing ccov-all-capture ccov-all-html)
+      DEPENDS ccov-all-html)
 
   endif()
 endfunction()

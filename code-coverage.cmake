@@ -159,21 +159,7 @@ if(CODE_COVERAGE AND NOT CODE_COVERAGE_ADDED)
     endif()
 
     # Targets
-    if(${CMAKE_VERSION} VERSION_LESS "3.17.0")
-      add_custom_target(
-        ccov-clean
-        COMMAND
-          ${CMAKE_COMMAND} -E remove -f #
-          ${CMAKE_COVERAGE_DATA_DIRECTORY}/objects/*
-          ${CMAKE_COVERAGE_DATA_DIRECTORY}/profraw/*)
-    else()
-      add_custom_target(
-        ccov-clean
-        COMMAND
-          ${CMAKE_COMMAND} -E rm -f #
-          ${CMAKE_COVERAGE_DATA_DIRECTORY}/objects/*
-          ${CMAKE_COVERAGE_DATA_DIRECTORY}/profraw/*)
-    endif()
+    add_custom_target(ccov-clean)
 
     # Used to get the shared object file list before doing the main all-
     # processing
@@ -377,6 +363,20 @@ function(target_code_coverage TARGET_NAME)
         endif()
       endforeach()
 
+      if(${CMAKE_VERSION} VERSION_LESS "3.17.0")
+        add_custom_target(
+          ccov-clean-${target_code_coverage_COVERAGE_TARGET_NAME}
+          COMMAND ${CMAKE_COMMAND} -E remove -f
+                  ${target_code_coverage_COVERAGE_TARGET_NAME}.profraw)
+      else()
+        add_custom_target(
+          ccov-clean-${target_code_coverage_COVERAGE_TARGET_NAME}
+          COMMAND ${CMAKE_COMMAND} -E rm -f
+                  ${target_code_coverage_COVERAGE_TARGET_NAME}.profraw)
+      endif()
+      add_dependencies(ccov-clean
+                       ccov-clean-${target_code_coverage_COVERAGE_TARGET_NAME})
+
       # Run the executable, generating raw profile data Make the run data
       # available for further processing. Separated to allow Windows to run this
       # target serially.
@@ -500,6 +500,8 @@ function(target_code_coverage TARGET_NAME)
           COMMAND ${CMAKE_COMMAND} -E rm -f ${COVERAGE_INFO}
           COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters)
       endif()
+      add_dependencies(ccov-clean
+                       ccov-clean-${target_code_coverage_COVERAGE_TARGET_NAME})
 
       # Run the executable, generating coverage information
       add_custom_command(
@@ -765,15 +767,14 @@ function(add_code_coverage_all_targets)
       add_custom_target(
         ccov-all-clean
         COMMAND ${CMAKE_COMMAND} -E remove -f ${COVERAGE_INFO}
-        COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
-        DEPENDS ccov-all-processing)
+        COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters)
     else()
       add_custom_target(
         ccov-all-clean
         COMMAND ${CMAKE_COMMAND} -E rm -f ${COVERAGE_INFO}
-        COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
-        DEPENDS ccov-all-processing)
+        COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters)
     endif()
+    add_dependencies(ccov-clean ccov-all-clean)
 
     add_custom_command(
       OUTPUT ${COVERAGE_INFO}

@@ -457,11 +457,13 @@ function(target_code_coverage TARGET_NAME)
         add_custom_target(
           ccov-clean-${target_code_coverage_COVERAGE_TARGET_NAME}
           COMMAND ${CMAKE_COMMAND} -E remove -f ${COVERAGE_INFO}
+                  ${target_code_coverage_COVERAGE_TARGET_NAME}.ccov-run
           COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters)
       else()
         add_custom_target(
           ccov-clean-${target_code_coverage_COVERAGE_TARGET_NAME}
           COMMAND ${CMAKE_COMMAND} -E rm -f ${COVERAGE_INFO}
+                  ${target_code_coverage_COVERAGE_TARGET_NAME}.ccov-run
           COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters)
       endif()
       add_dependencies(ccov-clean

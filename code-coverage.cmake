@@ -342,8 +342,7 @@ function(target_code_coverage TARGET_NAME)
                        ccov-clean-${target_code_coverage_COVERAGE_TARGET_NAME})
 
       # Run the executable, generating raw profile data Make the run data
-      # available for further processing. Separated to allow Windows to run this
-      # target serially.
+      # available for further processing.
       add_custom_command(
         OUTPUT ${target_code_coverage_COVERAGE_TARGET_NAME}.profraw
         COMMAND
@@ -363,8 +362,41 @@ function(target_code_coverage TARGET_NAME)
         COMMAND ${CMAKE_COMMAND} -E rm -f
                 ${CMAKE_COVERAGE_DATA_DIRECTORY}/ccov-all.profdata
         DEPENDS ${TARGET_NAME})
+
+      # This is a copy of the above add_custom_command.
+      #
+      # Since add_custom_target items are always considered out-of-date, this
+      # can be used by the user to perform another coverage run, but only when
+      # invoked directly.
       add_custom_target(
         ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME}
+        COMMAND
+          ${CMAKE_COMMAND} -E env ${CMAKE_CROSSCOMPILING_EMULATOR}
+          ${target_code_coverage_PRE_ARGS}
+          LLVM_PROFILE_FILE=${target_code_coverage_COVERAGE_TARGET_NAME}.profraw
+          $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
+        COMMAND
+          ${CMAKE_COMMAND} -E echo "-object=$<TARGET_FILE:${TARGET_NAME}>"
+          ${LINKED_OBJECTS} >
+          ${CMAKE_COVERAGE_DATA_DIRECTORY}/objects/${target_code_coverage_COVERAGE_TARGET_NAME}
+        COMMAND
+          ${CMAKE_COMMAND} -E echo
+          "${CMAKE_CURRENT_BINARY_DIR}/${target_code_coverage_COVERAGE_TARGET_NAME}.profraw"
+          >
+          ${CMAKE_COVERAGE_DATA_DIRECTORY}/profraw/${target_code_coverage_COVERAGE_TARGET_NAME}
+        COMMAND ${CMAKE_COMMAND} -E rm -f
+                ${CMAKE_COVERAGE_DATA_DIRECTORY}/ccov-all.profdata
+        DEPENDS ${TARGET_NAME})
+
+      # As custom targets with COMMANDs are always considered out of date, we
+      # want the merged/all targets to depend on this, so that we don't
+      # necessarily re-run the executbale every time, only at a minimum to
+      # generate the file. If the user want to re-run targets, they can by
+      # explicitly invoking the ccov-run-TARGET targets.
+      #
+      # If the option for a hidden target were possible, this would be.
+      add_custom_target(
+        ccov-ran-${target_code_coverage_COVERAGE_TARGET_NAME}
         DEPENDS ${target_code_coverage_COVERAGE_TARGET_NAME}.profraw)
 
       # Merge the generated profile data so llvm-cov can process it
@@ -469,7 +501,8 @@ function(target_code_coverage TARGET_NAME)
       add_dependencies(ccov-clean
                        ccov-clean-${target_code_coverage_COVERAGE_TARGET_NAME})
 
-      # Run the executable, generating coverage information
+      # Run the executable, generating raw profile data Make the run data
+      # available for further processing.
       add_custom_command(
         OUTPUT ${target_code_coverage_COVERAGE_TARGET_NAME}.ccov-run
         COMMAND
@@ -480,8 +513,32 @@ function(target_code_coverage TARGET_NAME)
                 ${CMAKE_COMMAND} -E touch
                 ${target_code_coverage_COVERAGE_TARGET_NAME}.ccov-run
         DEPENDS ${TARGET_NAME})
+
+      # This is a copy of the above add_custom_command.
+      #
+      # Since add_custom_target items are always considered out-of-date, this
+      # can be used by the user to perform another coverage run, but only when
+      # invoked directly.
       add_custom_target(
         ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME}
+        COMMAND
+          ${CMAKE_CROSSCOMPILING_EMULATOR} ${target_code_coverage_PRE_ARGS}
+          $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
+        COMMAND # add a dummy file to use as a dependency to indicate the target
+                # has been run and data collected
+                ${CMAKE_COMMAND} -E touch
+                ${target_code_coverage_COVERAGE_TARGET_NAME}.ccov-run
+        DEPENDS ${TARGET_NAME})
+
+      # As custom targets with COMMANDs are always considered out of date, we
+      # want the merged/all targets to depend on this, so that we don't
+      # necessarily re-run the executbale every time, only at a minimum to
+      # generate the file. If the user want to re-run targets, they can by
+      # explicitly invoking the ccov-run-TARGET targets.
+      #
+      # If the option for a hidden target were possible, this would be.
+      add_custom_target(
+        ccov-ran-${target_code_coverage_COVERAGE_TARGET_NAME}
         DEPENDS ${target_code_coverage_COVERAGE_TARGET_NAME}.ccov-run)
 
       add_custom_command(
@@ -542,12 +599,15 @@ function(target_code_coverage TARGET_NAME)
       if(NOT TARGET ccov-all-run)
         message(
           FATAL_ERROR
-            "Calling target_code_coverage with 'ALL' must be after a call to 'add_code_coverage_all_targets'."
+            "Calling target_code_coverage with 'ALL' must be after a call to 'add_code_coverage_all_targets' to create the 'ccov-all' target set."
         )
       endif()
 
       add_dependencies(ccov-all-run
                        ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME})
+
+      add_dependencies(ccov-all-ran
+                       ccov-ran-${target_code_coverage_COVERAGE_TARGET_NAME})
     endif()
   endif()
 endfunction()
@@ -592,10 +652,15 @@ function(add_code_coverage_all_targets)
   cmake_parse_arguments(add_code_coverage_all_targets "" ""
                         "${multi_value_keywords}" ${ARGN})
 
+  # invoke to re-run all coverage-instrumented executables
+  add_custom_target(ccov-all-run)
+
+  # used to ensure profile data from all targets is available, without forcing a
+  # re-run of previously run ones
+  add_custom_target(ccov-all-ran)
+
   if(CMAKE_C_COMPILER_ID MATCHES "(Apple)?[Cc]lang"
      OR CMAKE_CXX_COMPILER_ID MATCHES "(Apple)?[Cc]lang")
-
-    add_custom_target(ccov-all-run)
 
     # Merge the profile data for all of the run targets
     if(WIN32)
@@ -610,7 +675,7 @@ function(add_code_coverage_all_targets)
           ${CMAKE_COVERAGE_DATA_DIRECTORY}/all-profraw.list \; llvm-profdata.exe
           merge -o ${CMAKE_COVERAGE_DATA_DIRECTORY}/ccov-all.profdata -sparse
           $$FILELIST
-        DEPENDS ccov-all-run)
+        DEPENDS ccov-all-ran)
     else()
       add_custom_command(
         OUTPUT ${CMAKE_COVERAGE_DATA_DIRECTORY}/ccov-all.profdata
@@ -624,7 +689,7 @@ function(add_code_coverage_all_targets)
           ${LLVM_PROFDATA_PATH} merge -o
           ${CMAKE_COVERAGE_DATA_DIRECTORY}/ccov-all.profdata -sparse `cat
           ${CMAKE_COVERAGE_DATA_DIRECTORY}/all-profraw.list`
-        DEPENDS ccov-all-run)
+        DEPENDS ccov-all-ran)
     endif()
 
     # Regex exclude only available for LLVM >= 7
@@ -712,8 +777,6 @@ function(add_code_coverage_all_targets)
                                               "GNU")
     set(COVERAGE_INFO "${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/ccov-all.info")
 
-    add_custom_target(ccov-all-run)
-
     # Exclusion regex string creation
     set(EXCLUDE_REGEX)
     foreach(EXCLUDE_ITEM ${add_code_coverage_all_targets_EXCLUDE})
@@ -747,7 +810,7 @@ function(add_code_coverage_all_targets)
       COMMAND ${LCOV_PATH} --ignore-errors unused --directory
               ${CMAKE_BINARY_DIR} --capture --output-file ${COVERAGE_INFO}
       COMMAND ${EXCLUDE_COMMAND}
-      DEPENDS ccov-all-run)
+      DEPENDS ccov-all-ran)
     add_custom_target(ccov-all-capture DEPENDS ${COVERAGE_INFO})
 
     # Only generates HTML output of all targets for perusal

@@ -156,19 +156,34 @@ To enable, turn on the `CODE_COVERAGE` variable.
 
 ### Added Targets
 
-- GCOV/LCOV:
-    - ccov : Generates HTML code coverage report for every target added with 'AUTO' parameter.
-    - ccov-${TARGET_NAME} : Generates HTML code coverage report for the associated named target.
-    - ccov-all : Generates HTML code coverage report, merging every target added with 'ALL' parameter into a single detailed report.
-    - ccov-all-capture : Generates an all-merged.info file, for use with coverage dashboards (e.g. codecov.io, coveralls).
-- LLVM-COV:
-    - ccov : Generates HTML code coverage report for every target added with 'AUTO' parameter.
-    - ccov-report : Generates HTML code coverage report for every target added with 'AUTO' parameter.
-    - ccov-${TARGET_NAME} : Generates HTML code coverage report.
-    - ccov-rpt-${TARGET_NAME} : Prints to command line summary per-file coverage information.
-    - ccov-show-${TARGET_NAME} : Prints to command line detailed per-line coverage information.
-    - ccov-all : Generates HTML code coverage report, merging every target added with 'ALL' parameter into a single detailed report.
-    - ccov-all-report : Prints summary per-file coverage information for every target added with ALL' parameter to the command line.
+#### Via `target_code_coverage`
+
+Targets added (executables only):
+- ccov-run-${TARGET_NAME} : Re-runs the executable, collecting fresh coverage data
+- ccov-html-${TARGET_NAME} : Generates HTML code coverage report for the associated named target.
+- ccov-${TARGET_NAME} : Generates HTML code coverage report for the associated named target. (same as ccov-html-${TARGET_NAME})
+- ccov-html : Generates HTML code coverage report for every target added with 'AUTO' parameter.
+- ccov : Generates HTML code coverage report for every target added with 'AUTO' parameter. (same as ccov-html)
+
+LLVM-based coverage targets added (executables only):
+- ccov-report-${TARGET_NAME} : Prints to command line summary per-file coverage information.
+- ccov-export-${TARGET_NAME} : Exports the coverage report to a JSON file.
+- ccov-show-${TARGET_NAME} : Prints to command line detailed per-line coverage information.
+- ccov-report : Generates HTML code coverage report for every target added with 'AUTO' parameter.
+
+#### Via `add_code_coverage_all_targets`
+
+Targets added:
+- ccov-all-run : Re-runs all tagged executables, collecting fresh coverage data
+- ccov-all-html : Generates an HTML report of all tagged executable coverage data merged into one
+- ccov-all : Generates an HTML report of all tagged executable coverage data merged into one (same as ccov-all-html)
+
+LLVM-based coverage targets added:
+- ccov-all-report : Generates an HTML report of all tagged executable coverage data merged into one and displays it in the CLI
+- ccov-all-export : Exports coverage data in JSON format for use in CI environments or similar
+
+GCC-based coverage targets added:
+- ccov-all-capture :  Generates an all-merged.info file, for use with coverage dashboards (e.g. codecov.io, coveralls).
 
 ### Usage
 
@@ -176,7 +191,7 @@ To enable any code coverage instrumentation/targets, the single CMake option of 
 
 From this point, there are two primary methods for adding instrumentation to targets:
 1. A blanket instrumentation by calling `add_code_coverage()`, where all targets in that directory and all subdirectories are automatically instrumented.
-2. Per-target instrumentation by calling `target_code_coverage(<TARGET_NAME>)`, where the target is given and thus only that target is instrumented. This applies to both libraries and executables.
+2. Per-target instrumentation by calling `target_code_coverage(<TARGET_NAME>)`, where the target is given and thus only that target is instrumented and executables have ccov* targets created. This applies to both libraries and executables.
 3. Automatically add coverage for each target with `-DCCOV_TARGETS_HOOK=On` and `-DCCOV_TARGETS_HOOK_ARGS=...` for default values, requires `add_code_coverage()` or similar.
 
 To add coverage targets, such as calling `make ccov` to generate the actual coverage information for perusal or consumption, call `target_code_coverage(<TARGET_NAME>)` on an *executable* target.

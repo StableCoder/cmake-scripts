@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2018-2024 by George Cave - gcave@stablecoder.ca
+# Copyright (C) 2018-2025 by George Cave - gcave@stablecoder.ca
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -224,37 +224,34 @@ endif()
 # Adds code coverage instrumentation to a library, or instrumentation/targets
 # for an executable target.
 # ~~~
-# EXECUTABLE ADDED TARGETS:
-# GCOV/LCOV:
-# ccov : Generates HTML code coverage report for every target added with 'AUTO' parameter.
-# ccov-${TARGET_NAME} : Generates HTML code coverage report for the associated named target.
-# ccov-all : Generates HTML code coverage report, merging every target added with 'ALL' parameter into a single detailed report.
+# Targets added (executables only):
+# ccov-run-${TARGET_NAME} : Re-runs the executable, collecting fresh coverage data
+# ccov-html-${TARGET_NAME} : Generates HTML code coverage report for the associated named target.
+# ccov-${TARGET_NAME} : Generates HTML code coverage report for the associated named target. (same as ccov-html-${TARGET_NAME})
+# ccov-html : Generates HTML code coverage report for every target added with 'AUTO' parameter.
+# ccov : Generates HTML code coverage report for every target added with 'AUTO' parameter. (same as ccov-html)
 #
-# LLVM-COV:
-# ccov : Generates HTML code coverage report for every target added with 'AUTO' parameter.
-# ccov-report : Generates HTML code coverage report for every target added with 'AUTO' parameter.
-# ccov-${TARGET_NAME} : Generates HTML code coverage report.
+# LLVM-based coverage targets added (executables only):
 # ccov-report-${TARGET_NAME} : Prints to command line summary per-file coverage information.
 # ccov-export-${TARGET_NAME} : Exports the coverage report to a JSON file.
 # ccov-show-${TARGET_NAME} : Prints to command line detailed per-line coverage information.
-# ccov-all : Generates HTML code coverage report, merging every target added with 'ALL' parameter into a single detailed report.
-# ccov-all-report : Prints summary per-file coverage information for every target added with ALL' parameter to the command line.
-# ccov-all-export : Exports the coverage report to a JSON file.
+# ccov-report : Generates HTML code coverage report for every target added with 'AUTO' parameter.
 #
-# Required:
+# Required Parameters:
 # TARGET_NAME - Name of the target to generate code coverage for.
-# Optional:
+#
+# Optional Parameters:
 # PUBLIC - Sets the visibility for added compile options to targets to PUBLIC instead of the default of PRIVATE.
 # INTERFACE - Sets the visibility for added compile options to targets to INTERFACE instead of the default of PRIVATE.
 # PLAIN - Do not set any target visibility (backward compatibility with old cmake projects)
 # AUTO - Adds the target to the 'ccov' target so that it can be run in a batch with others easily. Effective on executable targets.
-# ALL - Adds the target to the 'ccov-all' and 'ccov-all-report' targets, which merge several executable targets coverage data to a single report. Effective on executable targets.
+# ALL - Adds the target to the 'ccov-all-*' targets created by a prior call to `add_code_coverage_all_targets` Effective on executable targets.
 # EXTERNAL - For GCC's lcov, allows the profiling of 'external' files from the processing directory
 # COVERAGE_TARGET_NAME - For executables ONLY, changes the outgoing target name so instead of `ccov-${TARGET_NAME}` it becomes `ccov-${COVERAGE_TARGET_NAME}`.
 # EXCLUDE <PATTERNS> - Excludes files of the patterns provided from coverage. Note that GCC/lcov excludes by glob pattern, and clang/LLVM excludes via regex! **These do not copy to the 'all' targets.**
 # OBJECTS <TARGETS> - For executables ONLY, if the provided targets are static or shared libraries, adds coverage information to the output
-# PRE_ARGS <ARGUMENTS> - For executables ONLY, prefixes given arguments to the associated ccov-* executable call ($<PRE_ARGS> ccov-*)
-# ARGS <ARGUMENTS> - For executables ONLY, appends the given arguments to the associated ccov-* executable call (ccov-* $<ARGS>)
+# PRE_ARGS <ARGUMENTS> - For executables ONLY, prefixes given arguments to the associated ccov-run-${TARGET_NAME} executable call ($<PRE_ARGS> ccov-*)
+# ARGS <ARGUMENTS> - For executables ONLY, appends the given arguments to the associated ccov-run-${TARGET_NAME} executable call (ccov-* $<ARGS>)
 # ~~~
 function(target_code_coverage TARGET_NAME)
   if(NOT CODE_COVERAGE)
@@ -613,8 +610,13 @@ function(target_code_coverage TARGET_NAME)
 endfunction()
 
 # Adds code coverage instrumentation to all targets in the current directory and
-# any subdirectories. To add coverage instrumentation to only specific targets,
+# any subdirectories.
+#
+# To add coverage instrumentation to only specific targets, or to add targets,
 # use `target_code_coverage`.
+#
+# @WARNING: Does not add targets to collect coverage data from executables, use
+# `target_code_coverage` to do so.
 function(add_code_coverage)
   if(NOT CODE_COVERAGE)
     return()
@@ -633,13 +635,23 @@ function(add_code_coverage)
   endif()
 endfunction()
 
-# Adds the 'ccov-all' type targets that calls all targets added via
+# Adds several 'ccov-all-*' type targets that operates on all targets added via
 # `target_code_coverage` with the `ALL` parameter, but merges all the coverage
-# data from them into a single large report  instead of the numerous smaller
-# reports. Also adds the ccov-all-capture Generates an all-merged.info file, for
-# use with coverage dashboards (e.g. codecov.io, coveralls).
+# data into a single large report instead of numerous smaller reports.
 # ~~~
-# Optional:
+# Targets added:
+# ccov-all-run : Re-runs all tagged executables, collecting fresh coverage data
+# ccov-all-html : Generates an HTML report of all tagged executable coverage data merged into one
+# ccov-all : Generates an HTML report of all tagged executable coverage data merged into one (same as ccov-all-html)
+#
+# LLVM-based coverage targets added:
+# ccov-all-report : Generates an HTML report of all tagged executable coverage data merged into one and displays it in the CLI
+# ccov-all-export : Exports coverage data in JSON format for use in CI environments or similar
+#
+# GCC-based coverage targets added:
+# ccov-all-capture :  Generates an all-merged.info file, for use with coverage dashboards (e.g. codecov.io, coveralls).
+#
+# Optional Parameters:
 # EXCLUDE <PATTERNS> - Excludes files of the patterns provided from coverage. Note that GCC/lcov excludes by glob pattern, and clang/LLVM excludes via regex!
 # ~~~
 function(add_code_coverage_all_targets)
@@ -810,6 +822,8 @@ function(add_code_coverage_all_targets)
       COMMAND ${LCOV_PATH} --ignore-errors unused --directory
               ${CMAKE_BINARY_DIR} --capture --output-file ${COVERAGE_INFO}
       COMMAND ${EXCLUDE_COMMAND}
+      COMMAND ${CMAKE_COMMAND} -E echo
+              "Generated coverage .info file at ${COVERAGE_INFO}"
       DEPENDS ccov-all-ran)
     add_custom_target(ccov-all-capture DEPENDS ${COVERAGE_INFO})
 

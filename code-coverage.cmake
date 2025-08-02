@@ -161,13 +161,6 @@ if(CODE_COVERAGE AND NOT CODE_COVERAGE_ADDED)
     # Targets
     add_custom_target(ccov-clean)
 
-    # Used to get the shared object file list before doing the main all-
-    # processing
-    add_custom_target(
-      ccov-libs
-      COMMAND ;
-      COMMENT "libs ready for coverage report.")
-
   elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
                                               "GNU")
     # Messages
@@ -315,35 +308,6 @@ function(target_code_coverage TARGET_NAME)
   # Targets
   get_target_property(target_type ${TARGET_NAME} TYPE)
 
-  # Add shared library to processing for 'all' targets
-  if(target_type STREQUAL "SHARED_LIBRARY" AND target_code_coverage_ALL)
-    if(CMAKE_C_COMPILER_ID MATCHES "(Apple)?[Cc]lang"
-       OR CMAKE_CXX_COMPILER_ID MATCHES "(Apple)?[Cc]lang")
-      add_custom_command(
-        OUTPUT
-          ${CMAKE_COVERAGE_DATA_DIRECTORY}/objects/${target_code_coverage_COVERAGE_TARGET_NAME}
-        COMMAND
-          ${CMAKE_COMMAND} -E echo "-object=$<TARGET_FILE:${TARGET_NAME}>" >
-          ${CMAKE_COVERAGE_DATA_DIRECTORY}/objects/${target_code_coverage_COVERAGE_TARGET_NAME}
-        DEPENDS ${TARGET_NAME})
-      add_custom_target(
-        ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME}
-        DEPENDS
-          ${CMAKE_COVERAGE_DATA_DIRECTORY}/objects/${target_code_coverage_COVERAGE_TARGET_NAME}
-      )
-
-      if(NOT TARGET ccov-libs)
-        message(
-          FATAL_ERROR
-            "Calling target_code_coverage with 'ALL' must be after a call to 'add_code_coverage_all_targets'."
-        )
-      endif()
-
-      add_dependencies(ccov-libs
-                       ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME})
-    endif()
-  endif()
-
   # For executables add targets to run and produce output
   if(target_type STREQUAL "EXECUTABLE")
     if(CMAKE_C_COMPILER_ID MATCHES "(Apple)?[Cc]lang"
@@ -398,7 +362,7 @@ function(target_code_coverage TARGET_NAME)
           ${CMAKE_COVERAGE_DATA_DIRECTORY}/profraw/${target_code_coverage_COVERAGE_TARGET_NAME}
         COMMAND ${CMAKE_COMMAND} -E rm -f
                 ${CMAKE_COVERAGE_DATA_DIRECTORY}/ccov-all.profdata
-        DEPENDS ccov-libs ${TARGET_NAME})
+        DEPENDS ${TARGET_NAME})
       add_custom_target(
         ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME}
         DEPENDS ${target_code_coverage_COVERAGE_TARGET_NAME}.profraw)

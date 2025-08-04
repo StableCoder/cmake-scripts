@@ -218,8 +218,8 @@ endif()
 # Targets added (executables only):
 # ccov-run-${TARGET_NAME} : Re-runs the executable, collecting fresh coverage data
 # ccov-html-${TARGET_NAME} : Generates HTML code coverage report for the associated named target.
-# ccov-${TARGET_NAME} : Generates HTML code coverage report for the associated named target. (same as ccov-html-${TARGET_NAME})
 # ccov-html : Generates HTML code coverage report for every target added with 'AUTO' parameter.
+# ccov-${TARGET_NAME} : Generates HTML code coverage report for the associated named target. (same as ccov-html-${TARGET_NAME})
 # ccov : Generates HTML code coverage report for every target added with 'AUTO' parameter. (same as ccov-html)
 #
 # LLVM-based coverage targets added (executables only):
@@ -239,12 +239,23 @@ endif()
 # ALL - Adds the target to the 'ccov-all-*' targets created by a prior call to `add_code_coverage_all_targets` Effective on executable targets.
 # EXTERNAL - For GCC's lcov, allows the profiling of 'external' files from the processing directory
 # COVERAGE_TARGET_NAME - For executables ONLY, changes the outgoing target name so instead of `ccov-${TARGET_NAME}` it becomes `ccov-${COVERAGE_TARGET_NAME}`.
-# EXCLUDE <PATTERNS> - Excludes files of the patterns provided from coverage. Added to any lcov/llvm specific excludes. sNote that GCC/lcov excludes by glob pattern, and clang/LLVM excludes via regex! **These do not copy to the 'all' targets.**
-# LLVM_EXCLUDE <PATTERNS> - Excludes files that match the provided patterns, LLVM excludes by regex patterns.
-# LCOV_EXCLUDE <PATTERNS> - Excludes files that match the provided patterns. LCOV exclude by glob patterns.
 # OBJECTS <TARGETS> - For executables ONLY, if the provided targets are static or shared libraries, adds coverage information to the output
 # PRE_ARGS <ARGUMENTS> - For executables ONLY, prefixes given arguments to the associated ccov-run-${TARGET_NAME} executable call ($<PRE_ARGS> ccov-*)
 # ARGS <ARGUMENTS> - For executables ONLY, appends the given arguments to the associated ccov-run-${TARGET_NAME} executable call (ccov-* $<ARGS>)
+# EXCLUDE <PATTERNS> - Excludes files of the patterns provided from coverage. Added to any LLVM/LCOV specified excludes. (These do not copy to the 'all' targets)
+#
+# Optional Parameters effective with the clang/LLVM backend:
+# LLVM_EXCLUDE <PATTERNS> - Excludes files that match the provided patterns, LLVM excludes by regex patterns.
+# LLVM_PROFDATA_OPTIONS <OPTIONS> - Options are passed verbatim to the `llvm-profdata` call that merges/processes raw profile data. (.profraw -> .profdata)
+# LLVM_COV_SHOW_OPTIONS <OPTIONS> - Options are passed verbatim to the `llvm-cov show` call for the `ccov-show-${TARGET_NAME}` target.
+# LLVM_COV_REPORT_OPTIONS <OPTIONS> - Options are passed verbatim to the `llvm-cov report` call for the `ccov-report-${TARGET_NAME}` target.
+# LLVM_COV_EXPORT_OPTIONS <OPTIONS> - Options are passed verbatim to the `llvm-cov export` call for the `ccov-export-${TARGET_NAME}` target.
+# LLVM_COV_HTML_OPTIONS <OPTIONS> - Options are passed verbatim to the `llvm-cov show -format="html"` call for the `ccov-html-${TARGET_NAME}`/`ccov-${TARGET_NAME}` targets.
+#
+# Optional Parameters effective with the GCC/lcov backend:
+# LCOV_EXCLUDE <PATTERNS> - Excludes files that match the provided patterns. LCOV exclude by glob patterns.
+# LCOV_OPTIONS <OPTIONS> - Options are passed verbatim to the `lcov` call when capturing/filtering capture data
+# GENHTML_OPTIONS <OPTIONS> - Options are passed verbatim to the `genhtml` call when generating the HTML report from lcov data for the `ccov-html-${TARGET_NAME}`/`ccov-${TARGET_NAME}` targets.
 # ~~~
 function(target_code_coverage TARGET_NAME)
   if(NOT CODE_COVERAGE)
@@ -254,8 +265,23 @@ function(target_code_coverage TARGET_NAME)
   # Argument parsing
   set(options AUTO ALL EXTERNAL PUBLIC INTERFACE PLAIN)
   set(single_value_keywords COVERAGE_TARGET_NAME)
-  set(multi_value_keywords EXCLUDE LLVM_EXCLUDE LCOV_EXCLUDE OBJECTS PRE_ARGS
-                           ARGS)
+  set(multi_value_keywords
+      # common
+      EXCLUDE
+      OBJECTS
+      PRE_ARGS
+      ARGS
+      # llvm
+      LLVM_EXCLUDE
+      LLVM_PROFDATA_OPTIONS
+      LLVM_COV_SHOW_OPTIONS
+      LLVM_COV_REPORT_OPTIONS
+      LLVM_COV_EXPORT_OPTIONS
+      LLVM_COV_HTML_OPTIONS
+      # lcov
+      LCOV_EXCLUDE
+      LCOV_OPTIONS
+      GENHTML_OPTIONS)
   cmake_parse_arguments(
     target_code_coverage "${options}" "${single_value_keywords}"
     "${multi_value_keywords}" ${ARGN})
@@ -394,7 +420,8 @@ function(target_code_coverage TARGET_NAME)
       add_custom_command(
         OUTPUT ${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
         COMMAND
-          ${LLVM_PROFDATA_PATH} merge -sparse
+          ${LLVM_PROFDATA_PATH} merge
+          ${target_code_coverage_LLVM_PROFDATA_OPTIONS} -sparse
           ${target_code_coverage_COVERAGE_TARGET_NAME}.profraw -o
           ${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
         DEPENDS ${target_code_coverage_COVERAGE_TARGET_NAME}.profraw)
@@ -419,6 +446,7 @@ function(target_code_coverage TARGET_NAME)
           ${LLVM_COV_PATH} show $<TARGET_FILE:${TARGET_NAME}>
           -instr-profile=${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
           -show-line-counts-or-regions ${LINKED_OBJECTS} ${EXCLUDE_REGEX}
+          ${target_code_coverage_LLVM_COV_SHOW_OPTIONS}
         DEPENDS ${target_code_coverage_COVERAGE_TARGET_NAME}.profdata)
 
       # Print out a summary of the coverage information to the command line
@@ -428,6 +456,7 @@ function(target_code_coverage TARGET_NAME)
           ${LLVM_COV_PATH} report $<TARGET_FILE:${TARGET_NAME}>
           -instr-profile=${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
           ${LINKED_OBJECTS} ${EXCLUDE_REGEX}
+          ${target_code_coverage_LLVM_COV_REPORT_OPTIONS}
         DEPENDS ${target_code_coverage_COVERAGE_TARGET_NAME}.profdata)
 
       # Export coverage information so continuous integration tools (e.g.
@@ -437,7 +466,8 @@ function(target_code_coverage TARGET_NAME)
         COMMAND
           ${LLVM_COV_PATH} export $<TARGET_FILE:${TARGET_NAME}>
           -instr-profile=${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
-          -format="text" ${LINKED_OBJECTS} ${EXCLUDE_REGEX} >
+          -format="text" ${LINKED_OBJECTS} ${EXCLUDE_REGEX}
+          ${target_code_coverage_LLVM_COV_EXPORT_OPTIONS} >
           ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${target_code_coverage_COVERAGE_TARGET_NAME}.json
         DEPENDS ${target_code_coverage_COVERAGE_TARGET_NAME}.profdata)
 
@@ -450,6 +480,7 @@ function(target_code_coverage TARGET_NAME)
           -show-line-counts-or-regions
           -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${target_code_coverage_COVERAGE_TARGET_NAME}
           -format="html" ${LINKED_OBJECTS} ${EXCLUDE_REGEX}
+          ${target_code_coverage_LLVM_COV_HTML_OPTIONS}
         DEPENDS ${target_code_coverage_COVERAGE_TARGET_NAME}.profdata)
 
       # Generates HTML output of the coverage information for perusal
@@ -547,7 +578,7 @@ function(target_code_coverage TARGET_NAME)
         COMMAND
           ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --base-directory
           ${CMAKE_SOURCE_DIR} --capture ${EXTERNAL_OPTION} --output-file
-          ${COVERAGE_INFO}
+          ${COVERAGE_INFO} ${target_code_coverage_LCOV_OPTIONS}
         COMMAND ${EXCLUDE_COMMAND}
         DEPENDS ${target_code_coverage_COVERAGE_TARGET_NAME}.ccov-run)
       add_custom_target(
@@ -558,7 +589,7 @@ function(target_code_coverage TARGET_NAME)
       add_custom_target(
         ccov-html-${target_code_coverage_COVERAGE_TARGET_NAME}
         COMMAND
-          ${GENHTML_PATH} -o
+          ${GENHTML_PATH} ${target_code_coverage_GENHTML_OPTIONS} -o
           ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${target_code_coverage_COVERAGE_TARGET_NAME}
           ${COVERAGE_INFO}
         COMMAND
@@ -639,9 +670,9 @@ function(add_code_coverage)
   endif()
 endfunction()
 
-# Adds several 'ccov-all-*' type targets that operates on all targets added via
-# `target_code_coverage` with the `ALL` parameter, but merges all the coverage
-# data into a single large report instead of numerous smaller reports.
+# Adds several 'ccov-all-*' targets that operates runs all targets added via
+# `target_code_coverage` with the `ALL` parameter and merges all the coverage
+# data into a single large report instead of numerous smaller ones.
 # ~~~
 # Targets added:
 # ccov-all-run : Re-runs all tagged executables, collecting fresh coverage data
@@ -657,8 +688,18 @@ endfunction()
 #
 # Optional Parameters:
 # EXCLUDE <PATTERNS> - Excludes files of the patterns provided from coverage. Note that GCC/lcov excludes by glob pattern, and clang/LLVM excludes via regex!
+#
+# Optional Parameters effective with the clang/LLVM backend:
 # LLVM_EXCLUDE <PATTERNS> - Excludes files that match the provided patterns, LLVM excludes by regex patterns.
+# LLVM_PROFDATA_OPTIONS <OPTIONS> - Options are passed verbatim to the `llvm-profdata` call that merges/processes raw profile data. (.profraw -> .profdata)
+# LLVM_COV_REPORT_OPTIONS <OPTIONS> - Options are passed verbatim to the `llvm-cov report` call for the `ccov-report-all` target.
+# LLVM_COV_EXPORT_OPTIONS <OPTIONS> - Options are passed verbatim to the `llvm-cov export` call for the `ccov-export-all` target.
+# LLVM_COV_HTML_OPTIONS <OPTIONS> - Options are passed verbatim to the `llvm-cov show -format="html"` call for the `ccov-html-all`/`ccov-all` targets.
+#
+# Optional Parameters effective with the GCC/lcov backend:
 # LCOV_EXCLUDE <PATTERNS> - Excludes files that match the provided patterns. LCOV exclude by glob patterns.
+# LCOV_OPTIONS <OPTIONS> - Options are passed verbatim to the `lcov` call when capturing/filtering capture data
+# GENHTML_OPTIONS <OPTIONS> - Options are passed verbatim to the `genhtml` call when generating the HTML report from lcov data for the `ccov-html-all`/`ccov-all` targets.
 # ~~~
 function(add_code_coverage_all_targets)
   if(NOT CODE_COVERAGE)
@@ -666,7 +707,19 @@ function(add_code_coverage_all_targets)
   endif()
 
   # Argument parsing
-  set(multi_value_keywords EXCLUDE LLVM_EXCLUDE LCOV_EXCLUDE)
+  set(multi_value_keywords
+      # common
+      EXCLUDE
+      # llvm
+      LLVM_EXCLUDE
+      LLVM_PROFDATA_OPTIONS
+      LLVM_COV_REPORT_OPTIONS
+      LLVM_COV_EXPORT_OPTIONS
+      LLVM_COV_HTML_OPTIONS
+      # lcov
+      LCOV_EXCLUDE
+      LCOV_OPTIONS
+      GENHTML_OPTIONS)
   cmake_parse_arguments(add_code_coverage_all_targets "" ""
                         "${multi_value_keywords}" ${ARGN})
 
@@ -691,8 +744,8 @@ function(add_code_coverage_all_targets)
         COMMAND
           powershell -Command $$FILELIST = Get-Content
           ${CMAKE_COVERAGE_DATA_DIRECTORY}/all-profraw.list \; llvm-profdata.exe
-          merge -o ${CMAKE_COVERAGE_DATA_DIRECTORY}/ccov-all.profdata -sparse
-          $$FILELIST
+          merge ${add_code_coverage_all_targets_LLVM_PROFDATA_OPTIONS} -o
+          ${CMAKE_COVERAGE_DATA_DIRECTORY}/ccov-all.profdata -sparse $$FILELIST
         DEPENDS ccov-all-ran)
     else()
       add_custom_command(
@@ -733,6 +786,7 @@ function(add_code_coverage_all_targets)
           report $$FILELIST
           -instr-profile=${CMAKE_COVERAGE_DATA_DIRECTORY}/ccov-all.profdata
           ${EXCLUDE_REGEX}
+          ${add_code_coverage_all_targets_LLVM_COV_REPORT_OPTIONS}
         DEPENDS ${CMAKE_COVERAGE_DATA_DIRECTORY}/ccov-all.profdata)
     else()
       add_custom_target(
@@ -742,6 +796,7 @@ function(add_code_coverage_all_targets)
           ${CMAKE_COVERAGE_DATA_DIRECTORY}/all-objects.list`
           -instr-profile=${CMAKE_COVERAGE_DATA_DIRECTORY}/ccov-all.profdata
           ${EXCLUDE_REGEX}
+          ${add_code_coverage_all_targets_LLVM_COV_REPORT_OPTIONS}
         DEPENDS ${CMAKE_COVERAGE_DATA_DIRECTORY}/ccov-all.profdata)
     endif()
 
@@ -755,7 +810,8 @@ function(add_code_coverage_all_targets)
           ${CMAKE_COVERAGE_DATA_DIRECTORY}/all-objects.list \; llvm-cov.exe
           export $$FILELIST
           -instr-profile=${CMAKE_COVERAGE_DATA_DIRECTORY}/ccov-all.profdata
-          -format="text" ${EXCLUDE_REGEX} >
+          -format="text" ${EXCLUDE_REGEX}
+          ${add_code_coverage_all_targets_LLVM_COV_EXPORT_OPTIONS} >
           ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.json
         DEPENDS ${CMAKE_COVERAGE_DATA_DIRECTORY}/ccov-all.profdata)
     else()
@@ -765,7 +821,8 @@ function(add_code_coverage_all_targets)
           ${LLVM_COV_PATH} export `cat
           ${CMAKE_COVERAGE_DATA_DIRECTORY}/all-objects.list`
           -instr-profile=${CMAKE_COVERAGE_DATA_DIRECTORY}/ccov-all.profdata
-          -format="text" ${EXCLUDE_REGEX} >
+          -format="text" ${EXCLUDE_REGEX}
+          ${add_code_coverage_all_targets_LLVM_COV_EXPORT_OPTIONS} >
           ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.json
         DEPENDS ${CMAKE_COVERAGE_DATA_DIRECTORY}/ccov-all.profdata)
     endif()
@@ -782,6 +839,7 @@ function(add_code_coverage_all_targets)
           -show-line-counts-or-regions
           -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged
           -format="html" ${EXCLUDE_REGEX}
+          ${add_code_coverage_all_targets_LLVM_COV_HTML_OPTIONS}
         DEPENDS ${CMAKE_COVERAGE_DATA_DIRECTORY}/ccov-all.profdata)
     else()
       add_custom_target(
@@ -793,6 +851,7 @@ function(add_code_coverage_all_targets)
           -show-line-counts-or-regions
           -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged
           -format="html" ${EXCLUDE_REGEX}
+          ${add_code_coverage_all_targets_LLVM_COV_HTML_OPTIONS}
         DEPENDS ${CMAKE_COVERAGE_DATA_DIRECTORY}/ccov-all.profdata)
     endif()
 
@@ -834,8 +893,9 @@ function(add_code_coverage_all_targets)
 
     add_custom_command(
       OUTPUT ${COVERAGE_INFO}
-      COMMAND ${LCOV_PATH} --ignore-errors unused --directory
-              ${CMAKE_BINARY_DIR} --capture --output-file ${COVERAGE_INFO}
+      COMMAND
+        ${LCOV_PATH} ${add_code_coverage_all_targets_LCOV_OPTIONS} --directory
+        ${CMAKE_BINARY_DIR} --capture --output-file ${COVERAGE_INFO}
       COMMAND ${EXCLUDE_COMMAND}
       COMMAND ${CMAKE_COMMAND} -E echo
               "Generated coverage .info file at ${COVERAGE_INFO}"
@@ -845,18 +905,17 @@ function(add_code_coverage_all_targets)
     # Only generates HTML output of all targets for perusal
     add_custom_target(
       ccov-all-html
-      COMMAND ${GENHTML_PATH} -o ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged
-              ${COVERAGE_INFO} -p ${CMAKE_SOURCE_DIR}
+      COMMAND
+        ${GENHTML_PATH} ${add_code_coverage_all_targets_GENHTML_OPTIONS} -o
+        ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged ${COVERAGE_INFO} -p
+        ${CMAKE_SOURCE_DIR}
       COMMAND
         ${CMAKE_COMMAND} -E echo
         "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged/index.html in your browser to view the coverage report."
       DEPENDS ${COVERAGE_INFO})
 
     # Generates HTML output of all targets for perusal
-    add_custom_target(
-      ccov-all
-      COMMAND
-      DEPENDS ccov-all-html)
+    add_custom_target(ccov-all DEPENDS ccov-all-html)
 
   endif()
 endfunction()

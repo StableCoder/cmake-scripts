@@ -166,20 +166,6 @@ if(CODE_COVERAGE AND NOT CODE_COVERAGE_ADDED)
     # Messages
     message(STATUS "Building with lcov Code Coverage Tools")
 
-    if(CMAKE_BUILD_TYPE)
-      string(TOUPPER ${CMAKE_BUILD_TYPE} upper_build_type)
-      if(NOT ${upper_build_type} STREQUAL "DEBUG")
-        message(
-          WARNING
-            "Code coverage results with an optimized (non-Debug) build may be misleading"
-        )
-      endif()
-    else()
-      message(
-        WARNING
-          "Code coverage results with an optimized (non-Debug) build may be misleading"
-      )
-    endif()
     if(NOT LCOV_PATH)
       message(FATAL_ERROR "lcov not found! Aborting...")
     endif()

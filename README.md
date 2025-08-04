@@ -192,11 +192,11 @@ To enable any code coverage instrumentation/targets, the single CMake option of 
 From this point, there are two primary methods for adding instrumentation to targets:
 1. A blanket instrumentation by calling `add_code_coverage()`, where all targets in that directory and all subdirectories are automatically instrumented.
 2. Per-target instrumentation by calling `target_code_coverage(<TARGET_NAME>)`, where the target is given and thus only that target is instrumented and executables have ccov* targets created. This applies to both libraries and executables.
-3. Automatically add coverage for each target with `-DCCOV_TARGETS_HOOK=On` and `-DCCOV_TARGETS_HOOK_ARGS=...` for default values, requires `add_code_coverage()` or similar.
+3. Automatically add coverage for each target with `-DCCOV_TARGETS_HOOK=ON` and `-DCCOV_TARGETS_HOOK_ARGS=...` for default values, requires `add_code_coverage()` or similar.
 
 To add coverage targets, such as calling `make ccov` to generate the actual coverage information for perusal or consumption, call `target_code_coverage(<TARGET_NAME>)` on an *executable* target.
 
-**NOTE:** For more options, please check the actual [`code-coverage.cmake`](code-coverage.cmake) file.
+**NOTE:** For more options, please check the documentation for each function in the [`code-coverage.cmake`](code-coverage.cmake) file.
 
 #### Example 1 - All targets instrumented
 
@@ -235,10 +235,21 @@ target_code_coverage(theExe EXCLUDE non_covered.cpp) # As an executable target, 
 #### Example 3: Target added to the 'ccov' and 'ccov-all' targets
 
 ```
-add_code_coverage_all_targets(EXCLUDE test/*) # Adds the 'ccov-all' target set and sets it to exclude all files in test/ folders.
+# Adds the 'ccov-all' target set and sets it to exclude a specific 
+# file and all files in test/ folders.
+add_code_coverage_all_targets(
+  EXCLUDE non_covered.cpp
+  LCOV_EXCLUDE test/*
+  LLVM_EXCLUDE test/.*)
 
 add_executable(theExe main.cpp non_covered.cpp)
-target_code_coverage(theExe AUTO ALL EXCLUDE non_covered.cpp test/*) # As an executable target, adds to the 'ccov' and ccov-all' targets, and the reports will exclude the non-covered.cpp file, and any files in a test/ folder.
+# As an executable target, adds to the 'ccov' and ccov-all' targets, and
+# the reports will exclude the non-covered.cpp file, and any files in a test/ folder.
+target_code_coverage(theExe AUTO ALL 
+  EXCLUDE non_covered.cpp  # a file path which applies to both backends
+  LCOV_EXCLUDE test/*   # the GCC/lcov backend excludes by glob
+  LLVM_EXCLUDE test/.*  # the clang/LLVM backend exclude by regext
+  )
 ```
 
 #### Example 4: Hook all targets

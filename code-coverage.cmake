@@ -61,13 +61,18 @@
 #
 # ~~~
 # add_executable(theExe main.cpp non_covered.cpp)
-# target_code_coverage(theExe EXCLUDE non_covered.cpp test/*) # As an executable target, the reports will exclude the non-covered.cpp file, and any files in a test/ folder.
+# target_code_coverage(theExe
+#     EXCLUDE non_covered.cpp
+#     LCOV_EXCLUDE test/*
+#     LLVM_EXCLUDE test/.*) # As an executable target, the reports will exclude the non-covered.cpp file, and any files in a test/ folder.
 # ~~~
 #
 # Example 3: Target added to the 'ccov' and 'ccov-all' targets
 #
 # ~~~
-# add_code_coverage_all_targets(EXCLUDE test/*) # Adds the 'ccov-all' target set and sets it to exclude all files in test/ folders.
+# add_code_coverage_all_targets(
+#     LCOV_EXCLUDE test/*
+#     LLVM_EXCLUDE test/.*)# Adds the 'ccov-all' target set and sets it to exclude all files in test/ folders.
 #
 # add_executable(theExe main.cpp non_covered.cpp)
 # target_code_coverage(theExe AUTO ALL EXCLUDE non_covered.cpp test/*) # As an executable target, adds to the 'ccov' and ccov-all' targets, and the reports will exclude the non-covered.cpp file, and any files in a test/ folder.
@@ -234,7 +239,9 @@ endif()
 # ALL - Adds the target to the 'ccov-all-*' targets created by a prior call to `add_code_coverage_all_targets` Effective on executable targets.
 # EXTERNAL - For GCC's lcov, allows the profiling of 'external' files from the processing directory
 # COVERAGE_TARGET_NAME - For executables ONLY, changes the outgoing target name so instead of `ccov-${TARGET_NAME}` it becomes `ccov-${COVERAGE_TARGET_NAME}`.
-# EXCLUDE <PATTERNS> - Excludes files of the patterns provided from coverage. Note that GCC/lcov excludes by glob pattern, and clang/LLVM excludes via regex! **These do not copy to the 'all' targets.**
+# EXCLUDE <PATTERNS> - Excludes files of the patterns provided from coverage. Added to any lcov/llvm specific excludes. sNote that GCC/lcov excludes by glob pattern, and clang/LLVM excludes via regex! **These do not copy to the 'all' targets.**
+# LLVM_EXCLUDE <PATTERNS> - Excludes files that match the provided patterns, LLVM excludes by regex patterns.
+# LCOV_EXCLUDE <PATTERNS> - Excludes files that match the provided patterns. LCOV exclude by glob patterns.
 # OBJECTS <TARGETS> - For executables ONLY, if the provided targets are static or shared libraries, adds coverage information to the output
 # PRE_ARGS <ARGUMENTS> - For executables ONLY, prefixes given arguments to the associated ccov-run-${TARGET_NAME} executable call ($<PRE_ARGS> ccov-*)
 # ARGS <ARGUMENTS> - For executables ONLY, appends the given arguments to the associated ccov-run-${TARGET_NAME} executable call (ccov-* $<ARGS>)
@@ -247,7 +254,8 @@ function(target_code_coverage TARGET_NAME)
   # Argument parsing
   set(options AUTO ALL EXTERNAL PUBLIC INTERFACE PLAIN)
   set(single_value_keywords COVERAGE_TARGET_NAME)
-  set(multi_value_keywords EXCLUDE OBJECTS PRE_ARGS ARGS)
+  set(multi_value_keywords EXCLUDE LLVM_EXCLUDE LCOV_EXCLUDE OBJECTS PRE_ARGS
+                           ARGS)
   cmake_parse_arguments(
     target_code_coverage "${options}" "${single_value_keywords}"
     "${multi_value_keywords}" ${ARGN})
@@ -392,8 +400,13 @@ function(target_code_coverage TARGET_NAME)
         DEPENDS ${target_code_coverage_COVERAGE_TARGET_NAME}.profraw)
 
       # Ignore regex only works on LLVM >= 7
+      set(EXCLUDE_REGEX)
       if(LLVM_COV_VERSION VERSION_GREATER_EQUAL "7.0.0")
         foreach(EXCLUDE_ITEM ${target_code_coverage_EXCLUDE})
+          set(EXCLUDE_REGEX ${EXCLUDE_REGEX}
+                            -ignore-filename-regex='${EXCLUDE_ITEM}')
+        endforeach()
+        foreach(EXCLUDE_ITEM ${target_code_coverage_LLVM_EXCLUDE})
           set(EXCLUDE_REGEX ${EXCLUDE_REGEX}
                             -ignore-filename-regex='${EXCLUDE_ITEM}')
         endforeach()
@@ -451,7 +464,12 @@ function(target_code_coverage TARGET_NAME)
       )
 
       # Generate exclusion string for use
+      set(EXCLUDE_REGEX)
       foreach(EXCLUDE_ITEM ${target_code_coverage_EXCLUDE})
+        set(EXCLUDE_REGEX ${EXCLUDE_REGEX} --remove ${COVERAGE_INFO}
+                          '${EXCLUDE_ITEM}')
+      endforeach()
+      foreach(EXCLUDE_ITEM ${target_code_coverage_LCOV_EXCLUDE})
         set(EXCLUDE_REGEX ${EXCLUDE_REGEX} --remove ${COVERAGE_INFO}
                           '${EXCLUDE_ITEM}')
       endforeach()
@@ -639,6 +657,8 @@ endfunction()
 #
 # Optional Parameters:
 # EXCLUDE <PATTERNS> - Excludes files of the patterns provided from coverage. Note that GCC/lcov excludes by glob pattern, and clang/LLVM excludes via regex!
+# LLVM_EXCLUDE <PATTERNS> - Excludes files that match the provided patterns, LLVM excludes by regex patterns.
+# LCOV_EXCLUDE <PATTERNS> - Excludes files that match the provided patterns. LCOV exclude by glob patterns.
 # ~~~
 function(add_code_coverage_all_targets)
   if(NOT CODE_COVERAGE)
@@ -646,7 +666,7 @@ function(add_code_coverage_all_targets)
   endif()
 
   # Argument parsing
-  set(multi_value_keywords EXCLUDE)
+  set(multi_value_keywords EXCLUDE LLVM_EXCLUDE LCOV_EXCLUDE)
   cmake_parse_arguments(add_code_coverage_all_targets "" ""
                         "${multi_value_keywords}" ${ARGN})
 
@@ -691,8 +711,13 @@ function(add_code_coverage_all_targets)
     endif()
 
     # Regex exclude only available for LLVM >= 7
+    set(EXCLUDE_REGEX)
     if(LLVM_COV_VERSION VERSION_GREATER_EQUAL "7.0.0")
       foreach(EXCLUDE_ITEM ${add_code_coverage_all_targets_EXCLUDE})
+        set(EXCLUDE_REGEX ${EXCLUDE_REGEX}
+                          -ignore-filename-regex='${EXCLUDE_ITEM}')
+      endforeach()
+      foreach(EXCLUDE_ITEM ${add_code_coverage_all_targets_LLVM_EXCLUDE})
         set(EXCLUDE_REGEX ${EXCLUDE_REGEX}
                           -ignore-filename-regex='${EXCLUDE_ITEM}')
       endforeach()
@@ -778,6 +803,10 @@ function(add_code_coverage_all_targets)
     # Exclusion regex string creation
     set(EXCLUDE_REGEX)
     foreach(EXCLUDE_ITEM ${add_code_coverage_all_targets_EXCLUDE})
+      set(EXCLUDE_REGEX ${EXCLUDE_REGEX} --remove ${COVERAGE_INFO}
+                        '${EXCLUDE_ITEM}')
+    endforeach()
+    foreach(EXCLUDE_ITEM ${add_code_coverage_all_targets_LCOV_EXCLUDE})
       set(EXCLUDE_REGEX ${EXCLUDE_REGEX} --remove ${COVERAGE_INFO}
                         '${EXCLUDE_ITEM}')
     endforeach()

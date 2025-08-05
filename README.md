@@ -5,7 +5,6 @@
 
 This is a collection of quite useful scripts that expand the possibilities for building software with CMake, by making some things easier and otherwise adding new build types
 
-- [C++ Standards `c++-standards.cmake`](#c-standards-c-standardscmake)
 - [Sanitizer Builds `sanitizers.cmake`](#sanitizer-builds-sanitizerscmake)
   - [Usage](#usage)
 - [Code Coverage `code-coverage.cmake`](#code-coverage-code-coveragecmake)
@@ -60,12 +59,6 @@ This is a collection of quite useful scripts that expand the possibilities for b
 - [Link Time Optimization / Interprocedural Optimization `link-time-optimization.cmake`](#link-time-optimization--interprocedural-optimization-link-time-optimizationcmake)
   - [Optional Arguments](#optional-arguments-4)
     - [REQUIRED](#required)
-
-## C++ Standards [`c++-standards.cmake`](c++-standards.cmake)
-
-Using the functions `cxx_11()`, `cxx_14()`, `cxx_17()` or `cxx_20()` this adds the appropriate flags for both unix and MSVC compilers, even for those before 3.11 with improper support.
-
-These obviously force the standard to be required, and also disables compiler-specific extensions, ie `--std=gnu++11`. This helps to prevent fragmenting the code base with items not available elsewhere, adhering to the agreed C++ standards only.
 
 ## Sanitizer Builds [`sanitizers.cmake`](sanitizers.cmake)
 

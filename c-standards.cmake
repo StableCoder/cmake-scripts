@@ -13,6 +13,9 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+# WARNING: This file and it's functions are DEPRECATED and will be removed in a
+# future version.
+
 # Set the compiler standard to C89/90
 macro(c_90)
   set(CMAKE_C_STANDARD 90)

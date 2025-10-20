@@ -871,8 +871,9 @@ function(add_code_coverage_all_targets)
     endforeach()
 
     if(EXCLUDE_REGEX)
-      set(EXCLUDE_COMMAND ${LCOV_PATH} ${EXCLUDE_REGEX} --output-file
-                          ${COVERAGE_INFO})
+      set(EXCLUDE_COMMAND ${LCOV_PATH}
+                          ${add_code_coverage_all_targets_LCOV_OPTIONS} 
+                          ${EXCLUDE_REGEX} --output-file ${COVERAGE_INFO})
     else()
       set(EXCLUDE_COMMAND ;)
     endif()

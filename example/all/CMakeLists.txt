@@ -13,6 +13,9 @@ include(dependency-graph)
 # Require C++11
 cxx_11()
 
+# required by ALL
+add_code_coverage_all_targets()
+
 # Tools
 if(UNIX AND NOT APPLE)
   file(GLOB_RECURSE FFILES *.[hc] *.[hc]pp)

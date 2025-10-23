@@ -1,0 +1,61 @@
+# This is a basic workflow to help you get started with Actions
+name: Sanitizers
+
+# Controls when the action will run. Triggers the workflow on push
+on:
+  push:
+  pull_request:
+  release:
+    # tags:
+    # - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    name: "OS: ${{ matrix.os-version }}  CXX: ${{ matrix.compiler }}  SAN: ${{ matrix.sanitizer }}"
+    runs-on: ${{ matrix.os-version }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os-version: [ ubuntu-latest ]
+        compiler: [ gcc, clang ]
+        build_type: [ Debug ]
+        sanitizer: [ Address, Memory, Leak, Thread, Undefined ]
+
+    steps:
+      - name: Print env
+        run: |
+          echo github.event.action: ${{ github.event.action }}
+          echo github.event_name: ${{ github.event_name }}
+
+      - name: Install compiler
+        id: install_cc
+        uses: rlalik/setup-cpp-compiler@v1.1
+        with:
+          compiler: ${{ matrix.compiler }}
+
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout repository
+        uses: actions/checkout@v1
+        with:
+          submodules: recursive
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v1.9
+
+      - name: Test sanitizer
+        if: ${{ matrix.sanitizer != 'Memory' || matrix.sanitizer == 'Memory' && matrix.compiler == 'clang' }}
+        shell: bash
+        env:
+          CC: ${{ steps.install_cc.outputs.cc }}
+          CXX: ${{ steps.install_cc.outputs.cxx }}
+        run: |
+          cmake \
+            -S example/all \
+            -B build_sanitizer \
+            -DUSE_SANITIZER=${{ matrix.sanitizer }} \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          cmake --build build_sanitizer --config ${{ matrix.build_type }}

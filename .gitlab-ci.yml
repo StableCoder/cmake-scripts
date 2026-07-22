@@ -692,13 +692,47 @@ macOS/Clang/UndefinedSanitizer:
     CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=undefined
   <<: *macos_failure_template_xclt
 
-Windows/MSVC/Address Sanitizer:
-  image: stabletec/build-core:windows-ltsc2025
+Windows/MSVC/Address Sanitizer (VS2019):
+  image: stabletec/build-core:windows-ltsc2025-vs2019
+  stage: Sanitizers
+  parallel:
+    matrix:
+      - ARCH: [amd64]
+        BUILD_SYSTEM: ["Ninja", "Visual Studio 16 2019"]
+  tags:
+    - container
+    - windows
+    - ltsc2025
+    - ${ARCH}
+  script:
+    - cmake -S example/all/ -B build -G "${BUILD_SYSTEM}" -D CMAKE_BUILD_TYPE=Debug -D EXAMPLE_USE_SANITIZER=address $env:CMAKE_OPTIONS
+    - cmake --build build
+    - ctest --test-dir build --output-on-failure $env:CTEST_OPTIONS ; if ($? -ne 0) { exit 1 } else { exit 0 }
+
+Windows/MSVC/Address Sanitizer (VS2022):
+  image: stabletec/build-core:windows-ltsc2025-vs2022
   stage: Sanitizers
   parallel:
     matrix:
       - ARCH: [amd64]
         BUILD_SYSTEM: ["Ninja", "Visual Studio 17 2022"]
+  tags:
+    - container
+    - windows
+    - ltsc2025
+    - ${ARCH}
+  script:
+    - cmake -S example/all/ -B build -G "${BUILD_SYSTEM}" -D CMAKE_BUILD_TYPE=Debug -D EXAMPLE_USE_SANITIZER=address $env:CMAKE_OPTIONS
+    - cmake --build build
+    - ctest --test-dir build --output-on-failure $env:CTEST_OPTIONS ; if ($? -ne 0) { exit 1 } else { exit 0 }
+
+Windows/MSVC/Address Sanitizer (VS2026):
+  image: stabletec/build-core:windows-ltsc2025-vs2026
+  stage: Sanitizers
+  parallel:
+    matrix:
+      - ARCH: [amd64]
+        BUILD_SYSTEM: ["Ninja", "Visual Studio 18 2026"]
   tags:
     - container
     - windows

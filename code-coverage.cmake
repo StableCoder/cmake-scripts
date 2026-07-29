@@ -417,14 +417,28 @@ function(target_code_coverage TARGET_NAME)
         DEPENDS ${target_code_coverage_COVERAGE_TARGET_NAME}.profraw)
 
       # Merge the generated profile data so llvm-cov can process it
-      add_custom_command(
-        OUTPUT ${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
-        COMMAND
-          ${LLVM_PROFDATA_PATH} merge
-          ${target_code_coverage_LLVM_PROFDATA_OPTIONS} -sparse
-          ${target_code_coverage_COVERAGE_TARGET_NAME}.profraw -o
-          ${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
-        DEPENDS ccov-profraw-${target_code_coverage_COVERAGE_TARGET_NAME})
+      if(DEFINED CMAKE_XCODE_BUILD_SYSTEM)
+        # Xcode does not support the same file being a dependency for multiple
+        # targets, so depend on the run target to always run instead
+        add_custom_command(
+          OUTPUT ${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
+          COMMAND
+            ${LLVM_PROFDATA_PATH} merge
+            ${target_code_coverage_LLVM_PROFDATA_OPTIONS} -sparse
+            ${target_code_coverage_COVERAGE_TARGET_NAME}.profraw -o
+            ${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
+          DEPENDS ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME})
+      else()
+        add_custom_command(
+          OUTPUT ${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
+          COMMAND
+            ${LLVM_PROFDATA_PATH} merge
+            ${target_code_coverage_LLVM_PROFDATA_OPTIONS} -sparse
+            ${target_code_coverage_COVERAGE_TARGET_NAME}.profraw -o
+            ${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
+          DEPENDS ${target_code_coverage_COVERAGE_TARGET_NAME}.profraw)
+      endif()
+
       add_custom_target(
         ccov-profiledata-${target_code_coverage_COVERAGE_TARGET_NAME}
         DEPENDS ${target_code_coverage_COVERAGE_TARGET_NAME}.profdata)

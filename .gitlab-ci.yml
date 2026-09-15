@@ -673,13 +673,6 @@ macOS/Clang/AddressSanitizer:
     CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=address
   <<: *macos_failure_template_xclt
 
-macOS/Clang/LeakSanitizer:
-  variables:
-    CC: clang
-    CXX: clang++
-    CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=leak
-  <<: *macos_failure_template_xclt
-
 macOS/AppleClang/UndefinedSanitizer:
   variables:
     CMAKE_OPTIONS: -D EXAMPLE_USE_SANITIZER=undefined
